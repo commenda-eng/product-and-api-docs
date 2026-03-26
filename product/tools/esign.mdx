@@ -130,11 +130,22 @@ Clients see signature tasks on their Commenda dashboard:
 3. If multiple signers are required, the next recipient is notified
 4. When all recipients sign, the envelope is marked as "Completed"
 
-### When a signature is declined or canceled
+### When a recipient declines to sign
 
-1. The task status updates to "Canceled"
-2. All other pending signatures are voided
-3. The reason for cancellation is recorded
+If a recipient actively declines to sign the document:
+
+1. **The entire envelope is automatically canceled** - DocuSign voids all signatures, not just the one that was declined
+2. **All tasks are marked as "Canceled"** - Every recipient's task status updates to "Canceled", including those who haven't been notified yet
+3. **The decline reason is recorded** - The task description shows which recipient declined (e.g., "This signature request has been canceled because John Smith declined to sign")
+4. **No further signatures are possible** - The envelope cannot be reopened; you must create a new signature request
+
+### When you manually cancel a signature request
+
+Agents can also manually cancel signature requests:
+
+1. All pending signatures are voided
+2. Recipients can no longer sign the document
+3. Tasks are marked as "Canceled"
 4. No further action can be taken on the envelope
 
 ## Notifications

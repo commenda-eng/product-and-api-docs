@@ -134,30 +134,35 @@
       {
         "tab": "API Documentation",
         "icon": "code",
-        "groups": [
+        "menu": [
           {
-            "group": "Global Indirect Tax",
-            "pages": [
-              "engine/indirect-tax/introduction",
-              "engine/indirect-tax/taxcode"
+            "item": "Global Indirect Tax",
+            "groups": [
+              {
+                "group": "Get Started",
+                "pages": [
+                  "engine/indirect-tax/introduction",
+                  "engine/indirect-tax/taxcode",
+                  {
+                    "group": "Core Concepts",
+                    "pages": [
+                      "engine/indirect-tax/core-concepts/transactions",
+                      "engine/indirect-tax/core-concepts/nexus",
+                      "engine/indirect-tax/core-concepts/exemptions"
+                    ]
+                  },
+                  {
+                    "group": "Common Use Cases",
+                    "pages": [
+                      "engine/indirect-tax/use-cases/us-sales-tax-calculation"
+                    ]
+                  }
+                ]
+              }
             ]
           },
           {
-            "group": "Core Concepts",
-            "pages": [
-              "engine/indirect-tax/core-concepts/transactions",
-              "engine/indirect-tax/core-concepts/nexus",
-              "engine/indirect-tax/core-concepts/exemptions"
-            ]
-          },
-          {
-            "group": "Common Use Cases",
-            "pages": [
-              "engine/indirect-tax/use-cases/us-sales-tax-calculation"
-            ]
-          },
-          {
-            "group": "Corporations",
+            "item": "Corporations",
             "pages": [
               "engine/indirect-tax/corporation/corporation",
               "engine/indirect-tax/corporation/corporation-POST",
@@ -170,7 +175,7 @@
             ]
           },
           {
-            "group": "Registrations",
+            "item": "Registrations",
             "pages": [
               "engine/indirect-tax/registrations/registrations",
               "engine/indirect-tax/registrations/registrations-POST",
@@ -193,14 +198,14 @@
             ]
           },
           {
-            "group": "Tax Calculations",
+            "item": "Tax Calculations",
             "pages": [
               "engine/indirect-tax/calculate/calculate",
               "engine/indirect-tax/calculate/calculate-POST"
             ]
           },
           {
-            "group": "Transactions",
+            "item": "Transactions",
             "pages": [
               "engine/indirect-tax/transaction/transaction",
               "engine/indirect-tax/transaction/transaction-POST",
@@ -217,13 +222,13 @@
             ]
           },
           {
-            "group": "Global Nexus",
+            "item": "Global Nexus",
             "pages": [
               "engine/indirect-tax/nexus/nexus-GET"
             ]
           },
           {
-            "group": "Products",
+            "item": "Products",
             "pages": [
               "engine/indirect-tax/products/products",
               "engine/indirect-tax/products/products-POST",
@@ -240,7 +245,7 @@
             ]
           },
           {
-            "group": "Customers",
+            "item": "Customers",
             "pages": [
               "engine/indirect-tax/customers/customer",
               "engine/indirect-tax/customers/customers-POST",
@@ -251,7 +256,7 @@
             ]
           },
           {
-            "group": "Exemption Certificates",
+            "item": "Exemption Certificates",
             "pages": [
               "engine/indirect-tax/exemptions/exemption-certificates/exemption-certificates",
               "engine/indirect-tax/exemptions/exemption-certificates/exemption-certificates-POST",
@@ -267,13 +272,13 @@
             ]
           },
           {
-            "group": "Exemptions",
+            "item": "Exemptions",
             "pages": [
               "engine/indirect-tax/exemptions/exemptions-GET"
             ]
           },
           {
-            "group": "Files",
+            "item": "Files",
             "pages": [
               "engine/indirect-tax/files/files",
               "engine/indirect-tax/files/files-POST",
@@ -283,13 +288,13 @@
             ]
           },
           {
-            "group": "Filings",
+            "item": "Filings",
             "pages": [
               "engine/indirect-tax/filings/filings-GET-ONE"
             ]
           },
           {
-            "group": "Webhooks",
+            "item": "Webhooks",
             "pages": [
               "engine/indirect-tax/webhooks/webhooks",
               "engine/indirect-tax/webhooks/event",
@@ -302,7 +307,7 @@
             ]
           },
           {
-            "group": "CommendaOS",
+            "item": "CommendaOS",
             "pages": [
               "engine/commendaos/overview",
               {
@@ -371,7 +376,7 @@
             ]
           },
           {
-            "group": "Incorporation",
+            "item": "Incorporation",
             "pages": [
               "engine/incorporation/introduction",
               {
@@ -404,7 +409,7 @@
             ]
           },
           {
-            "group": "Customs Duty",
+            "item": "Customs Duty",
             "pages": [
               "engine/customs-duty/products/products",
               "engine/customs-duty/products/products-customs-code-POST",
@@ -412,7 +417,7 @@
             ]
           },
           {
-            "group": "Workflow Builder",
+            "item": "Workflow Builder",
             "pages": [
               "engine/workflow-builder/overview",
               "engine/workflow-builder/quickstart",
@@ -445,13 +450,13 @@
             ]
           },
           {
-            "group": "Form Builder",
+            "item": "Form Builder",
             "pages": [
               "engine/form-builder/overview"
             ]
           },
           {
-            "group": "Address API",
+            "item": "Address API",
             "pages": [
               "engine/address-api/introduction",
               {

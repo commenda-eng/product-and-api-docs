@@ -21,8 +21,23 @@
     },
     "tabs": [
       {
-        "tab": "Product Guides",
-        "icon": "computer-classic",
+        "tab": "Introduction",
+        "groups": [
+          {
+            "group": "Getting started",
+            "pages": [
+              "introduction/welcome",
+              "introduction/key-concepts",
+              "introduction/user-roles",
+              "introduction/platform-overview",
+              "introduction/quickstart",
+              "introduction/navigation-guide"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Engine",
         "groups": [
           {
             "group": "Entities",

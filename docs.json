@@ -21,9 +21,6 @@
     },
     "tabs": [
       {
-        "tab": "Introduction"
-      },
-      {
         "tab": "Product Guides",
         "icon": "computer-classic",
         "groups": [

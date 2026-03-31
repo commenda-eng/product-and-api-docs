@@ -44,7 +44,8 @@
           {
             "group": "Tools",
             "pages": [
-              "product/tools/esign"
+              "product/tools/esign",
+              "product/tools/general-thread"
             ]
           },
           {

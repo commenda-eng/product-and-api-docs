@@ -27,49 +27,95 @@ Possible values:
 
 ### Transaction Types
 
-The system supports two primary transaction types:
+The system supports the following transaction types:
 
-| Type | Description | Use Case |
+| Type | Description | Use case |
 |------|-------------|----------|
-| SALE | Standard sales transaction | New sales, corrections, re-invoicing |
-| REFUND | Refund transaction | Full or partial refunds of previous sales |
+| `SALE` | Standard sales transaction | New sales, corrections, re-invoicing |
+| `REFUND` | Refund of a previous sale | Full or partial refunds of SALE transactions |
+| `RETURN` | Legacy return type | Equivalent to REFUND, maintained for backward compatibility |
+| `PURCHASE` | Purchase transaction | Recording purchases for EU VAT / UK VAT input credit calculations |
+| `PURCHASE_REFUND` | Refund of a previous purchase | Auto-derived when creating a refund against a PURCHASE transaction |
 
-#### Amount Sign Rules
+#### Sales transactions
 
-**For SALE Transactions**
-- Normally: Line item amounts (price_per_unit * quantity) should be positive
-- Special Cases: Negative amounts are allowed for:
-  - Price corrections within an invoice (mixed with positive lines)
-  - Re-invoicing scenarios with correction lines
+Use `SALE` for standard outgoing sales. You set `transaction_type` to `SALE` when creating the transaction.
 
-**For REFUND Transactions**
-- Line item amounts (price_per_unit * quantity) must be negative
+#### Refund transactions
+
+Use `REFUND` (or `RETURN`) for returns against a previous sale. Link the refund to the original sale via `parent_invoice_id`.
+
+#### Purchase transactions
+
+Use `PURCHASE` to record incoming purchase transactions. This is useful when you need to track input tax credits for EU VAT or UK VAT alongside your sales data.
+
+<Note>
+Purchase transactions do not affect sales-focused flows like nexus tracking, filing calculations, or daily sales summaries. They are stored separately for input credit calculations.
+</Note>
+
+#### Purchase refund transactions
+
+`PURCHASE_REFUND` is automatically assigned when you create a refund against a `PURCHASE` transaction using the refund endpoint. You do not set this type directly — it is derived from the parent transaction's type.
+
+#### Amount sign rules
+
+**For SALE transactions**
+- Line item amounts (`price_per_unit * quantity`) should normally be positive
+- Negative amounts are allowed for price corrections within an invoice (mixed with positive lines) or re-invoicing scenarios
+
+**For REFUND / RETURN transactions**
+- Line item amounts (`price_per_unit * quantity`) must be negative
 - Can be achieved through either:
   - Negative quantity with positive price, OR
   - Positive quantity with negative price
 - All line items in a REFUND transaction must have negative amounts
 
-### Bulk Transactions
+**For PURCHASE transactions**
+- Line item amounts (`price_per_unit * quantity`) must be negative (similar to REFUND)
+
+**For PURCHASE_REFUND transactions**
+- Line item amounts (`price_per_unit * quantity`) should be positive (similar to SALE)
+
+### Filtering by transaction type
+
+When listing transactions, you can filter by type using the `types` query parameter (an array) or the legacy `type` parameter (a single value).
+
+If you do not provide a type filter, the API defaults to returning `SALE`, `REFUND`, and `RETURN` transactions only. `PURCHASE` and `PURCHASE_REFUND` transactions are excluded by default and must be explicitly requested.
+
+**Priority order:** `types` > `type` > default
+
+```bash
+# Return only purchase transactions
+GET /transactions?corporation_id=...&types=PURCHASE&types=PURCHASE_REFUND
+
+# Return all transaction types
+GET /transactions?corporation_id=...&types=SALE&types=REFUND&types=RETURN&types=PURCHASE&types=PURCHASE_REFUND
+```
+
+### Bulk transactions
 
 See [Bulk Transactions](/engine/indirect-tax/transaction/bulk-transactions).
 
-## Best Practices
+## Best practices
 
-### Transaction Type Selection
-- Use SALE for new sales and correction scenarios with mixed positive/negative lines
-- Use REFUND for complete refunds of previous sales
-- Ensure all REFUND transaction line items have negative amounts
+### Transaction type selection
+- Use `SALE` for new sales and correction scenarios with mixed positive/negative lines
+- Use `REFUND` for refunds of previous sales
+- Use `PURCHASE` for incoming purchases where you need to track input tax credits
+- Ensure all `REFUND` and `PURCHASE` transaction line items have negative amounts
+- Do not set `PURCHASE_REFUND` directly — create a refund against a `PURCHASE` transaction instead
 
-### Amounts and Signs
-- For re-invoicing corrections, use a SALE with mixed line signs
-- For refunds, use a REFUND with negative total line amounts
+### Amounts and signs
+- For re-invoicing corrections, use a `SALE` with mixed line signs
+- For refunds, use a `REFUND` with negative total line amounts
 - Be consistent within each transaction type
 
-### Reference Original Transactions
-- Always link REFUND transactions to their original sales via parent_invoice_id
-- For line-level refunds, match line_number with the original invoice
+### Reference original transactions
+- Always link `REFUND` transactions to their original sales via `parent_invoice_id`
+- When creating a refund against a `PURCHASE`, the system automatically assigns `PURCHASE_REFUND` as the type
+- For line-level refunds, match `line_number` with the original invoice
 
-### Date Handling
-- Use transacted_at for the actual date of the return
-- Use reporting_date_override to control when the transaction appears in reports
-- Use calculation_date_override to apply historical tax rates from the original sale date
+### Date handling
+- Use `transacted_at` for the actual date of the return
+- Use `reporting_date_override` to control when the transaction appears in reports
+- Use `calculation_date_override` to apply historical tax rates from the original sale date

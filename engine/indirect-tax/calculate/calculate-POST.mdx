@@ -167,4 +167,26 @@ openapi: "POST /calculate"
   "message": "Successfully calculated tax."
 }
 ```
+```json 400 Missing address
+{
+  "type": "INVALID_REQUEST_BODY",
+  "sub_type": "MISSING_SHIP_TO_ADDRESS",
+  "title": "Missing destination address.",
+  "detail": {
+    "description": "Missing destination address. Shipping address is picked from addresses.ship_to or picked from customer_details.customer_id (customer's default shipping address)."
+  },
+  "status": 400
+}
+```
+```json 400 Invalid address
+{
+  "type": "INVALID_REQUEST_BODY",
+  "sub_type": "INVALID_ADDRESS",
+  "title": "Invalid address passed.",
+  "detail": {
+    "description": "Field 'city' is required for country US."
+  },
+  "status": 400
+}
+```
 </ResponseExample>

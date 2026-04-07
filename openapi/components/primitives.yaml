@@ -14,24 +14,38 @@ schemas:
     - postal_code
     - state
     - country
+    description: >
+      Address object. The fields `postal_code`, `state`, and `country` are always required at the schema level.
+      Additional field requirements (e.g., `address_line_1`, `city`) vary by country — use the
+      `/address-requirements` endpoint to check which fields are REQUIRED, OPTIONAL, or IGNORED for a given country.
+      Postal codes and state codes are validated against country-specific formats and allowed values.
     properties:
       address_line_1:
         type: string
         example: 1776 Main St
+        description: Primary street address. Required for some countries (e.g., US).
       address_line_2:
         type: string
         example: 'Apt. #123'
+        description: Secondary address line (apartment, suite, etc.). Optional for most countries.
       address_line_3:
         type: string
+        description: Tertiary address line. Ignored for most countries.
       postal_code:
         type: string
-        description: Either 5-digit ZIP code or 9-digit ZIP+4 code is accepted.
+        description: >
+          Postal or ZIP code. Format varies by country. For US addresses, either 5-digit ZIP or 9-digit ZIP+4 is accepted.
+          Use the `/address-requirements` endpoint to get the validation regex for each country.
         example: '90401'
       city:
         type: string
         example: Santa Monica
+        description: City name. Required for some countries (e.g., US).
       state:
         "$ref": "#/schemas/State"
+        description: >
+          State or province code. Must be a valid ISO 3166-2 subdivision code for the given country.
+          Use the `/address-requirements` endpoint to get the list of valid state codes for each country.
       country:
         "$ref": "#/schemas/Country"
   Currency:

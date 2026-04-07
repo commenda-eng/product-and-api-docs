@@ -1,17 +1,49 @@
 ---
-title: 'Supported Integrations'
-description: 'Overview of integrations supported by Commenda'
+title: "Supported integrations"
+description: "Overview of all platforms Commenda integrates with."
+keywords: ["integrations", "supported platforms", "accounting", "e-commerce", "payments"]
 ---
 
-## Integrations Supported by Commenda
+Commenda integrates with accounting software, e-commerce platforms, payment processors, and bank accounts to automatically sync your financial data.
 
-| Integration    | Syncing     | Calculation   | Notes |
-|---------------|-------------|---------------|-------|
-| **Stripe**     | Supported   | Not supported | — |
-| **Xero**       | Supported   | Supported     | Xero UK |
-| **QuickBooks** | Supported   | Supported     | — |
-| **Zoho Books** | Supported   | Supported     | Calculation requires manual webhook setup |
-| **Shopify**    | Supported   | Not supported | — |
-| **NetSuite**   | Supported   | Supported     | Calculation requires plugin installation |
-| **WooCommerce**| Supported   | Supported     | Plugin supports both syncing and calculation |
+## Accounting and finance
 
+| Platform | Syncing | Tax calculation | Notes |
+|----------|---------|-----------------|-------|
+| **QuickBooks** | Supported | Supported | Full transaction and invoice syncing |
+| **Xero** | Supported | Supported | Xero UK |
+| **Zoho Books** | Supported | Supported | Calculation requires manual webhook setup |
+| **NetSuite** | Supported | Supported | Calculation requires plugin installation |
+
+## E-commerce
+
+| Platform | Syncing | Tax calculation | Notes |
+|----------|---------|-----------------|-------|
+| **Shopify** | Supported | Not supported | Order and transaction syncing |
+| **WooCommerce** | Supported | Supported | Plugin supports both syncing and calculation |
+
+## Payments
+
+| Platform | Syncing | Tax calculation | Notes |
+|----------|---------|-----------------|-------|
+| **Stripe** | Supported | Not supported | Payment and subscription data |
+
+## Banking
+
+| Platform | Description |
+|----------|-------------|
+| **Plaid** | Bank account connection for balance and transaction data. Supports thousands of financial institutions. |
+
+## Other integrations
+
+| Platform | Purpose |
+|----------|---------|
+| **DocuSign** | Electronic document signing |
+| **Cal.com** | Meeting scheduling with advisors |
+
+## Setting up an integration
+
+For step-by-step setup instructions, see:
+
+- [Accounting data integrations](/integrations/accounting/overview) — detailed connection and sync guide
+- Individual integration pages for platform-specific details ([Stripe](/integrations/stripe/overview), [Shopify](/integrations/shopify/overview), [Xero](/integrations/xero/overview), [QuickBooks](/integrations/quickbooks/overview), [NetSuite](/integrations/netsuite/overview), [Zoho](/integrations/zoho/overview), [WooCommerce](/integrations/woocommerce/setup))

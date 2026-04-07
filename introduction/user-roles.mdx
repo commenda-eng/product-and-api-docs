@@ -1,6 +1,7 @@
 ---
-title: User roles
-description: Understand the three types of users on the Commenda platform and what each role can access.
+title: "User roles"
+description: "Understand the three types of users on the Commenda platform and what each role can access."
+keywords: ["user roles", "permissions", "access control", "company user", "advisor"]
 ---
 
 Commenda is a multi-tenant platform with three distinct user experiences. Your role determines which features, dashboards, and navigation items are available to you.
@@ -10,25 +11,36 @@ Commenda is a multi-tenant platform with three distinct user experiences. Your r
 Company users are businesses managing their own tax compliance and corporate operations. As a company user, you have access to:
 
 - **Home dashboard** — Overview of your entities, active services, and tasks
-- **Corporations** — Manage your legal entities and corporate structure
+- **Entities** — Manage your legal entities and corporate structure
 - **Indirect tax** — Registrations, filings, exemptions, calculations, transactions, and products
 - **Tax & reporting** — Direct tax compliance, fiscal year management, and filing requirements
 - **Compliance calendar** — All upcoming deadlines and compliance tasks
 - **Documents** — Document storage, organization, and secure information requests
 - **Service requests** — Request and track professional compliance services
 - **Integrations** — Connect external data sources like Shopify, Xero, and QuickBooks
-- **Guidance** — AI-powered contextual help
 - **Settings** — Organization profile, team management, billing, and subscriptions
+
+### Company roles
+
+| Role | Description |
+|------|-------------|
+| **Company Admin** | Full access to all company data, entities, and settings. Can manage team members and billing. |
+| **Company User** | Full access to company data and entities. Cannot manage team members. |
+| **Accountant** | Access to financial data across entities. Designed for external accountants and advisors. |
+| **Controller** | Access limited to specific entities assigned to them. Useful for team members who manage a subset of your entities. |
+| **Employee** | Limited access to their own payroll and equity information. |
+| **Custom** | Permissions defined on a per-user basis. |
 
 ## Advisor users
 
-Advisor users are accounting firms, tax consultancies, and other advisory firms that manage compliance for multiple client businesses. As an Advisor, you have access to:
+Advisor users are accounting firms, tax consultancies, and other advisory firms that manage compliance for multiple client businesses. As an advisor, you have access to:
 
 - **Clients** — View and manage all client businesses in your portfolio
 - **Team members** — Add team members and assign them to specific clients
 - **Research console** — AI-powered research and analysis tools
 - **Services** — Browse and offer marketplace services to clients
 - **Proposals** — Create and manage service proposals for clients
+- **Audit reports** — Audit documentation
 - **Alerts** — Compliance and filing alerts across your entire client portfolio
 - **Payment management** — Track payments and billing for client services
 - **Settings** — Firm profile, team configuration, and preferences
@@ -42,12 +54,13 @@ Service provider users are operational teams that fulfill compliance work on beh
 - **Document templates** — Standardized templates for compliance deliverables
 - **SLA management** — Track service level agreements and deadlines
 - **Team management** — Assign requests to team members and manage workload
+- **Tools** — E-signatures, document templates, and research console
 - **Settings** — Firm configuration and team preferences
 
-## Permissions and access
+## Switching between views
 
-Your role determines which sections of the platform are visible and what actions you can take. Within each role, additional permission levels (such as admin access) control whether you can manage team members, modify organization settings, or perform other administrative tasks.
+If you have access to multiple roles (for example, you're both a company user and part of an advisor firm), you can switch between views using the account switcher in the sidebar.
 
 <Info>
-  Your role determines which sections of the platform — and which parts of this documentation — are most relevant to you. Look for role-specific guidance throughout the docs.
+Your role determines which sections of the platform — and which parts of this documentation — are most relevant to you. Look for role-specific guidance throughout the docs.
 </Info>

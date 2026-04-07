@@ -3485,24 +3485,38 @@ components:
         - postal_code
         - state
         - country
+      description: >
+        Address object. The fields `postal_code`, `state`, and `country` are always required at the schema level.
+        Additional field requirements (e.g., `address_line_1`, `city`) vary by country — use the
+        `/address-requirements` endpoint to check which fields are REQUIRED, OPTIONAL, or IGNORED for a given country.
+        Postal codes and state codes are validated against country-specific formats and allowed values.
       properties:
         address_line_1:
           type: string
           example: 1776 Main St
+          description: Primary street address. Required for some countries (e.g., US).
         address_line_2:
           type: string
           example: 'Apt. #123'
+          description: Secondary address line (apartment, suite, etc.). Optional for most countries.
         address_line_3:
           type: string
+          description: Tertiary address line. Ignored for most countries.
         postal_code:
           type: string
-          description: Either 5-digit ZIP code or 9-digit ZIP+4 code is accepted.
+          description: >
+            Postal or ZIP code. Format varies by country. For US addresses, either 5-digit ZIP or 9-digit ZIP+4 is accepted.
+            Use the `/address-requirements` endpoint to get the validation regex for each country.
           example: '90401'
         city:
           type: string
           example: Santa Monica
+          description: City name. Required for some countries (e.g., US).
         state:
           $ref: '#/components/schemas/State'
+          description: >
+            State or province code. Must be a valid ISO 3166-2 subdivision code for the given country.
+            Use the `/address-requirements` endpoint to get the list of valid state codes for each country.
         country:
           $ref: '#/components/schemas/Country'
     TaxCalculationRequest:
@@ -3540,14 +3554,26 @@ components:
           description: Total discount amount applied to the subtotal.
         addresses:
           type: object
-          required:
-            - ship_to
           properties:
             ship_to:
               $ref: '#/components/schemas/Address'
+              description: >
+                Destination address for the transaction. If omitted, the API falls back to the default shipping address
+                of the customer specified in `customer_details.customer_id`. If neither is available, the request fails
+                with a `MISSING_SHIP_TO_ADDRESS` error. Address fields are validated against per-country requirements —
+                use the `/address-requirements` endpoint to check which fields are required for each country.
             ship_from:
               $ref: '#/components/schemas/Address'
-          description: The addresses for this transaction, including shipping origin and destination. If destination address is not set, we will attempt to extract it from the linked customer. If a customer is not linked, or if the linked customer does not have a shipping address, the tax calculation will fail.
+              description: >
+                Origin address for the transaction. Required for certain destination countries (e.g., GB).
+                If required but not provided, the request fails with a `MISSING_SHIP_FROM_ADDRESS` error.
+                When the destination is US, the ship-from state must be a valid US state code and the postal code
+                must be a valid US ZIP code.
+          description: >
+            Shipping origin and destination addresses. The `ship_to` field is optional when a `customer_id` is provided
+            that has a default shipping address on file. The `ship_from` field is required for certain destination countries.
+            All address fields are validated against country-specific requirements — query `/address-requirements` to check
+            which fields are required, optional, or ignored for a given country.
         customer_details:
           type: object
           properties:
@@ -3555,6 +3581,9 @@ components:
               type: string
               description: Unique identifier for the customer for this transaction. Used for exemptions and for shipping address. If fields on the customer conflict with fields on this calculation, the ones on the calculation will be prioritized.
           description: Customer details for this transaction.
+        exemption_reason:
+          $ref: '#/components/schemas/ExemptionType'
+          description: Optional exemption reason to apply to the entire transaction. When provided, the transaction may be fully or partially exempt from tax based on the exemption type and applicable jurisdiction rules.
         line_items:
           type: object
           required:
@@ -3574,16 +3603,21 @@ components:
                     type: integer
                     minimum: 1
                     description: Optional line number for this item.
+                  line_item_id:
+                    type: string
+                    description: Optional identifier to uniquely identify this line item.
                   product_taxability_code:
                     $ref: '#/components/schemas/ProductTaxCode'
                   quantity:
                     type: number
-                    minimum: 0.01
-                    description: Quantity of units purchased.
+                    description: >
+                      Quantity of units. Must not be zero. For REFUND or PURCHASE transactions,
+                      negative values are accepted. Cannot be negative simultaneously with `amount`.
                   amount:
                     type: number
-                    minimum: 0
-                    description: Total price for the line item.
+                    description: >
+                      Total price for the line item. For REFUND or PURCHASE transactions,
+                      negative values are accepted. Cannot be negative simultaneously with `quantity`.
                   discount:
                     type: number
                     minimum: 0
@@ -3591,6 +3625,11 @@ components:
                   product_id:
                     type: string
                     description: The unique identifier for the product.
+                  product_source_platform:
+                    $ref: '#/components/schemas/SourcePlatform'
+                  product_source_platform_id:
+                    type: string
+                    description: The identifier for the product on the source platform.
     TaxCalculationResponse:
       type: object
       properties:

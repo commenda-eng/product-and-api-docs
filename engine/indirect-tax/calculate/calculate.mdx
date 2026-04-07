@@ -30,6 +30,34 @@ Our system considers the following factors to determine the appropriate tax for 
    - **Shipping Address**: We compute the tax rate based on the shipping address provided for each transaction.
    - **Customer Exemptions**: Transactions can be exempted from sales tax based on properties of the customer making the purchase. You can read more about these exemptions [here](/engine/indirect-tax/core-concepts/exemptions#purpose-exemptions).
 
+## Address resolution and validation
+
+The `/calculate` endpoint validates addresses against country-specific requirements before computing tax.
+
+### Ship-to address resolution
+
+The destination address is resolved in the following order:
+
+1. **`addresses.ship_to`** from the request body (highest priority).
+2. **Customer's default shipping address** — used when `ship_to` is omitted and a `customer_id` is provided with a shipping address on file.
+3. **Error** — if neither is available, the request returns a `400` error with sub-type `MISSING_SHIP_TO_ADDRESS`.
+
+### Ship-from address
+
+The `ship_from` address is optional for most countries but required for certain destination countries (e.g., GB). If required but missing, the request returns a `400` error with sub-type `MISSING_SHIP_FROM_ADDRESS`.
+
+When a ship-from address is provided for US destinations, the state must be a valid US state code and the postal code must be a valid US ZIP format.
+
+### Country-specific field validation
+
+Each address is validated against per-country requirements that define which fields are required, optional, or ignored. This includes:
+
+- **Field presence** — required fields (e.g., `address_line_1`, `city` for US) must be provided and non-empty.
+- **State code validation** — the state must match one of the valid ISO 3166-2 subdivision codes for the country.
+- **Postal code format** — the postal code must match the country's expected format (e.g., `^\d{5}(-\d{4})?$` for US ZIP codes).
+
+Use the [`/address-requirements`](/engine/indirect-tax/address-requirements/address-requirements) endpoint to query which fields and formats are expected for each country before calling `/calculate`.
+
 ## Sample Calculation Object
 
 The `/calculate` endpoint returns a JSON object containing the transaction details and calculated taxes.

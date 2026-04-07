@@ -38,7 +38,60 @@
           {
             "group": "Entities",
             "pages": [
+              "product/entities/overview",
+              "product/entities/creating-entities",
+              "product/entities/business-information",
+              "product/entities/key-persons",
+              "product/entities/ownership",
+              "product/entities/registrations",
+              "product/entities/corporate-structure",
               "product/entities/bank-accounts"
+            ]
+          },
+          {
+            "group": "Compliance",
+            "pages": [
+              "product/compliance/overview",
+              "product/compliance/compliance-calendar",
+              "product/compliance/tracking-filings",
+              "product/compliance/recurring-tasks"
+            ]
+          },
+          {
+            "group": "Sales Tax",
+            "pages": [
+              "product/sales-tax/overview",
+              "product/sales-tax/getting-started",
+              "product/sales-tax/registrations",
+              "product/sales-tax/transactions",
+              "product/sales-tax/filings",
+              "product/sales-tax/exemptions",
+              "product/sales-tax/products",
+              "product/sales-tax/tax-calculator"
+            ]
+          },
+          {
+            "group": "Transfer Pricing",
+            "pages": [
+              "product/transfer-pricing/overview",
+              "product/transfer-pricing/policies",
+              "product/transfer-pricing/benchmarking"
+            ]
+          },
+          {
+            "group": "Services",
+            "pages": [
+              "product/services/overview",
+              "product/services/marketplace",
+              "product/services/service-requests",
+              "product/services/incorporation"
+            ]
+          },
+          {
+            "group": "Documents",
+            "pages": [
+              "product/documents/overview",
+              "product/documents/secure-information-requests"
             ]
           },
           {
@@ -46,6 +99,12 @@
             "pages": [
               "product/tools/esign",
               "product/tools/general-thread"
+            ]
+          },
+          {
+            "group": "Settings",
+            "pages": [
+              "product/settings/overview"
             ]
           },
           {
@@ -140,6 +199,36 @@
                   }
                 ]
               }
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "Guides",
+        "icon": "book-open",
+        "groups": [
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/onboarding-your-company",
+              "guides/setting-up-sales-tax",
+              "guides/managing-compliance",
+              "guides/working-with-your-advisor",
+              "guides/incorporating-a-new-entity"
+            ]
+          }
+        ]
+      },
+      {
+        "tab": "FAQ",
+        "icon": "circle-question",
+        "groups": [
+          {
+            "group": "FAQ",
+            "pages": [
+              "faq/general",
+              "faq/billing",
+              "faq/security"
             ]
           }
         ]

@@ -1,0 +1,40 @@
+---
+title: "Security FAQ"
+sidebarTitle: "Security"
+description: "Frequently asked questions about data security and privacy."
+keywords: ["security", "privacy", "data protection", "encryption"]
+---
+
+<AccordionGroup>
+  <Accordion title="How does Commenda protect my data?">
+    Commenda uses industry-standard security practices including:
+    - Encryption in transit (TLS) and at rest
+    - Role-based access control
+    - Secure credential storage for sensitive information like tax portal passwords
+    - Regular security audits
+  </Accordion>
+
+  <Accordion title="Who can see my company's data?">
+    Only people you've explicitly granted access to can see your data:
+    - **Team members** with the roles you've assigned
+    - **Advisor firms** linked to your company (only for assigned entities)
+    - **Agent firms** working on your service requests (only for assigned work)
+    - **Commenda admins** for platform support purposes
+  </Accordion>
+
+  <Accordion title="How are credentials stored?">
+    Sensitive credentials (like tax portal usernames and passwords, bank account numbers, and government IDs) are encrypted using strong encryption before storage. They are only decrypted when needed by authorized users.
+  </Accordion>
+
+  <Accordion title="Is my bank account information safe?">
+    Bank connections are handled through Plaid, a trusted financial data platform used by thousands of financial institutions. Commenda never stores your banking login credentials. The connection uses bank-level encryption.
+  </Accordion>
+
+  <Accordion title="Can I control who accesses what?">
+    Yes. Commenda provides role-based access control with multiple roles (Admin, User, Accountant, Controller, Employee, Custom). You can restrict team members to specific entities and control what data they can view and edit. See [User roles](/introduction/user-roles).
+  </Accordion>
+
+  <Accordion title="How does document access control work?">
+    Documents can be set as private (specific team members), shared (your team and your advisor), or restricted based on the entity they belong to. File-level access control lists give you fine-grained control over who can view each document.
+  </Accordion>
+</AccordionGroup>

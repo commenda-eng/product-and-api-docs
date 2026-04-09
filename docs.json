@@ -419,6 +419,12 @@
             ]
           },
           {
+            "group": "Company Name Checker",
+            "pages": [
+              "engine/company-name-checker/introduction"
+            ]
+          },
+          {
             "group": "Incorporation",
             "pages": [
               "engine/incorporation/introduction",

@@ -10,15 +10,6 @@
   "favicon": "/favicon-32x32.png",
   "openapi": ["openapi.yaml"],
   "navigation": {
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Unified Finance Integrations",
-          "icon": "circle-nodes",
-          "href": "https://integrations.docs.commenda.io/documentation/general/introduction"
-        }
-      ]
-    },
     "tabs": [
       {
         "tab": "Product Guides",

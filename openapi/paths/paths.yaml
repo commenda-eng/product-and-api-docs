@@ -2029,7 +2029,7 @@
         required: false
         schema:
           type: integer
-        description: Filter payment intents to a single company.
+        description: Filter payment intents to a single company. The company must belong to the authenticated affiliate.
     responses:
       '200':
         description: Payment intents retrieved successfully
@@ -2045,6 +2045,12 @@
               "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
       '401':
         description: Missing or invalid affiliate API key
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
+      '403':
+        description: Filtered company is not accessible to the affiliate
         content:
           application/json:
             schema:
@@ -2323,6 +2329,12 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/CommendaOsPublicError"
+      '404':
+        description: Business entity not found
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPublicError"
 "/public/business-entities/{businessEntityId}/locations/{locationId}":
   get:
     summary: Get a location
@@ -2405,6 +2417,12 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/CommendaOsPublicError"
+      '404':
+        description: Business entity not found
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPublicError"
 "/public/persons":
   get:
     summary: List persons
@@ -2458,6 +2476,12 @@
               "$ref": "../components/components.yaml#/components/schemas/CommendaOsPublicError"
       '403':
         description: Business entity is not accessible to the affiliate
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPublicError"
+      '404':
+        description: Business entity not found
         content:
           application/json:
             schema:
@@ -2544,6 +2568,12 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/CommendaOsPublicError"
+      '404':
+        description: Business entity not found
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPublicError"
 "/public/business-entities/{businessEntityId}/documents/supported":
   get:
     summary: List supported document types
@@ -2579,6 +2609,12 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/CommendaOsPublicError"
+      '404':
+        description: Business entity not found
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPublicError"
 "/public/business-entities/{businessEntityId}/registrations":
   get:
     summary: List registrations for a business entity
@@ -2610,6 +2646,12 @@
               "$ref": "../components/components.yaml#/components/schemas/CommendaOsPublicError"
       '403':
         description: Business entity is not accessible to the affiliate
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPublicError"
+      '404':
+        description: Business entity not found
         content:
           application/json:
             schema:
@@ -2696,10 +2738,16 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/CommendaOsPublicError"
+      '404':
+        description: Business entity not found
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPublicError"
 "/public/registrations/supported":
   get:
     summary: List supported registrations
-    description: List the registrations Commenda OS supports globally.
+    description: List the full catalog of registrations Commenda OS supports globally. Returns registration rules from all supported countries, corporation types, and jurisdictions.
     operationId: listPublicCommendaOsSupportedRegistrations
     servers:
       - url: https://api.prod.commenda.io/api/v1

@@ -2014,7 +2014,7 @@ paths:
           required: false
           schema:
             type: integer
-          description: Filter payment intents to a single company.
+          description: Filter payment intents to a single company. The company must belong to the authenticated affiliate.
       responses:
         '200':
           description: Payment intents retrieved successfully
@@ -2030,6 +2030,12 @@ paths:
                 $ref: '#/components/schemas/AffiliatePublicError'
         '401':
           description: Missing or invalid affiliate API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Filtered company is not accessible to the affiliate
           content:
             application/json:
               schema:
@@ -2308,6 +2314,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CommendaOsPublicError'
+        '404':
+          description: Business entity not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPublicError'
   /public/business-entities/{businessEntityId}/locations/{locationId}:
     get:
       summary: Get a location
@@ -2390,6 +2402,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CommendaOsPublicError'
+        '404':
+          description: Business entity not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPublicError'
   /public/persons:
     get:
       summary: List persons
@@ -2443,6 +2461,12 @@ paths:
                 $ref: '#/components/schemas/CommendaOsPublicError'
         '403':
           description: Business entity is not accessible to the affiliate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPublicError'
+        '404':
+          description: Business entity not found
           content:
             application/json:
               schema:
@@ -2529,6 +2553,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CommendaOsPublicError'
+        '404':
+          description: Business entity not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPublicError'
   /public/business-entities/{businessEntityId}/documents/supported:
     get:
       summary: List supported document types
@@ -2564,6 +2594,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CommendaOsPublicError'
+        '404':
+          description: Business entity not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPublicError'
   /public/business-entities/{businessEntityId}/registrations:
     get:
       summary: List registrations for a business entity
@@ -2595,6 +2631,12 @@ paths:
                 $ref: '#/components/schemas/CommendaOsPublicError'
         '403':
           description: Business entity is not accessible to the affiliate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPublicError'
+        '404':
+          description: Business entity not found
           content:
             application/json:
               schema:
@@ -2681,10 +2723,16 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CommendaOsPublicError'
+        '404':
+          description: Business entity not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPublicError'
   /public/registrations/supported:
     get:
       summary: List supported registrations
-      description: List the registrations Commenda OS supports globally.
+      description: List the full catalog of registrations Commenda OS supports globally. Returns registration rules from all supported countries, corporation types, and jurisdictions.
       operationId: listPublicCommendaOsSupportedRegistrations
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -6204,6 +6252,7 @@ components:
         - corporationType
         - governmentIdentifierInternalIdentifier
         - country
+        - applicability
       properties:
         displayName:
           type: string
@@ -6236,6 +6285,14 @@ components:
         country:
           type: string
           example: US
+        applicability:
+          type: string
+          description: Whether this registration applies to the parent entity, its subsidiaries, or both.
+          enum:
+            - PARENT
+            - SUBSIDIARY
+            - BOTH
+          example: BOTH
     CommendaOsSupportedRegistrationsResponse:
       type: object
       required:

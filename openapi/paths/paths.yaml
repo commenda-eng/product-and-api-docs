@@ -2402,7 +2402,7 @@
             schema:
               "$ref": "../components/components.yaml#/components/schemas/CommendaOsPublicError"
       '404':
-        description: Business entity or location not found
+        description: Business entity not found or location not found
         content:
           application/json:
             schema:
@@ -2584,7 +2584,7 @@
             schema:
               "$ref": "../components/components.yaml#/components/schemas/CommendaOsPublicError"
       '404':
-        description: Business entity or government identifier not found
+        description: Business entity not found or government identifier not found
         content:
           application/json:
             schema:
@@ -2778,7 +2778,7 @@
             schema:
               "$ref": "../components/components.yaml#/components/schemas/CommendaOsPublicError"
       '404':
-        description: Business entity or registration not found
+        description: Business entity not found or registration not found
         content:
           application/json:
             schema:

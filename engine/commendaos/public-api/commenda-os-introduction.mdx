@@ -24,8 +24,10 @@ curl --request GET \
 - List endpoints return `{ <resourcePlural>, count }`.
 - Detail endpoints return `{ <resourceSingular> }`.
 - All Commenda OS public endpoints except `GET /registrations/supported` are scoped by `companyId`.
+- Requests without a valid `x-api-key` return `401` with `Missing x-api-key header` or `Invalid API key`.
 - Company-scoped endpoints return `403` with `Company does not belong to this affiliate firm` when the affiliate cannot access the requested company.
-- Business-entity-scoped endpoints return `404 Not Found` when the `businessEntityId` does not belong to the specified company.
+- Business-entity-scoped collection endpoints return `404 Business entity not found` when the `businessEntityId` does not belong to the specified company.
+- Child detail endpoints return resource-specific `404` messages such as `Location not found`, `Government identifier not found`, or `Registration not found`.
 
 ## Available resources
 

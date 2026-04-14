@@ -55,15 +55,21 @@ Registrations follow a hierarchy:
 
 ### Tax Types
 
-Each registration specifies which tax types you're collecting:
+Each registration specifies which tax types you're collecting. Common tax types include:
 
 - **RST** — Retail Sales Tax
 - **RUT** — Retailer's Use Tax  
 - **DTT** — District Transaction Tax
 - **SST** — Simplified Sellers Use Tax
-- **VAT** — Value Added Tax (used for EU and other international jurisdictions)
+- **VAT** — Value Added Tax (used for UK, EU, and other international jurisdictions)
+- **GST** — Goods and Services Tax (Canada)
+- **HST** — Harmonized Sales Tax (Canada)
+- **PST** — Provincial Sales Tax (Canada)
+- **QST** — Quebec Sales Tax (Canada)
+- **BPT** — Business Privilege Tax
+- **BRT** — Business and Retail Tax
 
-Some jurisdictions require multiple tax types to be registered together (e.g., RST + DTT in California).
+Some jurisdictions require multiple tax types to be registered together (e.g., RST + DTT in California). Use the [Registration Input Options](/engine/indirect-tax/registrations/content/registration-input-options-POST) endpoint to discover which tax types are available and required for each jurisdiction.
 
 ## Registration Workflow
 

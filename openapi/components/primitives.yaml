@@ -99,6 +99,7 @@ schemas:
     - ZOHO_CRM
     - PIPEDRIVE
     - WOOCOMMERCE
+    - BIGCOMMERCE
     - OTHER
   ExemptionType: 
     type: string
@@ -109,6 +110,7 @@ schemas:
       - GOVERNMENT
       - MANUFACTURER
       - AGRICULTURAL
+      - EXEMPT_PRODUCT
       - OTHER
   CorporationId:
     type: string

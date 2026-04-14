@@ -67,7 +67,7 @@ Files must be uploaded in CSV format, with the headers specified in our bulk upl
 | ship_to_zip | false | string (Valid postal code in destination country) | Address to which the product is shipped or where the service is delivered. |
 | ship_to_country_code | true | ISO-3166 Country String | Address to which the product is shipped or where the service is delivered. |
 | marketplace | false | string | Marketplace name if the transaction is from a marketplace. |
-| tax_remitter_type | false | string | Type of tax remitter. |
+| tax_remitter_type | false | [Tax Remitter Type](#tax-remitter-type) | Indicates which party is responsible for remitting tax on the transaction. |
 | metadata | false | string (JSON) | Additional metadata for the transaction in JSON format. |
 
 ### Transaction Type Code
@@ -115,7 +115,7 @@ Currently only `INSERT_TRANSACTION` is supported.
 
 The method by which the transaction entered Commenda's system. 
 
-Currently the following options are supported: `BUSY`, `HUBSPOT`, `MEKARI_JURNAL`, `MS_DYNAMICS_365`, `MYOB_BUSINESS`, `NETSUITE`, `ODOO_ACCOUNTING`, `PAYPAL`, `PIPEDRIVE`, `QOYOD`, `QUICKBOOKS`, `QUICKBOOKS_SANDBOX`, `RAZORPAY`, `ROOTFI_SANDBOX`, `SAGE_CLOUD_ACCOUNTING`, `SAGE_ZA_CLOUD_ACCOUNTING`, `SHOPIFY`, `STRIPE`, `TALLY`, `WAFEQ`, `WAVE`, `WOOCOMMERCE`, `XERO`, `ZOHO_BOOKS`, `ZOHO_CRM`.
+Currently the following options are supported: `BIGCOMMERCE`, `BUSY`, `HUBSPOT`, `MEKARI_JURNAL`, `MS_DYNAMICS_365`, `MYOB_BUSINESS`, `NETSUITE`, `ODOO_ACCOUNTING`, `PAYPAL`, `PIPEDRIVE`, `QOYOD`, `QUICKBOOKS`, `QUICKBOOKS_SANDBOX`, `RAZORPAY`, `ROOTFI_SANDBOX`, `SAGE_CLOUD_ACCOUNTING`, `SAGE_ZA_CLOUD_ACCOUNTING`, `SHOPIFY`, `STRIPE`, `TALLY`, `WAFEQ`, `WAVE`, `WOOCOMMERCE`, `XERO`, `ZOHO_BOOKS`, `ZOHO_CRM`.
 
 #### Exemption Reason 
 
@@ -123,4 +123,14 @@ Reason why a purchaser is exempt from sales tax. Used to manually specify that a
 
 When this field is set, the transaction will not be considered for registration threshold tracking or for filings.
 
-Currently the following options are supported: `PURPOSE_RESALE`, `ENTITY_TYPE_NONPROFIT`, `GOVERNMENT`, `MANUFACTURER`, `AGRICULTURAL`, `OTHER`.
+Currently the following options are supported: `PURPOSE_RESALE`, `ENTITY_TYPE_NONPROFIT`, `GOVERNMENT`, `MANUFACTURER`, `AGRICULTURAL`, `EXEMPT_PRODUCT`, `OTHER`.
+
+#### Tax Remitter Type
+
+Indicates which party is responsible for remitting the tax on the transaction. This field is relevant for VAT and reverse-charge scenarios.
+
+Currently the following options are supported:
+
+- **SELLER**: The seller is responsible for collecting and remitting tax (default behavior).
+- **MARKETPLACE_FACILITATOR**: A marketplace facilitator collects and remits the tax on behalf of the seller.
+- **BUYER**: The buyer is responsible for remitting the tax (reverse-charge mechanism, common in B2B VAT transactions).

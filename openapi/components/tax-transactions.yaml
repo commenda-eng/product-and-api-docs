@@ -183,6 +183,20 @@ schemas:
                 exemption_certificate_id:
                   type: string
                   description: ID of exemption certificate, if applicable.
+      marketplace:
+        type: string
+        description: Marketplace name if the transaction originates from a marketplace.
+      tax_remitter_type:
+        type: string
+        enum:
+          - SELLER
+          - MARKETPLACE_FACILITATOR
+          - BUYER
+        description: |-
+          Indicates which party is responsible for remitting tax on the transaction.
+          - SELLER: The seller collects and remits tax (default).
+          - MARKETPLACE_FACILITATOR: A marketplace facilitator collects and remits tax on behalf of the seller.
+          - BUYER: The buyer is responsible for remitting tax (reverse-charge mechanism, common in B2B VAT transactions).
       tax_included:
         type: boolean
         description: Whether tax is included in the line item prices.
@@ -268,6 +282,22 @@ schemas:
         type: string
         description: Method used to create this transaction.
         example: TRANSACTIONS_API_BULK
+      marketplace:
+        type: string
+        nullable: true
+        description: Marketplace name if the transaction originates from a marketplace.
+      tax_remitter_type:
+        type: string
+        nullable: true
+        enum:
+          - SELLER
+          - MARKETPLACE_FACILITATOR
+          - BUYER
+        description: |-
+          Indicates which party is responsible for remitting tax on the transaction.
+          - SELLER: The seller collects and remits tax (default).
+          - MARKETPLACE_FACILITATOR: A marketplace facilitator collects and remits tax on behalf of the seller.
+          - BUYER: The buyer is responsible for remitting tax (reverse-charge mechanism, common in B2B VAT transactions).
       metadata:
         type: object
         nullable: true

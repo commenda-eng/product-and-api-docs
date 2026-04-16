@@ -33,8 +33,16 @@ This content-based approach ensures:
 
 Registrations follow a hierarchy:
 
-1. **State/Province registrations** — Required first. Cover most tax collection for the state.
-2. **Local registrations** (City, County, District) — Optional. Required only for jurisdictions with separate filing requirements (home-rule jurisdictions).
+1. **Trade bloc registrations** (e.g., EU VAT) — Cover multiple member countries under a single registration. Required before creating member-state-level registrations that reference the trade bloc.
+2. **Country registrations** — For countries outside the US, or for EU member states linked to a trade bloc registration.
+3. **State/Province registrations** — Required first for US jurisdictions. Cover most tax collection for the state.
+4. **Local registrations** (City, County, District) — Optional. Required only for jurisdictions with separate filing requirements (home-rule jurisdictions).
+
+**Trade bloc registrations and member states:**
+- A trade bloc registration (e.g., EU VAT) represents a single registration that covers multiple member countries
+- When creating a registration for an EU member state, you must link it to your existing trade bloc registration using the `member_state_registration_id` field
+- The member state registration inherits the portal configuration from the trade bloc registration
+- Use the [Registration Input Options](/engine/indirect-tax/registrations/content/registration-input-options-POST) endpoint to discover which member state content IDs are available for a trade bloc registration
 
 **Local registrations inherit from their parent state:**
 - When creating a local registration, you must have an active state-level registration first
@@ -47,14 +55,21 @@ Registrations follow a hierarchy:
 
 ### Tax Types
 
-Each registration specifies which tax types you're collecting:
+Each registration specifies which tax types you're collecting. Common tax types include:
 
 - **RST** — Retail Sales Tax
 - **RUT** — Retailer's Use Tax  
 - **DTT** — District Transaction Tax
 - **SST** — Simplified Sellers Use Tax
+- **VAT** — Value Added Tax (used for UK, EU, and other international jurisdictions)
+- **GST** — Goods and Services Tax (Canada)
+- **HST** — Harmonized Sales Tax (Canada)
+- **PST** — Provincial Sales Tax (Canada)
+- **QST** — Quebec Sales Tax (Canada)
+- **BPT** — Business Privilege Tax
+- **BRT** — Business and Retail Tax
 
-Some jurisdictions require multiple tax types to be registered together (e.g., RST + DTT in California).
+Some jurisdictions require multiple tax types to be registered together (e.g., RST + DTT in California). Use the [Registration Input Options](/engine/indirect-tax/registrations/content/registration-input-options-POST) endpoint to discover which tax types are available and required for each jurisdiction.
 
 ## Registration Workflow
 
@@ -183,6 +198,77 @@ You should be:
 - Collecting sales tax using values from the `/calculate` endpoint
 - Recording completed transactions using the `/transactions` endpoint
 
+## EU trade bloc registrations
+
+For businesses selling into the European Union, Commenda supports trade bloc registrations that model the EU as a supra-national jurisdiction covering multiple member states.
+
+### How it works
+
+1. **Create a trade bloc registration** — Register at the EU level using a `TRADEBLOC` jurisdiction type content ID (e.g., for EU VAT). This represents your central EU VAT registration.
+2. **Link member state registrations** — When you register in individual EU member states (e.g., Germany, France), pass `member_state_registration_id` referencing your trade bloc registration. This links the member state to the parent EU registration.
+3. **Portal inheritance** — Member state registrations automatically inherit the portal configuration from the trade bloc registration. You do not need to specify a `portal_id` separately.
+
+### Example: registering for EU VAT
+
+```bash
+# Step 1: Find the EU trade bloc jurisdiction
+curl --request POST \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/content/available-jurisdictions' \
+  --header 'Authorization: Bearer <your_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "filters": {
+      "types": ["TRADEBLOC"]
+    }
+  }'
+```
+
+```bash
+# Step 2: Get registration options for the EU jurisdiction
+curl --request POST \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/content/registration-input-options' \
+  --header 'Authorization: Bearer <your_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "filters": {
+      "jurisdiction_ids": ["TRADEBLOC_EU_3000"]
+    }
+  }'
+```
+
+```bash
+# Step 3: Create the trade bloc registration
+curl --request POST \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations' \
+  --header 'Authorization: Bearer <your_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+    "registration_content_id": "<eu_vat_content_id>",
+    "tax_types": ["VAT"],
+    "frequency": "QUARTERLY"
+  }'
+```
+
+```bash
+# Step 4: Create a member state registration linked to the trade bloc
+curl --request POST \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations' \
+  --header 'Authorization: Bearer <your_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+    "registration_content_id": "<member_state_vat_content_id>",
+    "tax_types": ["VAT"],
+    "frequency": "QUARTERLY",
+    "member_state_registration_id": "<trade_bloc_registration_id>"
+  }'
+```
+
+<Note>
+  The `member_state_registration_id` must reference an active, non-archived trade bloc registration that belongs to the same corporation. The content system validates that the member state content ID is allowed for the given trade bloc registration.
+</Note>
+
 ## Registration Lifecycle
 
 ### Status Fields
@@ -271,6 +357,7 @@ The `/calculate` endpoint uses your active registrations to determine applicable
   "frequency": "QUARTERLY",
   "effective_start_date": "2024-01-01",
   "tax_registration_id": "123-456789",
+  "member_state_registration_id": null,
   "portal_id": "PORTAL_CA_CDTFA",
   "credential_id": "cred_abc123",
   "registration_status": "REGISTERED",
@@ -281,6 +368,10 @@ The `/calculate` endpoint uses your active registrations to determine applicable
   "created_at": "2024-01-15T10:30:00Z"
 }
 ```
+
+<Info>
+  The `member_state_registration_id` field is only populated for registrations linked to a trade bloc registration (e.g., EU member state registrations). For US state registrations, this field is `null`.
+</Info>
 
 ## API Endpoints
 

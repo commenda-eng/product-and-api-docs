@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Commenda Platform Documentation",
+  "name": "Commenda — Entity Management, Indirect Tax, Compliance & Corporate APIs for Multinationals",
   "colors": {
     "primary": "#026EB9",
     "light": "#026EB9",
@@ -10,15 +10,6 @@
   "favicon": "/favicon-32x32.png",
   "openapi": ["openapi.yaml"],
   "navigation": {
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Unified Finance Integrations",
-          "icon": "circle-nodes",
-          "href": "https://integrations.docs.commenda.io/documentation/general/introduction"
-        }
-      ]
-    },
     "tabs": [
       {
         "tab": "Product Guides",
@@ -148,6 +139,12 @@
             "group": "FAQ",
             "pages": [
               "faq/general",
+              "faq/entity-management",
+              "faq/compliance-faq",
+              "faq/indirect-tax",
+              "faq/integrations",
+              "faq/services-and-marketplace-faq",
+              "faq/api-and-developer-api",
               "faq/billing",
               "faq/security"
             ]
@@ -177,6 +174,7 @@
                     "pages": [
                       "engine/indirect-tax/core-concepts/transactions",
                       "engine/indirect-tax/core-concepts/nexus",
+                      "engine/indirect-tax/core-concepts/global-exposure",
                       "engine/indirect-tax/core-concepts/exemptions"
                     ]
                   },
@@ -200,17 +198,42 @@
                   "engine/indirect-tax/registrations/registrations-id-request-validation-POST",
                   "engine/indirect-tax/registrations/registrations-id-archive-POST",
                   "engine/indirect-tax/registrations/registrations-id-close-POST",
-                  {
-                    "group": "Registration Content",
-                    "pages": [
-                      "engine/indirect-tax/registrations/content/content",
-                      "engine/indirect-tax/registrations/content/available-jurisdictions-POST",
-                      "engine/indirect-tax/registrations/content/registration-input-options-POST",
-                      "engine/indirect-tax/registrations/content/portal-fields-POST"
-                    ]
-                  }
+              {
+                "group": "Registration Content",
+                "pages": [
+                  "engine/indirect-tax/registrations/content/content",
+                  "engine/indirect-tax/registrations/content/available-jurisdictions-POST",
+                  "engine/indirect-tax/registrations/content/registration-input-options-POST",
+                  "engine/indirect-tax/registrations/content/portal-fields-POST"
                 ]
               }
+            ]
+          },
+          {
+            "group": "Registrations V2",
+            "pages": [
+              "engine/indirect-tax/registrations/v2/registrations-v2",
+              "engine/indirect-tax/registrations/v2/registrations-v2-POST",
+              "engine/indirect-tax/registrations/v2/registrations-v2-GET",
+              "engine/indirect-tax/registrations/v2/registrations-v2-id-GET",
+              "engine/indirect-tax/registrations/v2/registrations-v2-id-POST",
+              "engine/indirect-tax/registrations/v2/registrations-v2-id-DELETE",
+              "engine/indirect-tax/registrations/v2/registrations-v2-id-archive-POST",
+              "engine/indirect-tax/registrations/v2/registrations-v2-id-close-POST",
+              "engine/indirect-tax/registrations/v2/registrations-v2-credentials-GET",
+              {
+                "group": "Registration Content V2",
+                "pages": [
+                  "engine/indirect-tax/registrations/v2/content/content-v2",
+                  "engine/indirect-tax/registrations/v2/content/available-jurisdictions-POST",
+                  "engine/indirect-tax/registrations/v2/content/available-registrations-POST",
+                  "engine/indirect-tax/registrations/v2/content/registration-conditions-POST",
+                  "engine/indirect-tax/registrations/v2/content/portal-fields-POST",
+                  "engine/indirect-tax/registrations/v2/content/tax-type-details-POST"
+                ]
+              }
+            ]
+          }
             ]
           },
           {
@@ -326,7 +349,8 @@
           {
             "group": "Filings",
             "pages": [
-              "engine/indirect-tax/filings/filings-GET-ONE"
+              "engine/indirect-tax/filings/filings-GET-ONE",
+              "engine/indirect-tax/filings/filings-contributions-GET"
             ]
           },
           {
@@ -415,6 +439,12 @@
                   }
                 ]
               }
+            ]
+          },
+          {
+            "group": "Company Name Checker",
+            "pages": [
+              "engine/company-name-checker/introduction"
             ]
           },
           {
@@ -590,7 +620,12 @@
       "label": "Report a bug",
       "href": "https://linear.app/commenda/team/ONC/new?template=a04ed671-96f2-4df0-882c-62e7ccf8a27c"
     },
-    "links": []
+    "links": [
+      {
+        "label": "Unified Finance APIs",
+        "href": "https://integrations.docs.commenda.io/documentation/general/introduction"
+      }
+    ]
   },
   "contextual": {
     "options": [
@@ -617,5 +652,6 @@
   "appearance": {
     "strict": true,
     "default": "light"
-  }
+  },
+  "description": "Commenda is the all-in-one platform for Controllers, CFOs, and Heads of Tax at multinational companies. Finance teams use Commenda to manage legal entities across 100+ countries, track global compliance obligations, handle indirect tax (VAT, GST, and US sales tax) across all jurisdictions, manage transfer pricing documentation, and access professional services through a vetted marketplace — all from a single platform. Commenda also provides a suite of APIs for software developers and AI agents: the Global Indirect Tax API, CommendaOS entity data API, Incorporation API, Workflow Builder API, Company Name Checker API, Address API, and an MCP Server for AI tool integrations."
 }

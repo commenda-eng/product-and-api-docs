@@ -1,0 +1,218 @@
+---
+title: "Company name checker"
+description: "Check company name availability across US state jurisdictions before incorporation."
+keywords: ["company name", "name availability", "incorporation", "jurisdiction", "name check"]
+---
+
+The company name checker API lets you verify whether a proposed company name is available in one or more US state jurisdictions. Use it before starting an incorporation to reduce the risk of name conflicts.
+
+## Authentication
+
+Pass your API key in the `x-api-key` header on every request.
+
+```bash
+curl --request POST \
+  --url 'https://api.prod.commenda.io/company-name-checker' \
+  --header 'x-api-key: <your_api_key>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "name": "Acme Corp",
+    "jurisdictions": [
+      { "level": "STATE_OR_PROVINCE", "country": "US", "code": "DE" }
+    ]
+  }'
+```
+
+<Info>
+Contact the Commenda team to obtain an API key.
+</Info>
+
+## Check name availability
+
+<ParamField body="name" type="string" required>
+  The company name to check.
+</ParamField>
+
+<ParamField body="jurisdictions" type="array" required>
+  One or more jurisdictions to check against. Each object contains:
+
+  <Expandable title="Jurisdiction object">
+    <ParamField body="level" type="string" required>
+      Jurisdiction level. Currently only `STATE_OR_PROVINCE` is supported.
+    </ParamField>
+
+    <ParamField body="country" type="string" required>
+      ISO 3166-1 alpha-2 country code. Currently only `US` is supported.
+    </ParamField>
+
+    <ParamField body="code" type="string" required>
+      Two-letter state or province code (ISO 3166-2), for example `DE` for Delaware or `CA` for California.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+### Request example
+
+```bash
+curl --request POST \
+  --url 'https://api.prod.commenda.io/company-name-checker' \
+  --header 'x-api-key: <your_api_key>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "name": "Acme Holdings",
+    "jurisdictions": [
+      { "level": "STATE_OR_PROVINCE", "country": "US", "code": "DE" },
+      { "level": "STATE_OR_PROVINCE", "country": "US", "code": "CA" }
+    ]
+  }'
+```
+
+### Response
+
+A successful response returns the queried name and an `availability` array with one entry per jurisdiction.
+
+```json
+{
+  "name": "Acme Holdings",
+  "availability": [
+    {
+      "level": "STATE_OR_PROVINCE",
+      "country": "US",
+      "code": "DE",
+      "available": true,
+      "success": true,
+      "error": ""
+    },
+    {
+      "level": "STATE_OR_PROVINCE",
+      "country": "US",
+      "code": "CA",
+      "available": false,
+      "success": true,
+      "error": ""
+    }
+  ]
+}
+```
+
+<ResponseField name="name" type="string">
+  The company name that was checked.
+</ResponseField>
+
+<ResponseField name="availability" type="array">
+  Per-jurisdiction results.
+
+  <Expandable title="Availability object">
+    <ResponseField name="level" type="string">
+      The jurisdiction level checked (for example, `STATE_OR_PROVINCE`).
+    </ResponseField>
+
+    <ResponseField name="country" type="string">
+      The country code of the jurisdiction.
+    </ResponseField>
+
+    <ResponseField name="code" type="string">
+      The state or province code.
+    </ResponseField>
+
+    <ResponseField name="available" type="boolean">
+      `true` if no exact-match company name was found in this jurisdiction.
+    </ResponseField>
+
+    <ResponseField name="success" type="boolean">
+      `true` if the check completed without errors.
+    </ResponseField>
+
+    <ResponseField name="error" type="string">
+      Empty on success. Contains an error message if the check failed.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Error responses
+
+| Status | Description |
+|--------|-------------|
+| `400` | Unsupported country or invalid jurisdiction code. |
+| `401` | Missing or invalid API key. |
+
+When a request-level error occurs, every entry in the `availability` array returns `success: false` with an error message:
+
+```json
+{
+  "name": "Acme Holdings",
+  "availability": [
+    {
+      "level": "STATE_OR_PROVINCE",
+      "country": "US",
+      "code": "DE",
+      "available": false,
+      "success": false,
+      "error": "Unknown error occurred"
+    }
+  ]
+}
+```
+
+## Supported jurisdictions
+
+The API currently supports all 50 US states, the District of Columbia, and Puerto Rico.
+
+<Accordion title="Full list of supported state codes">
+
+| Code | State |
+|------|-------|
+| `AL` | Alabama |
+| `AK` | Alaska |
+| `AZ` | Arizona |
+| `AR` | Arkansas |
+| `CA` | California |
+| `CO` | Colorado |
+| `CT` | Connecticut |
+| `DC` | District of Columbia |
+| `DE` | Delaware |
+| `FL` | Florida |
+| `GA` | Georgia |
+| `HI` | Hawaii |
+| `ID` | Idaho |
+| `IL` | Illinois |
+| `IN` | Indiana |
+| `IA` | Iowa |
+| `KS` | Kansas |
+| `KY` | Kentucky |
+| `LA` | Louisiana |
+| `ME` | Maine |
+| `MD` | Maryland |
+| `MA` | Massachusetts |
+| `MI` | Michigan |
+| `MN` | Minnesota |
+| `MS` | Mississippi |
+| `MO` | Missouri |
+| `MT` | Montana |
+| `NE` | Nebraska |
+| `NV` | Nevada |
+| `NH` | New Hampshire |
+| `NJ` | New Jersey |
+| `NM` | New Mexico |
+| `NY` | New York |
+| `NC` | North Carolina |
+| `ND` | North Dakota |
+| `OH` | Ohio |
+| `OK` | Oklahoma |
+| `OR` | Oregon |
+| `PA` | Pennsylvania |
+| `PR` | Puerto Rico |
+| `RI` | Rhode Island |
+| `SC` | South Carolina |
+| `SD` | South Dakota |
+| `TN` | Tennessee |
+| `TX` | Texas |
+| `UT` | Utah |
+| `VT` | Vermont |
+| `VA` | Virginia |
+| `WA` | Washington |
+| `WV` | West Virginia |
+| `WI` | Wisconsin |
+| `WY` | Wyoming |
+
+</Accordion>

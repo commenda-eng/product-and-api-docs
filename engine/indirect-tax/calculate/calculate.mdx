@@ -76,24 +76,57 @@ Each address is validated against per-country requirements that define which fie
 
 Use the [`/address-requirements`](/engine/indirect-tax/address-requirements/address-requirements) endpoint to query which fields and formats are expected for each country before calling `/calculate`.
 
-## Currency handling
+## Multi-currency support
 
-The `/calculate` endpoint supports multi-currency transactions. Tax is always computed in the default currency of the ship-to country (for example, USD for the United States, CAD for Canada, or GBP for the United Kingdom).
+The `/calculate` endpoint supports transactions in any [ISO 4217](https://en.wikipedia.org/wiki/ISO_4217) currency. You specify the currency of your transaction using the `transaction_currency` field, and all monetary values in the response are returned in that same currency.
 
-### Default currency resolution
+### How it works
 
-When `transaction_currency` is omitted from the request, it defaults to the ship-to country's standard currency. For example, if the ship-to address is in Canada, the default is `CAD`.
+When you submit a calculation, the engine applies tax rates in the **destination country's local currency**. If your `transaction_currency` differs from the destination country's default currency, the system automatically:
 
-### Currency conversion
+1. Converts your line item amounts into the destination country's currency.
+2. Looks up and applies the correct tax rates in that local currency.
+3. Converts the calculated tax amounts back into your `transaction_currency`.
 
-If you provide a `transaction_currency` that differs from the ship-to country's default currency, the API automatically converts line item amounts and discounts to the local currency before calculating tax. The response includes:
+This means tax rates are always applied accurately in the jurisdiction's native currency, regardless of the currency your transaction is denominated in.
 
-- **`calculation_currency`** — the currency used internally for the tax computation (the ship-to country's default currency).
-- **`exchange_rate`** — the exchange rate applied between the transaction currency and the calculation currency.
+### Currency fields in the response
 
-All monetary values in the response (`total_amount`, `total_tax`, `total_due`, and line item amounts) are returned in the original `transaction_currency`.
+| Field | Description |
+|-------|-------------|
+| `transaction_currency` | The currency you specified in the request. All amounts in the response (`total_amount`, `total_tax`, `total_due`, and line item amounts) are expressed in this currency. |
+| `tax_currency` | The currency in which tax amounts are expressed. This matches `transaction_currency`. |
+| `calculation_currency` | The destination country's default currency used internally to look up tax rates. Only present when a currency conversion occurred. |
+| `exchange_rate` | The exchange rate applied between `transaction_currency` and `calculation_currency`. Only present when a currency conversion occurred. |
 
-When the `transaction_currency` matches the ship-to country's default currency, no conversion takes place and `exchange_rate` is `1.0`.
+<Note>
+If you omit `transaction_currency` from your request, it defaults to the destination country's local currency (e.g., `USD` for the US, `GBP` for the UK, `EUR` for Germany).
+</Note>
+
+### Monetary value rounding
+
+Amounts are rounded according to the ISO 4217 standard for each currency:
+
+- **Two decimal places** — most currencies (e.g., `USD`, `EUR`, `GBP`)
+- **Zero decimal places** — `JPY`, `KRW`, `HUF`, `CLP`, `IDR`, `VND`, `ISK`, `TWD`
+- **Three decimal places** — `BHD`, `KWD`, `OMR`
+
+### Example: cross-currency calculation
+
+If you sell a product in `EUR` to a customer in the US, set `transaction_currency` to `EUR`. The engine converts the amounts to `USD` to calculate US sales tax, then converts the results back to `EUR`:
+
+```json
+{
+  "transaction_currency": "EUR",
+  "calculation_currency": "USD",
+  "exchange_rate": 1.08,
+  "total_amount": 100.00,
+  "total_tax": 8.79,
+  "total_due": 108.79
+}
+```
+
+When both the transaction and destination use the same currency (e.g., `USD` transaction to a US address), no conversion occurs and `calculation_currency` and `exchange_rate` are omitted.
 
 ## Sample calculation object
 

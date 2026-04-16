@@ -91,12 +91,13 @@ Each registration type has a `registration_content_id` that encodes the jurisdic
 
 | Type | Description |
 |------|-------------|
-| `STATE_OR_PROVINCE` | State or province level (most common) |
+| `TRADEBLOC` | Trade bloc level (e.g., European Union). Covers multiple member countries under a single registration. |
+| `COUNTRY` | Country level (for non-US jurisdictions or EU member states) |
+| `STATE_OR_PROVINCE` | State or province level (most common for US) |
 | `CITY` | City with separate filing requirements (home-rule) |
 | `COUNTY` | County with separate filing requirements |
 | `DISTRICT` | Special taxing district |
 | `LOCAL` | Other local jurisdiction |
-| `COUNTRY` | Country level (for non-US) |
 | `TERRITORY` | US territory |
 
 ### Tax Types
@@ -107,6 +108,7 @@ Each registration type has a `registration_content_id` that encodes the jurisdic
 | `RUT` | Retailer's Use Tax |
 | `DTT` | District Transaction Tax |
 | `SST` | Simplified Sellers Use Tax |
+| `VAT` | Value Added Tax |
 
 ## API Endpoints
 

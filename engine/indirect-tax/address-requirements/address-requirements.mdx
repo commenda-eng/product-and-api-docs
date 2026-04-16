@@ -26,7 +26,20 @@ Each address field returns one of three requirement levels:
 
 ## How address requirements are used
 
-The `/calculate` and `/transactions` endpoints automatically validate addresses against these country-specific requirements. If a required field is missing or incorrectly formatted, the API returns a `400` error with details about the validation failure. Querying address requirements ahead of time lets you catch these issues before submitting a request.
+The `/calculate` and `/transactions` endpoints only require `country` at the schema level for all addresses. All other field requirements — including `postal_code` and `state` — are determined per-country using the rules returned by this endpoint. If a field marked as `REQUIRED` for a country is missing or incorrectly formatted, the API returns a `400` error with details about the validation failure. Querying address requirements ahead of time lets you catch these issues before submitting a request.
+
+## Regional differences
+
+Address requirements vary by country and region. Here are some key differences to be aware of:
+
+- **United States (US):** `address_line_1`, `city`, `state`, and `postal_code` are all `REQUIRED`. State codes must be valid 2-letter US state abbreviations (e.g., `CA`, `NY`).
+- **EU countries (e.g., DE, FR):** `address_line_1` and `city` are `REQUIRED`, while `state` and `postal_code` are `OPTIONAL`. When a postal code is provided, it is still validated against the country's regex pattern.
+- **United Kingdom (GB):** `address_line_1` and `city` are `REQUIRED`, while `state` and `postal_code` are `OPTIONAL`. Provided postal codes must match the UK format (e.g., `SW1A 1AA`).
+- **Canada (CA):** `address_line_1` and `city` are `REQUIRED`. `state` and `postal_code` requirements follow Canadian postal standards. When provided, state codes must be valid 2-letter province/territory abbreviations (e.g., `ON`, `BC`).
+
+<Note>
+  Even when a field is `OPTIONAL`, providing it improves tax calculation accuracy. For example, including a postal code for EU or GB addresses helps resolve the correct tax jurisdiction.
+</Note>
 
 ## Postal code validation
 

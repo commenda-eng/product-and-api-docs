@@ -1,0 +1,138 @@
+---
+title: "Company name checker"
+description: "Check whether a proposed business name is available in one or more US states before starting an incorporation."
+keywords: ["name availability", "company name", "incorporation", "name check", "business formation"]
+---
+
+The Company Name Checker API lets you verify whether a proposed business name is already in use across one or more US jurisdictions. Use it before starting an incorporation to reduce the chance of a name rejection.
+
+## How it works
+
+You submit a company name along with one or more jurisdictions (US states). The API searches public business registries for exact matches and returns availability per jurisdiction.
+
+A name is considered **unavailable** if an existing registered company in the same state has a legal or trading name that matches your query after normalization (lowercased, non-alphanumeric characters removed).
+
+## Authentication
+
+Pass your API key in the `x-api-key` header on every request. Contact the Commenda team if you do not have a key.
+
+```bash
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/company-name-checker' \
+  --header 'x-api-key: <your_api_key>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "name": "Acme Corp",
+    "jurisdictions": [
+      { "level": "STATE_OR_PROVINCE", "country": "US", "code": "DE" },
+      { "level": "STATE_OR_PROVINCE", "country": "US", "code": "CA" }
+    ]
+  }'
+```
+
+## Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `name` | string | Yes | The proposed company name to check. |
+| `jurisdictions` | array | Yes | One or more jurisdictions to check against. |
+| `jurisdictions[].level` | string | Yes | Jurisdiction level. Currently only `STATE_OR_PROVINCE` is supported. |
+| `jurisdictions[].country` | string | Yes | ISO country code. Currently only `US` is supported. |
+| `jurisdictions[].code` | string | Yes | Two-letter state or province code (for example, `DE`, `CA`, `NY`). |
+
+## Response
+
+A successful response returns the proposed name and an availability entry for each requested jurisdiction.
+
+```json
+{
+  "name": "Acme Corp",
+  "availability": [
+    {
+      "level": "STATE_OR_PROVINCE",
+      "country": "US",
+      "code": "DE",
+      "available": true,
+      "success": true,
+      "error": ""
+    },
+    {
+      "level": "STATE_OR_PROVINCE",
+      "country": "US",
+      "code": "CA",
+      "available": false,
+      "success": true,
+      "error": ""
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `name` | string | The company name that was checked. |
+| `availability[].level` | string | The jurisdiction level that was checked. |
+| `availability[].country` | string | The country code. |
+| `availability[].code` | string | The state or province code. |
+| `availability[].available` | boolean | `true` if no exact match was found in the jurisdiction. |
+| `availability[].success` | boolean | `true` if the check completed without errors. |
+| `availability[].error` | string | Error message if the check failed, empty string otherwise. |
+
+## Supported jurisdictions
+
+The API currently supports all 50 US states plus the District of Columbia and Puerto Rico.
+
+<Expandable title="Full list of supported US state codes">
+
+| Code | State | Code | State |
+|------|-------|------|-------|
+| AL | Alabama | MT | Montana |
+| AK | Alaska | NE | Nebraska |
+| AZ | Arizona | NV | Nevada |
+| AR | Arkansas | NH | New Hampshire |
+| CA | California | NJ | New Jersey |
+| CO | Colorado | NM | New Mexico |
+| CT | Connecticut | NY | New York |
+| DE | Delaware | NC | North Carolina |
+| FL | Florida | ND | North Dakota |
+| GA | Georgia | OH | Ohio |
+| HI | Hawaii | OK | Oklahoma |
+| ID | Idaho | OR | Oregon |
+| IL | Illinois | PA | Pennsylvania |
+| IN | Indiana | RI | Rhode Island |
+| IA | Iowa | SC | South Carolina |
+| KS | Kansas | SD | South Dakota |
+| KY | Kentucky | TN | Tennessee |
+| LA | Louisiana | TX | Texas |
+| ME | Maine | UT | Utah |
+| MD | Maryland | VT | Vermont |
+| MA | Massachusetts | VA | Virginia |
+| MI | Michigan | WA | Washington |
+| MN | Minnesota | WV | West Virginia |
+| MS | Mississippi | WI | Wisconsin |
+| MO | Missouri | WY | Wyoming |
+| DC | District of Columbia | PR | Puerto Rico |
+
+</Expandable>
+
+## Error handling
+
+If the API cannot complete the check, each jurisdiction entry in the response will have `success` set to `false` and the `error` field will contain a description.
+
+Common errors:
+
+| Error | Cause |
+|-------|-------|
+| `Country not supported` | A country other than `US` was provided. |
+| `Jurisdiction code not supported` | An invalid state code was provided for the given country. |
+| Missing or invalid `x-api-key` | The request did not include a valid API key. |
+
+## When to use this API
+
+- **Before starting an incorporation** — check your preferred name and alternatives across target states.
+- **Bulk name validation** — submit multiple jurisdictions in a single request to check availability in parallel.
+- **Automated workflows** — integrate the check into your onboarding or entity-creation flow to catch conflicts early.
+
+<Info>
+Name availability results are based on publicly available registry data and may not reflect very recent filings. Treat results as a strong indicator rather than a legal guarantee.
+</Info>

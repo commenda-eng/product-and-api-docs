@@ -5,6 +5,41 @@ description: "Build on Commenda's APIs to manage entities, calculate indirect ta
 keywords: ["API", "developer", "integration", "REST API", "authentication"]
 ---
 
+<script type="application/ld+json">{`
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Commenda API Documentation — Global Indirect Tax, CommendaOS, Incorporation, Workflow Builder, and More",
+  "description": "Build on Commenda's APIs to manage entities, calculate indirect tax, automate workflows, incorporate companies, validate addresses, and connect AI agents via MCP.",
+  "url": "https://docs.commenda.io/engine/api-introduction",
+  "inLanguage": "en",
+  "author": {
+    "@type": "Organization",
+    "name": "Commenda",
+    "url": "https://www.commenda.io"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Commenda",
+    "url": "https://www.commenda.io",
+    "logo": {
+      "@type": "ImageObject",
+      "url": "https://docs.commenda.io/logo/FullLogoLockupBlack.svg"
+    }
+  },
+  "about": [
+    {"@type": "SoftwareApplication", "name": "Global Indirect Tax API"},
+    {"@type": "SoftwareApplication", "name": "CommendaOS API"},
+    {"@type": "SoftwareApplication", "name": "Incorporation API"},
+    {"@type": "SoftwareApplication", "name": "Workflow Builder API"},
+    {"@type": "SoftwareApplication", "name": "Company Name Checker API"},
+    {"@type": "SoftwareApplication", "name": "Address API"},
+    {"@type": "SoftwareApplication", "name": "MCP Server"}
+  ],
+  "proficiencyLevel": "Expert"
+}
+`}</script>
+
 Commenda exposes several APIs that let you programmatically manage business entities, calculate indirect tax, incorporate companies, build workflows, and more. This page helps you find the right API for your use case and get started quickly.
 
 ## Available APIs
@@ -15,6 +50,9 @@ Commenda exposes several APIs that let you programmatically manage business enti
   </Card>
   <Card title="CommendaOS" icon="microchip" href="/engine/commendaos/overview">
     Create and manage business entities, government identifiers, registrations, locations, credentials, and documents.
+  </Card>
+  <Card title="Company Name Checker" icon="magnifying-glass" href="/engine/company-name-checker/introduction">
+    Check company name availability across US state jurisdictions before incorporation.
   </Card>
   <Card title="Incorporation" icon="building" href="/engine/incorporation/introduction">
     Create companies, start incorporation services, and track payment intents and document delivery through affiliate-scoped endpoints.
@@ -36,6 +74,7 @@ Commenda exposes several APIs that let you programmatically manage business enti
 |----------|-----|
 | Calculate indirect tax on a transaction | [Global Indirect Tax](/engine/indirect-tax/introduction) |
 | Create or retrieve business entities | [CommendaOS](/engine/commendaos/overview) |
+| Check company name availability before incorporation | [Company Name Checker](/engine/company-name-checker/introduction) |
 | Incorporate a new entity programmatically | [Incorporation](/engine/incorporation/introduction) |
 | Manage tax registrations across jurisdictions | [Global Indirect Tax — Registrations](/engine/indirect-tax/registrations/registrations) |
 | Track registration thresholds | [Global Indirect Tax — Registration Thresholds](/engine/indirect-tax/nexus/nexus-GET) |
@@ -48,17 +87,7 @@ Commenda exposes several APIs that let you programmatically manage business enti
 
 Commenda APIs use two authentication methods depending on the API:
 
-### Bearer token
-
-The Global Indirect Tax API and CommendaOS API use Bearer token authentication. Include your token in the `Authorization` header of every request:
-
-```bash
-curl --request GET \
-  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations' \
-  --header 'Authorization: Bearer <your_token>'
-```
-
-### Affiliate API key
+### Incorporation API
 
 The Incorporation API uses an affiliate API key passed in the `x-api-key` header:
 
@@ -66,6 +95,26 @@ The Incorporation API uses an affiliate API key passed in the `x-api-key` header
 curl --request GET \
   --url 'https://api.prod.commenda.io/api/v1/public/payment-intents' \
   --header 'x-api-key: <your_api_key>'
+```
+
+### CommendaOS public API
+
+The CommendaOS public API also uses an affiliate API key passed in the `x-api-key` header:
+
+```bash
+curl --request GET \
+  --url 'https://api.prod.commenda.io/api/v1/public/companies/77/business-entities' \
+  --header 'x-api-key: <your_api_key>'
+```
+
+### Global Indirect Tax API
+
+The Global Indirect Tax API uses Bearer token authentication. Include your token in the `Authorization` header of every request:
+
+```bash
+curl --request GET \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations' \
+  --header 'Authorization: Bearer <your_token>'
 ```
 
 <Info>

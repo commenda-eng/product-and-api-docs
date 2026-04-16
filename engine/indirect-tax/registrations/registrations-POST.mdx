@@ -50,12 +50,25 @@ Create a registration to enable tax calculations and automated filing for a juri
   Your state-issued tax registration ID, permit number, or account number. Required for validation but can be added later via update.
 </ParamField>
 
+<ParamField body="member_state_registration_id" type="string">
+  The ID of an existing trade bloc registration to link this registration to. Required when creating a registration for an EU member state or any jurisdiction that belongs to a trade bloc.
+  
+  The referenced registration must:
+  - Belong to the same corporation
+  - Be active (not archived or closed)
+  - Have a `registration_content_id` that is listed as an allowed member state for the target content
+  
+  When provided, the portal configuration is automatically inherited from the trade bloc registration.
+</ParamField>
+
 <ParamField body="credential_id" type="string">
   Reference to stored portal credentials. Can be added later via update before requesting validation.
 </ParamField>
 
 <ParamField body="portal_id" type="string">
   The portal ID for the state's tax filing portal. Must be a valid portal for the selected registration content. Get available portals from the `/registrations/content/portal-fields` endpoint.
+  
+  For member state registrations linked to a trade bloc, the portal is inherited automatically and does not need to be specified.
 </ParamField>
 
 ## Workflow
@@ -75,7 +88,18 @@ Create a registration to enable tax calculations and automated filing for a juri
 - **Portal ID**: If provided, must be a valid portal for the registration content.
 - **Duplicate prevention**: Only one registration per jurisdiction per corporation is allowed.
 
-### Local Registration Rules
+### Trade bloc registration rules
+
+When creating a registration that requires a member state link:
+
+| Requirement | Details |
+|-------------|---------|
+| **Trade bloc registration required** | The `member_state_registration_id` must reference an existing registration |
+| **Same corporation** | The trade bloc registration must belong to the same corporation |
+| **Active registration** | The trade bloc registration must not be archived or closed |
+| **Allowed content ID** | The trade bloc registration's content ID must be listed as an allowed member state for the target content |
+
+### Local registration rules
 
 When creating a local registration (CITY, COUNTY, DISTRICT, etc.):
 
@@ -129,6 +153,17 @@ curl --request POST \
   "tax_registration_id": "123-456789-00",
   "portal_id": "PORTAL_CA_CDTFA",
   "credential_id": "cred_abc123def456"
+}
+```
+
+```json EU Member State
+{
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "registration_content_id": "<member_state_vat_content_id>",
+  "tax_types": ["VAT"],
+  "frequency": "QUARTERLY",
+  "effective_start_date": "2024-01-01",
+  "member_state_registration_id": "8a1b2c3d-4e5f-6789-abcd-ef0123456789"
 }
 ```
 </RequestExample>
@@ -286,6 +321,42 @@ curl --request POST \
     "type": "CLIENT_INVALID_REQUEST_BODY",
     "title": "Invalid effective_start_date format.",
     "detail": "Date must be in ISO format (YYYY-MM-DD).",
+    "status": 400,
+    "instance": "/api/v1/registrations"
+  }
+}
+```
+
+```json 400 - Member State Registration Required
+{
+  "error": {
+    "type": "MEMBER_STATE_REGISTRATION_REQUIRED",
+    "title": "Member state registration required.",
+    "detail": "A member state registration is required for this registration content.",
+    "status": 400,
+    "instance": "/api/v1/registrations"
+  }
+}
+```
+
+```json 400 - Invalid Member State Registration
+{
+  "error": {
+    "type": "INVALID_MEMBER_STATE_REGISTRATION",
+    "title": "Invalid member state registration.",
+    "detail": "The selected member state registration is not allowed for this registration content.",
+    "status": 400,
+    "instance": "/api/v1/registrations"
+  }
+}
+```
+
+```json 400 - Member State Not Allowed
+{
+  "error": {
+    "type": "MEMBER_STATE_REGISTRATION_NOT_ALLOWED",
+    "title": "Member state registration not accepted.",
+    "detail": "This registration content does not accept a member state registration.",
     "status": 400,
     "instance": "/api/v1/registrations"
   }

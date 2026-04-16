@@ -9,17 +9,17 @@ schemas:
     properties:
       statusCode:
         type: integer
-        example: 403
+        description: HTTP status code for the error response.
       message:
+        description: Error message returned by the API. Exact text varies by failure mode.
         oneOf:
           - type: string
           - type: array
             items:
               type: string
-        example: Business entity is not accessible to the authenticated affiliate
       error:
         type: string
-        example: Forbidden
+        description: Standard error label for the response status.
   CommendaOsUniqueIdentifierFromJurisdiction:
     type: object
     required:
@@ -851,7 +851,6 @@ schemas:
       - isFunctionCritical
       - internalIdentifier
       - corporationType
-      - governmentIdentifierInternalIdentifier
       - country
     properties:
       displayName:
@@ -881,6 +880,8 @@ schemas:
         example: LLC
       governmentIdentifierInternalIdentifier:
         type: string
+        nullable: true
+        description: Linked government-identifier rule when one is required for this registration.
         example: US_EIN
       country:
         type: string

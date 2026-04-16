@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Commenda — Entity Management, Tax & Compliance Platform for Multinationals",
+  "name": "Commenda — Entity Management, Indirect Tax, Compliance & Corporate APIs for Multinationals",
   "colors": {
     "primary": "#026EB9",
     "light": "#026EB9",
@@ -628,5 +628,5 @@
     "strict": true,
     "default": "light"
   },
-  "description": "Commenda is the all-in-one platform for Controllers, CFOs, and Heads of Tax at multinational companies. Instead of wrangling multiple vendors and carrying compliance complexity themselves, finance teams use Commenda to manage legal entities, track compliance obligations, and handle indirect tax (VAT, GST, and sales tax) across 100+ countries from a single platform. Commenda also provides a suite of APIs — including the Indirect Tax API, CommendaOS entity data API, and Incorporation API — for software teams embedding compliance workflows into their own products."
+  "description": "Commenda is the all-in-one platform for Controllers, CFOs, and Heads of Tax at multinational companies. Finance teams use Commenda to manage legal entities across 100+ countries, track global compliance obligations, handle indirect tax (VAT, GST, and US sales tax) across all jurisdictions, manage transfer pricing documentation, and access professional services through a vetted marketplace — all from a single platform. Commenda also provides a suite of APIs for software developers and AI agents: the Global Indirect Tax API, CommendaOS entity data API, Incorporation API, Workflow Builder API, Company Name Checker API, Address API, and an MCP Server for AI tool integrations."
 }

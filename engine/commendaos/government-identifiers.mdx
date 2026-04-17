@@ -240,6 +240,15 @@ Returns `200 OK` on success.
 | `CORPORATE_TAX_NUMBER` | Corporate tax number | `[0-9]{13}` |
 | `TVA_NUMBER` | VAT number | `FR[0-9A-Z]{2}[0-9]{9}` |
 
+### Philippines
+
+| Type | Description | Format |
+|------|-------------|--------|
+| `TAX_IDENTIFICATION_NUMBER` | BIR-issued Tax Identification Number (TIN) | `[0-9]{3}-[0-9]{3}-[0-9]{3}(-[0-9]{3})?` |
+| `SEC_REGISTRATION_NUMBER` | SEC registration or license number issued upon corporate registration | `[A-Z]{1,4}-?[0-9]{4}-?[0-9]{4,8}` or `[0-9]{6,9}` |
+| `VAT_REGISTRATION_NUMBER` | VAT registration number (entity TIN with branch code) | `[0-9]{3}-[0-9]{3}-[0-9]{3}(-[0-9]{3})?` |
+| `EMPLOYER_WITHHOLDING_NUMBER` | BIR employer withholding identifier | `[0-9]{3}-[0-9]{3}-[0-9]{3}(-[0-9]{3})?` |
+
 ## Validation rules
 
 Government identifiers are validated using jurisdiction-specific regex patterns. Invalid formats will return a `400 Bad Request` error.

@@ -1,0 +1,91 @@
+---
+title: "Philippines"
+description: "Supported entity types, required documents, and tax registrations for Philippine business entities on Commenda."
+keywords: ["Philippines", "SEC", "BIR", "domestic corporation", "OPC", "partnership", "entity types"]
+---
+
+Commenda supports nine entity types in the Philippines, covering corporations, partnerships, branch offices, and nonprofit structures. When you add or manage a Philippine entity, Commenda automatically applies the correct document, registration, and government identifier requirements based on the entity type you select.
+
+## Supported entity types
+
+| Entity type | Description | Ownership |
+|---|---|---|
+| **Domestic Corporation** | Standard stock corporation incorporated under the Revised Corporation Code | Limited by shares |
+| **Stock Corporation** | Corporation with authorized capital stock and share-based ownership | Limited by shares |
+| **Close Corporation** | Corporation with share transfer restrictions and a limited number of shareholders | Limited by shares |
+| **One Person Corporation (OPC)** | Single-stockholder corporation (distinct from India's OPC) | Limited by shares |
+| **Partnership** | General or professional partnership registered with the SEC | Partnership |
+| **Branch Office** | Philippine branch of a foreign corporation operating under an SEC license | Not applicable |
+| **Non-Stock Corporation** | Corporation without authorized capital stock, typically for civic or charitable purposes | Not applicable |
+| **Educational Corporation** | Corporation organized for educational purposes | Not applicable |
+| **Religious Corporation** | Corporation organized for religious purposes | Not applicable |
+
+## Industry classification
+
+Philippine entities use the **PSIC** (Philippine Standard Industrial Classification) code system. PSIC codes are 4 to 5 digits and are required during entity setup.
+
+## Required documents
+
+Commenda tracks the documents each entity type must maintain. The specific set varies by entity type, but all Philippine entities require a common base of tax and compliance documents.
+
+### Formation documents
+
+| Document | Applies to |
+|---|---|
+| Articles of Incorporation and by-laws | All corporation types |
+| Certificate of Incorporation | All corporation types |
+| Articles of Partnership | Partnership |
+| Certificate of Recording of Articles of Partnership | Partnership |
+| Head Office Articles of Incorporation | Branch Office |
+| SEC License to Do Business | Branch Office |
+
+### Tax and compliance documents
+
+These documents are required across all Philippine entity types:
+
+| Document | Renewable |
+|---|---|
+| BIR Certificate of Registration (Form 2303) — income tax | No |
+| BIR Certificate of Registration (Form 2303) — employer withholding | No |
+| Barangay Clearance | Yes |
+| Mayor's / Business Permit | Yes |
+| VAT Registration (BIR Form 2303) | No |
+
+### Ongoing administration documents
+
+| Document | Renewable |
+|---|---|
+| Audited Financial Statements | Yes |
+| General Information Sheet (GIS) | Yes |
+| Proof of Registered Address | Yes |
+| SEC Corporate Register Extract | Yes |
+
+<Info>
+Partnership entities do not require a General Information Sheet.
+</Info>
+
+## Tax registrations
+
+Every Philippine entity must register with the Bureau of Internal Revenue (BIR). Commenda tracks four registration types for each entity:
+
+| Registration | Authority | Description |
+|---|---|---|
+| **Tax Identification Number (TIN)** | BIR | 9-digit base with optional 3-digit branch code (e.g., `000-123-456-000`). Issued via BIR Form 1903; confirmed on BIR Form 2303. |
+| **VAT Registration** | BIR | Uses the entity TIN with branch code. Required for entities meeting the VAT threshold. |
+| **Employer Withholding Registration** | BIR | BIR registration for employer withholding tax on compensation. Separate SSS, PhilHealth, and Pag-IBIG employer registrations are also required. |
+| **Entity Formation (SEC Registration)** | SEC | Registration number issued by the Securities and Exchange Commission upon incorporation or recording of partnership articles. |
+
+<Note>
+For partnerships, the tax treatment depends on the type. General partnerships are taxed as corporations under NIRC §27(A). General Professional Partnerships (GPPs) are tax-transparent under NIRC §26 — partners are taxed individually.
+</Note>
+
+## Getting started
+
+To add a Philippine entity in Commenda:
+
+1. Go to **Entities** and click **Add entity**.
+2. Select **Philippines** as the country.
+3. Choose the appropriate entity type from the list above.
+4. Enter the PSIC industry code and complete the required fields.
+
+Commenda will automatically generate the applicable document checklist and registration requirements for your entity type.

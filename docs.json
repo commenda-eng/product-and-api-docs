@@ -36,7 +36,13 @@
               "product/entities/ownership",
               "product/entities/registrations",
               "product/entities/corporate-structure",
-              "product/entities/bank-accounts"
+              "product/entities/bank-accounts",
+              {
+                "group": "Jurisdictions",
+                "pages": [
+                  "product/entities/philippines"
+                ]
+              }
             ]
           },
           {

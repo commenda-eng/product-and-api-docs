@@ -171,9 +171,9 @@ schemas:
       required:
         - jurisdiction_id
         - jurisdiction_type
+        - jurisdiction_name
         - exposure_type
         - exposure_rule_id
-        - country
         - currency
         - rule
         - calculation
@@ -191,22 +191,22 @@ schemas:
             - COUNTRY
             - TRADEBLOC
           example: STATE
+        jurisdiction_name:
+          type: string
+          description: Human-readable name of the jurisdiction.
+          example: California
         exposure_type:
           type: string
           description: The type of exposure rule being evaluated.
           enum:
-            - ECONOMIC
-            - PHYSICAL
-            - REGISTRATION
-          example: ECONOMIC
+            - EXPOSURE_ECONOMIC
+            - EXPOSURE_PHYSICAL
+            - EXPOSURE
+          example: EXPOSURE_ECONOMIC
         exposure_rule_id:
           type: string
           description: Unique identifier for the exposure rule being evaluated.
           example: US_CA_ECONOMIC_001
-        country:
-          type: string
-          description: ISO 3166-1 alpha-2 country code.
-          example: US
         subdivision:
           type: string
           description: State or province code within the country, if applicable.
@@ -236,6 +236,9 @@ schemas:
       required:
         - threshold_type
         - evaluation_period_type
+        - location_based_scope
+        - exclusion_types
+        - establishment_types
       properties:
         sales_threshold:
           type: number
@@ -251,6 +254,44 @@ schemas:
           "$ref": "#/schemas/ThresholdType"
         evaluation_period_type:
           "$ref": "#/schemas/EvaluationPeriod"
+        location_based_scope:
+          type: string
+          description: Defines which transactions count toward the threshold based on the geographic relationship between buyer and seller.
+          enum:
+            - DESTINATION
+            - WORLDWIDE
+            - INTRA_COMMUNITY
+            - IMPORT
+          example: DESTINATION
+        exclusion_types:
+          type: array
+          description: Transaction or customer categories excluded from threshold calculations for this rule.
+          items:
+            type: string
+            enum:
+              - PRODUCT.TANGIBLE.TAXABLE
+              - PRODUCT.TANGIBLE.EXEMPT
+              - PRODUCT.DIGITAL.TAXABLE
+              - PRODUCT.DIGITAL.EXEMPT
+              - PRODUCT.SERVICES.TAXABLE
+              - PRODUCT.SERVICES.EXEMPT
+              - TRANSACTION.MARKETPLACE
+              - TRANSACTION.REFUNDS
+              - CUSTOMER.RESALE
+              - CUSTOMER.B2B
+              - TRANSACTION.DESTINATION_REGISTERED
+          example: ["TRANSACTION.MARKETPLACE", "CUSTOMER.RESALE"]
+        establishment_types:
+          type: array
+          description: Location types that qualify as a physical establishment for this rule. Used to determine whether resident or non-resident thresholds apply.
+          items:
+            type: string
+          example: ["HEADQUARTERS", "WAREHOUSE"]
+        max_transaction_value:
+          type: integer
+          nullable: true
+          description: Maximum value of a single transaction to be included in threshold calculations. Transactions exceeding this value are excluded. Used by schemes like EU IOSS where only consignments at or below a cap (e.g., €150) are eligible.
+          example: 15000
     CalculationObjectV2:
       type: object
       required:

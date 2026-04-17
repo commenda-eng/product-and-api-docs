@@ -24,11 +24,15 @@ Each jurisdiction has one or more exposure rules that define when registration i
 | Field | Description |
 |---|---|
 | `exposure_rule_id` | Unique identifier for the rule |
-| `exposure_type` | The type of tax obligation (e.g., `EXPOSURE`) |
-| `threshold_type` | Whether the threshold is based on `SALES`, `TRANSACTIONS`, or `SALES_OR_TRANSACTIONS` |
+| `exposure_type` | The type of tax obligation (`EXPOSURE`, `EXPOSURE_ECONOMIC`, or `EXPOSURE_PHYSICAL`) |
+| `threshold_type` | Whether the threshold is based on `SALES_ONLY`, `SALES_OR_TRANSACTIONS`, or `SALES_AND_TRANSACTIONS` |
 | `sales_threshold` | Revenue amount that triggers registration |
 | `transactions_threshold` | Transaction count that triggers registration |
-| `evaluation_period` | Time window for measuring activity (e.g., `PRECEDING_12_MONTHS`, `PREVIOUS_OR_CURRENT_CALENDAR_YEAR`) |
+| `evaluation_period_type` | Time window for measuring activity (e.g., `PRECEDING_12_MONTHS`, `PREVIOUS_OR_CURRENT_CALENDAR_YEAR`) |
+| `location_based_scope` | Which transactions count toward the threshold (`DESTINATION`, `WORLDWIDE`, `INTRA_COMMUNITY`, or `IMPORT`) |
+| `exclusion_types` | Transaction types excluded from threshold calculations (e.g., marketplace, B2B, resale) |
+| `establishment_types` | Business establishment types that determine which rule variant applies |
+| `max_transaction_value` | Maximum per-transaction value for inclusion (e.g., €150 for IOSS) |
 
 ### Multi-rule jurisdictions
 
@@ -85,7 +89,8 @@ The v2 response returns an array of jurisdiction objects, each representing one 
       {
         "jurisdiction_id": "STATE_US_NY_1036",
         "jurisdiction_type": "STATE",
-        "exposure_type": "EXPOSURE",
+        "jurisdiction_name": "New York",
+        "exposure_type": "EXPOSURE_ECONOMIC",
         "exposure_rule_id": "us_ny_economic",
         "country": "US",
         "subdivision": "NY",
@@ -93,8 +98,11 @@ The v2 response returns an array of jurisdiction objects, each representing one 
         "rule": {
           "sales_threshold": 500000,
           "transactions_threshold": null,
-          "threshold_type": "SALES",
-          "evaluation_period_type": "PREVIOUS_OR_CURRENT_CALENDAR_YEAR"
+          "threshold_type": "SALES_ONLY",
+          "evaluation_period_type": "PREVIOUS_OR_CURRENT_CALENDAR_YEAR",
+          "location_based_scope": "DESTINATION",
+          "exclusion_types": ["MARKETPLACE"],
+          "establishment_types": []
         },
         "calculation": {
           "included_sales": 320000,
@@ -110,6 +118,7 @@ The v2 response returns an array of jurisdiction objects, each representing one 
       {
         "jurisdiction_id": "TRADEBLOC_EU_3000",
         "jurisdiction_type": "TRADEBLOC",
+        "jurisdiction_name": "EU Union OSS",
         "exposure_type": "EXPOSURE",
         "exposure_rule_id": "eu_union_oss",
         "country": "",
@@ -118,8 +127,12 @@ The v2 response returns an array of jurisdiction objects, each representing one 
         "rule": {
           "sales_threshold": 10000,
           "transactions_threshold": null,
-          "threshold_type": "SALES",
-          "evaluation_period_type": "PREVIOUS_OR_CURRENT_CALENDAR_YEAR"
+          "threshold_type": "SALES_ONLY",
+          "evaluation_period_type": "PREVIOUS_OR_CURRENT_CALENDAR_YEAR",
+          "location_based_scope": "INTRA_COMMUNITY",
+          "exclusion_types": ["B2B"],
+          "establishment_types": [],
+          "max_transaction_value": 150
         },
         "calculation": {
           "included_sales": 8500,
@@ -146,12 +159,13 @@ Each jurisdiction object includes:
 |---|---|
 | `jurisdiction_id` | Internal identifier for the jurisdiction. For trade bloc rules, this is the trade bloc ID (e.g., `TRADEBLOC_EU_3000`) |
 | `jurisdiction_type` | `STATE`, `COUNTRY`, or `TRADEBLOC` |
-| `exposure_type` | Type of exposure obligation |
+| `jurisdiction_name` | Human-readable name of the jurisdiction (e.g., "New York", "United Kingdom", "EU Union OSS") |
+| `exposure_type` | Type of exposure obligation: `EXPOSURE`, `EXPOSURE_ECONOMIC`, or `EXPOSURE_PHYSICAL` |
 | `exposure_rule_id` | Identifier for the specific rule being evaluated |
 | `country` | ISO country code, empty for trade bloc-level rules |
 | `subdivision` | State or province code, if applicable |
 | `currency` | Currency of the threshold amounts |
-| `rule` | The threshold rule being applied |
+| `rule` | The threshold rule being applied (see [Exposure rules](#exposure-rules) for field details) |
 | `calculation` | Your current progress toward the threshold |
 | `is_nexus_breached` | Whether you have exceeded the registration threshold |
 | `date_of_breach` | Date when the threshold was exceeded, if breached |

@@ -1,0 +1,287 @@
+---
+title: "Bulk operations"
+description: "Create, validate, and update multiple registrations in a single request"
+---
+
+Use bulk endpoints to manage multiple V2 registrations at once. Each operation processes items independently — individual failures do not block the rest of the batch.
+
+## Bulk create registrations
+
+Create multiple registrations for a corporation in one request. Each item follows the same validation rules as the [single create endpoint](/engine/indirect-tax/registrations/v2/registrations-v2-POST).
+
+```
+POST /registrations/v2/bulk
+```
+
+### Request body
+
+<ParamField body="corporation_id" type="string" required>
+  The corporation UUID that owns the registrations.
+</ParamField>
+
+<ParamField body="registrations" type="array" required>
+  Array of registration objects (minimum 1). Each object accepts:
+
+  | Field | Type | Required | Description |
+  |-------|------|----------|-------------|
+  | `registration_tax_type_id` | string | Yes | Content ID for the jurisdiction and tax type |
+  | `tax_types` | string[] | Yes | Tax types to register for (minimum 1) |
+  | `frequencies` | string[] | Yes | Filing frequencies (minimum 1) |
+  | `effective_start_date` | string | No | ISO date (YYYY-MM-DD) |
+  | `registered_by` | string | No | `COMMENDA`, `API`, or `USER` |
+  | `tax_registration_number` | string | No | Permit or account number from the tax authority |
+  | `credential_id` | string | No | UUID of stored portal credentials |
+  | `member_state_registration_id` | string | No | UUID of prerequisite domestic registration (Union OSS) |
+  | `registered_through_registration_tax_type_id` | string | No | Content ID for the member country (Non-Union OSS, IOSS) |
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl --request POST \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/bulk' \
+  --header 'Authorization: Bearer <your_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+    "registrations": [
+      {
+        "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+        "tax_types": ["RST", "DTT"],
+        "frequencies": ["QUARTERLY"],
+        "effective_start_date": "2024-01-01"
+      },
+      {
+        "registration_tax_type_id": "REG_STATE_CEN_48_RST",
+        "tax_types": ["RST"],
+        "frequencies": ["MONTHLY"]
+      }
+    ]
+  }'
+```
+
+```json Request body
+{
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "registrations": [
+    {
+      "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+      "tax_types": ["RST", "DTT"],
+      "frequencies": ["QUARTERLY"],
+      "effective_start_date": "2024-01-01"
+    },
+    {
+      "registration_tax_type_id": "REG_STATE_CEN_48_RST",
+      "tax_types": ["RST"],
+      "frequencies": ["MONTHLY"]
+    }
+  ]
+}
+```
+</RequestExample>
+
+<ResponseExample>
+```json 201
+{
+  "message": "Bulk registration completed.",
+  "registrations": [
+    {
+      "id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+      "status": "CREATED"
+    },
+    {
+      "id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+      "registration_tax_type_id": "REG_STATE_CEN_48_RST",
+      "status": "CREATED"
+    }
+  ]
+}
+```
+
+```json 201 - Partial failure
+{
+  "message": "Bulk registration completed.",
+  "registrations": [
+    {
+      "id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+      "status": "CREATED"
+    },
+    {
+      "id": "",
+      "registration_tax_type_id": "INVALID_ID",
+      "status": "FAILED",
+      "error": "The registration_tax_type_id 'INVALID_ID' does not exist."
+    }
+  ]
+}
+```
+</ResponseExample>
+
+---
+
+## Bulk request validation
+
+Request Commenda validation for multiple registrations at once. This triggers the same verification process as the individual validation request.
+
+```
+POST /registrations/v2/bulk/request-validation
+```
+
+### Request body
+
+<ParamField body="corporation_id" type="string" required>
+  The corporation UUID.
+</ParamField>
+
+<ParamField body="registration_ids" type="string[]" required>
+  Array of registration UUIDs to validate (minimum 1).
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl --request POST \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/bulk/request-validation' \
+  --header 'Authorization: Bearer <your_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+    "registration_ids": [
+      "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "a1b2c3d4-5678-90ab-cdef-1234567890ab"
+    ]
+  }'
+```
+
+```json Request body
+{
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "registration_ids": [
+    "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+    "a1b2c3d4-5678-90ab-cdef-1234567890ab"
+  ]
+}
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "message": "Bulk validation request completed.",
+  "results": [
+    {
+      "registration_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "success": true
+    },
+    {
+      "registration_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+      "success": true
+    }
+  ]
+}
+```
+
+```json 200 - Partial failure
+{
+  "message": "Bulk validation request completed.",
+  "results": [
+    {
+      "registration_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "success": true
+    },
+    {
+      "registration_id": "00000000-0000-0000-0000-000000000000",
+      "success": false,
+      "error": "Registration not found."
+    }
+  ]
+}
+```
+</ResponseExample>
+
+---
+
+## Bulk update registration status
+
+Update the registration status for multiple registrations simultaneously.
+
+```
+POST /registrations/v2/bulk/registration-status
+```
+
+### Request body
+
+<ParamField body="corporation_id" type="string" required>
+  The corporation UUID.
+</ParamField>
+
+<ParamField body="registration_ids" type="string[]" required>
+  Array of registration UUIDs to update (minimum 1).
+</ParamField>
+
+<ParamField body="registration_status" type="string" required>
+  The new status to apply to all specified registrations.
+  
+  Values: `REGISTERED`, `REGISTRATION_IN_PROGRESS`, `PENDING`
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl --request POST \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/bulk/registration-status' \
+  --header 'Authorization: Bearer <your_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+    "registration_ids": [
+      "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "a1b2c3d4-5678-90ab-cdef-1234567890ab"
+    ],
+    "registration_status": "REGISTERED"
+  }'
+```
+
+```json Request body
+{
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "registration_ids": [
+    "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+    "a1b2c3d4-5678-90ab-cdef-1234567890ab"
+  ],
+  "registration_status": "REGISTERED"
+}
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "message": "Bulk status update completed.",
+  "results": [
+    {
+      "registration_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "success": true
+    },
+    {
+      "registration_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+      "success": true
+    }
+  ]
+}
+```
+</ResponseExample>
+
+## When to use bulk operations
+
+- **Onboarding** — Register a corporation across multiple jurisdictions in a single call instead of making separate requests
+- **Validation sweeps** — Request validation for all pending registrations at once
+- **Status updates** — Mark multiple registrations as active after receiving confirmation from tax authorities
+
+<Note>
+  Each item in a bulk request is processed independently. If one item fails validation (e.g., duplicate registration), the remaining items still succeed. Always check the `status` or `success` field on each result item.
+</Note>
+
+## Related
+
+- [Create Registration](/engine/indirect-tax/registrations/v2/registrations-v2-POST) — Create a single registration
+- [Tax Registrations V2 Overview](/engine/indirect-tax/registrations/v2/registrations-v2) — Full workflow and concepts

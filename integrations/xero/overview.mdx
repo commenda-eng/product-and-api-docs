@@ -85,6 +85,8 @@ Line items with `EXEMPTINPUT` or `EXEMPTOUTPUT` tax types in Xero are automatica
 
 Commenda syncs the **tax number** from Xero contacts into the `business_identification_number` field on the corresponding customer record. This is useful for storing VAT IDs and other tax registration numbers required for compliance in certain jurisdictions.
 
+When syncing invoices, Commenda also populates the `customer_business_identification_number` field on each transaction using the associated contact's tax number. This ensures the customer's tax identification is available directly on the transaction for reporting and filing purposes.
+
 ## Known behaviors
 
 - **Lock dates are respected** — Commenda skips invoices dated before your Xero organisation's period lock date or end-of-year lock date

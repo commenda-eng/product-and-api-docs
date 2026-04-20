@@ -250,6 +250,7 @@ curl --request POST \
   "registration_name": "Sales and Use Tax",
   "effective_start_date": "2024-01-01",
   "registered_by": "COMMENDA",
+  "managed_filing_enabled": false,
   "registration_status": "PENDING",
   "validation_status": "PENDING",
   "created_at": "2024-01-15T10:30:00Z"
@@ -267,6 +268,7 @@ curl --request POST \
 | [`/registrations/v2/content/registration-conditions`](/engine/indirect-tax/registrations/v2/content/registration-conditions-POST) | POST | Get conditions for a registration type |
 | [`/registrations/v2/content/portal-fields`](/engine/indirect-tax/registrations/v2/content/portal-fields-POST) | POST | Get portal credential requirements |
 | [`/registrations/v2/content/tax-type-details`](/engine/indirect-tax/registrations/v2/content/tax-type-details-POST) | POST | Get tax type descriptions |
+| [`/registrations/v2/content/supported-regions`](/engine/indirect-tax/registrations/v2/content/supported-regions-GET) | GET | Get supported regions and their jurisdiction filters |
 
 ### Registration management
 

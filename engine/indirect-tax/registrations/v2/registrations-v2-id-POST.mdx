@@ -46,6 +46,10 @@ All fields are optional. Only the fields you provide will be updated.
   Values: `COMMENDA`, `API`, `USER`
 </ParamField>
 
+<ParamField body="managed_filing_enabled" type="boolean">
+  Whether managed filing is enabled for this registration. When `true`, Commenda will handle filing on your behalf.
+</ParamField>
+
 ## Validation rules
 
 When updating `tax_types` or `frequencies`, the new values are re-validated against the registration's content:
@@ -111,6 +115,7 @@ curl --request POST \
     "tax_registration_number": "123-456789-00",
     "credential_id": "cred_abc123def456",
     "registered_by": "COMMENDA",
+    "managed_filing_enabled": false,
     "registration_status": "PENDING",
     "validation_status": "PENDING",
     "created_at": "2024-01-15T10:30:00Z",

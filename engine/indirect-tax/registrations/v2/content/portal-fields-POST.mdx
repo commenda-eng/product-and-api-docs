@@ -68,7 +68,8 @@ curl --request POST \
             "credential_type": "STRING",
             "required": true,
             "is_unique_per_registration": false,
-            "display_order": 2
+            "display_order": 2,
+            "helper_text": "Enter the password associated with your CDTFA account."
           }
         ]
       }
@@ -102,6 +103,7 @@ curl --request POST \
 | `is_unique_per_registration` | boolean | Whether each registration needs a unique value |
 | `regex` | string | Validation regex pattern (if applicable) |
 | `display_order` | integer | Suggested display order for UI rendering |
+| `helper_text` | string | Instructional text to display alongside the field in a UI (if applicable) |
 
 ## Related
 

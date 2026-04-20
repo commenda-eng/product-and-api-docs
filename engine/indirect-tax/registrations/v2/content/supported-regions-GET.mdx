@@ -1,0 +1,78 @@
+---
+title: "Get Supported Regions"
+api: "GET https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/content/supported-regions"
+description: "Get the list of supported regions and their jurisdiction filter sets"
+---
+
+Retrieve the list of supported regions for V2 registrations. Each region includes filter sets that define which jurisdictions belong to it. Use this endpoint to build region-based navigation or filtering in your registration UI.
+
+<RequestExample>
+```bash cURL
+curl --request GET \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/content/supported-regions' \
+  --header 'Authorization: Bearer <your_token>'
+```
+</RequestExample>
+
+## Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `regions` | array | List of supported regions |
+| `regions[].region_id` | string | Short identifier for the region (e.g., `"US"`, `"EU"`) |
+| `regions[].region_name` | string | Human-readable name of the region |
+| `regions[].jurisdiction_filter_sets` | array | Filter sets that define which jurisdictions belong to this region |
+| `regions[].jurisdiction_filter_sets[].countries` | array | ISO 3166-1 alpha-2 country codes to match |
+| `regions[].jurisdiction_filter_sets[].states` | array | State or province codes to match |
+| `regions[].jurisdiction_filter_sets[].types` | array | Jurisdiction types to match (e.g., `"COUNTRY"`, `"TRADEBLOC"`) |
+
+Each filter set is a conjunction (all specified fields must match). Multiple filter sets for a region are combined with OR logic — a jurisdiction matches the region if it matches any one filter set.
+
+<ResponseExample>
+```json 200
+{
+  "data": {
+    "regions": [
+      {
+        "region_id": "US",
+        "region_name": "United States",
+        "jurisdiction_filter_sets": [
+          { "countries": ["US"] }
+        ]
+      },
+      {
+        "region_id": "EU",
+        "region_name": "European Union",
+        "jurisdiction_filter_sets": [
+          { "types": ["TRADEBLOC"] },
+          {
+            "countries": ["AT", "BE", "BG", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR", "HR", "HU", "IE", "IT", "LT", "LU", "LV", "MT", "NL", "PL", "PT", "RO", "SE", "SI", "SK"],
+            "types": ["COUNTRY"]
+          }
+        ]
+      },
+      {
+        "region_id": "CA",
+        "region_name": "Canada",
+        "jurisdiction_filter_sets": [
+          { "countries": ["CA"] }
+        ]
+      },
+      {
+        "region_id": "GB",
+        "region_name": "United Kingdom",
+        "jurisdiction_filter_sets": [
+          { "countries": ["GB"], "types": ["COUNTRY"] }
+        ]
+      }
+    ]
+  }
+}
+```
+</ResponseExample>
+
+## Related
+
+- [Available Jurisdictions](/engine/indirect-tax/registrations/v2/content/available-jurisdictions-POST) — Search for jurisdictions within a region
+- [Available Registrations](/engine/indirect-tax/registrations/v2/content/available-registrations-POST) — Get registration options for jurisdictions
+- [V2 Registration Content Overview](/engine/indirect-tax/registrations/v2/content/content-v2) — Full content API workflow

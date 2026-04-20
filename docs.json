@@ -227,6 +227,9 @@
               "engine/indirect-tax/registrations/v2/registrations-v2-id-archive-POST",
               "engine/indirect-tax/registrations/v2/registrations-v2-id-close-POST",
               "engine/indirect-tax/registrations/v2/registrations-v2-credentials-GET",
+              "engine/indirect-tax/registrations/v2/registrations-v2-bulk-POST",
+              "engine/indirect-tax/registrations/v2/registrations-v2-tasks-GET",
+              "engine/indirect-tax/registrations/v2/registrations-v2-form-data",
               {
                 "group": "Registration Content V2",
                 "pages": [

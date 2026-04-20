@@ -295,3 +295,19 @@ curl --request POST \
 | [`/registrations/v2/{id}/archive`](/engine/indirect-tax/registrations/v2/registrations-v2-id-archive-POST) | POST | Archive a registration |
 | [`/registrations/v2/{id}/close`](/engine/indirect-tax/registrations/v2/registrations-v2-id-close-POST) | POST | Close a registration |
 | [`/registrations/v2/credentials/by-portal/{portal_id}`](/engine/indirect-tax/registrations/v2/registrations-v2-credentials-GET) | GET | Look up credentials by portal |
+
+### Bulk operations
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| [`/registrations/v2/bulk`](/engine/indirect-tax/registrations/v2/registrations-v2-bulk-POST) | POST | Create multiple registrations |
+| [`/registrations/v2/bulk/request-validation`](/engine/indirect-tax/registrations/v2/registrations-v2-bulk-POST#bulk-request-validation) | POST | Request validation for multiple registrations |
+| [`/registrations/v2/bulk/registration-status`](/engine/indirect-tax/registrations/v2/registrations-v2-bulk-POST#bulk-update-registration-status) | POST | Update status for multiple registrations |
+
+### Tasks and form data
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| [`/registrations/v2/tasks`](/engine/indirect-tax/registrations/v2/registrations-v2-tasks-GET) | GET | List registration tasks for a corporation |
+| [`/registrations/v2/{id}/form-data`](/engine/indirect-tax/registrations/v2/registrations-v2-form-data) | GET | Get supplementary form data |
+| [`/registrations/v2/{id}/form-data`](/engine/indirect-tax/registrations/v2/registrations-v2-form-data#update-form-data) | POST | Update supplementary form data |

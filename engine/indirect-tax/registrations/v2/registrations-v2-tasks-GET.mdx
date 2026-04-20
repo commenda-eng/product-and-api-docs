@@ -1,0 +1,91 @@
+---
+title: "List registration tasks"
+description: "Retrieve pending tasks for a corporation's V2 registrations"
+---
+
+Retrieve all active registration tasks for a corporation. Tasks represent actions that need to be completed as part of the registration process — such as document submission, information verification, or Commenda team review.
+
+```
+GET /registrations/v2/tasks
+```
+
+## Query parameters
+
+<ParamField query="corporation_id" type="string" required>
+  The corporation UUID to retrieve tasks for.
+</ParamField>
+
+## Response
+
+Returns a list of tasks associated with the corporation's V2 registrations.
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Unique task identifier |
+| `task_id` | string | Task type identifier |
+| `title` | string | Human-readable description of what the task requires |
+| `status` | string | Current task status |
+| `assignee_type` | string | Who is responsible (`USER` or `AGENT`) |
+| `registration_id` | string | The registration this task belongs to |
+| `registration_name` | string | Human-readable name of the registration |
+| `service_request_id` | string | Associated service request identifier |
+
+<RequestExample>
+```bash cURL
+curl --request GET \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/tasks?corporation_id=550e8400-e29b-41d4-a716-446655440000' \
+  --header 'Authorization: Bearer <your_token>'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "tasks": [
+    {
+      "id": "d290f1ee-6c54-4b01-90e6-d701748f0851",
+      "task_id": "SUBMIT_DOCUMENTS",
+      "title": "Submit required documents for California Sales Tax",
+      "status": "PENDING",
+      "assignee_type": "USER",
+      "registration_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "registration_name": "California Sales and Use Tax",
+      "service_request_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+    },
+    {
+      "id": "e290f1ee-6c54-4b01-90e6-d701748f0852",
+      "task_id": "REVIEW_APPLICATION",
+      "title": "Commenda team is reviewing the registration",
+      "status": "IN_PROGRESS",
+      "assignee_type": "AGENT",
+      "registration_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "registration_name": "California Sales and Use Tax",
+      "service_request_id": "f47ac10b-58cc-4372-a567-0e02b2c3d479"
+    }
+  ]
+}
+```
+
+```json 200 - No tasks
+{
+  "tasks": []
+}
+```
+</ResponseExample>
+
+## Task types
+
+Tasks are automatically created when you initiate a registration through Commenda's managed process. Each task is assigned to either you (`USER`) or the Commenda team (`AGENT`).
+
+- **User tasks** require action from you, such as providing additional information or uploading documents
+- **Agent tasks** are handled by the Commenda team and require no action from you — they serve as progress indicators
+
+<Tip>
+  Poll this endpoint to track the progress of registrations that are being processed by Commenda. When all tasks for a registration are complete, the registration status will be updated accordingly.
+</Tip>
+
+## Related
+
+- [Get Registration](/engine/indirect-tax/registrations/v2/registrations-v2-id-GET) — View registration details and status
+- [Registration Form Data](/engine/indirect-tax/registrations/v2/registrations-v2-form-data) — Provide additional information required by tasks
+- [Tax Registrations V2 Overview](/engine/indirect-tax/registrations/v2/registrations-v2) — Full workflow and concepts

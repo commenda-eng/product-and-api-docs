@@ -1,0 +1,194 @@
+---
+title: "Registration form data"
+description: "Retrieve and update supplementary form data for V2 registrations"
+---
+
+Some registrations require additional information beyond the core registration fields — such as tax account details, officer information, or cross-border trade declarations. Use the form data endpoints to retrieve and submit this information.
+
+## Get form data
+
+Retrieve the current form data for a registration, including officer details, cross-border trade fields, and any metadata collected during the registration process.
+
+```
+GET /registrations/v2/{registration_id}/form-data
+```
+
+### Path parameters
+
+<ParamField path="registration_id" type="string" required>
+  The unique identifier (UUID) of the registration.
+</ParamField>
+
+### Query parameters
+
+<ParamField query="corporation_id" type="string" required>
+  The corporation UUID.
+</ParamField>
+
+### Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `registration_id` | string | The registration UUID |
+| `corporation_id` | string | The corporation identifier |
+| `jurisdiction_id` | string \| null | Jurisdiction identifier |
+| `jurisdiction_type` | string \| null | Jurisdiction type (e.g., `STATE_OR_PROVINCE`, `COUNTRY`) |
+| `jurisdiction_name` | string \| null | Human-readable jurisdiction name |
+| `sales_tax_registration_id` | string \| null | Internal registration reference |
+| `officer` | object \| null | Responsible officer details (see below) |
+| `metadata` | object \| null | Additional collected data |
+
+#### Officer object
+
+When present, the `officer` object contains details about the person responsible for the registration:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | number | Officer identifier |
+| `first_name` | string \| null | First name |
+| `middle_name` | string \| null | Middle name |
+| `last_name` | string \| null | Last name |
+| `email` | string \| null | Email address |
+| `ssn` | string \| null | Social security number (masked) |
+| `has_no_ssn` | boolean \| null | Whether the officer has no SSN |
+| `job_title` | string \| null | Job title or role |
+| `roles` | string[] \| null | Assigned roles |
+| `employment_start_date` | string \| null | Employment start date |
+| `date_of_birth` | string \| null | Date of birth |
+| `country_of_citizenship` | string \| null | Country of citizenship |
+| `home_address` | object \| null | Home address with `address_line_1`, `address_line_2`, `city`, `state`, `postal_code`, `country` |
+| `government_id` | object \| null | Government ID document with `id`, `file_name`, `file_url` |
+
+<RequestExample>
+```bash cURL
+curl --request GET \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/7c9e6679-7425-40de-944b-e07fc1f90ae7/form-data?corporation_id=550e8400-e29b-41d4-a716-446655440000' \
+  --header 'Authorization: Bearer <your_token>'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "registration_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "jurisdiction_id": "JUR_EU_COUNTRY_DE",
+  "jurisdiction_type": "COUNTRY",
+  "jurisdiction_name": "Germany",
+  "sales_tax_registration_id": "abc123",
+  "officer": {
+    "id": 42,
+    "first_name": "Jane",
+    "last_name": "Doe",
+    "email": "jane@example.com",
+    "job_title": "CFO",
+    "roles": ["DIRECTOR"],
+    "country_of_citizenship": "US",
+    "home_address": {
+      "address_line_1": "123 Main St",
+      "city": "San Francisco",
+      "state": "CA",
+      "postal_code": "94105",
+      "country": "US"
+    }
+  },
+  "metadata": null
+}
+```
+</ResponseExample>
+
+---
+
+## Update form data
+
+Submit or update supplementary form data for a registration. Use this to provide tax account details, assign a responsible officer, or declare cross-border trade information.
+
+```
+POST /registrations/v2/{registration_id}/form-data
+```
+
+### Path parameters
+
+<ParamField path="registration_id" type="string" required>
+  The unique identifier (UUID) of the registration.
+</ParamField>
+
+### Request body
+
+<ParamField body="corporation_id" type="string" required>
+  The corporation UUID.
+</ParamField>
+
+<ParamField body="effective_start_date_of_tax_account" type="string">
+  ISO date (YYYY-MM-DD) when the tax account was first established with the jurisdiction.
+</ParamField>
+
+<ParamField body="first_year_taxable_sale" type="number">
+  The calendar year when the corporation first made a taxable sale in this jurisdiction.
+</ParamField>
+
+<ParamField body="officer_id" type="number">
+  The ID of the officer responsible for this registration. Must be a valid officer associated with the corporation.
+</ParamField>
+
+<ParamField body="intra_community_trade" type="boolean">
+  Whether the corporation conducts intra-community trade (relevant for EU VAT registrations).
+</ParamField>
+
+<ParamField body="imports_or_exports_goods" type="boolean">
+  Whether the corporation imports or exports goods in this jurisdiction.
+</ParamField>
+
+<ParamField body="currency" type="string">
+  The currency used for transactions in this jurisdiction (ISO 4217 code, e.g., `EUR`, `USD`).
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl --request POST \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/7c9e6679-7425-40de-944b-e07fc1f90ae7/form-data' \
+  --header 'Authorization: Bearer <your_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+    "officer_id": 42,
+    "intra_community_trade": true,
+    "imports_or_exports_goods": false,
+    "currency": "EUR"
+  }'
+```
+
+```json Request body
+{
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "officer_id": 42,
+  "intra_community_trade": true,
+  "imports_or_exports_goods": false,
+  "currency": "EUR"
+}
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "message": "Form data updated successfully."
+}
+```
+</ResponseExample>
+
+## When to use form data
+
+- **EU registrations** — Provide cross-border trade declarations (`intra_community_trade`, `imports_or_exports_goods`) and the operating currency
+- **Managed registrations** — Assign a responsible officer and provide tax account history when Commenda is handling the registration on your behalf
+- **Task completion** — Some [registration tasks](/engine/indirect-tax/registrations/v2/registrations-v2-tasks-GET) require you to submit form data before the registration can proceed
+
+<Note>
+  All fields in the update request are optional. You can submit partial updates — only the provided fields are changed, and existing values for other fields are preserved.
+</Note>
+
+## Related
+
+- [List Registration Tasks](/engine/indirect-tax/registrations/v2/registrations-v2-tasks-GET) — View pending tasks that may require form data
+- [Get Registration](/engine/indirect-tax/registrations/v2/registrations-v2-id-GET) — View registration details
+- [Tax Registrations V2 Overview](/engine/indirect-tax/registrations/v2/registrations-v2) — Full workflow and concepts

@@ -60,6 +60,7 @@ curl --request POST \
             "credential_type": "STRING",
             "required": true,
             "is_unique_per_registration": false,
+            "helper_text": "Enter the username you use to log in to the CDTFA portal",
             "display_order": 1
           },
           {
@@ -97,8 +98,9 @@ curl --request POST \
 |-------|------|-------------|
 | `credential_key` | string | Field identifier used when storing credentials |
 | `credential_name` | string | Human-readable label for the field |
-| `credential_type` | string | Input type (`STRING`, etc.) |
+| `credential_type` | string | Input type (`STRING`, `FILE`, etc.) |
 | `required` | boolean | Whether the field must be provided |
+| `helper_text` | string | Optional hint text for UI display, explaining what to enter in this field |
 | `is_unique_per_registration` | boolean | Whether each registration needs a unique value |
 | `regex` | string | Validation regex pattern (if applicable) |
 | `display_order` | integer | Suggested display order for UI rendering |

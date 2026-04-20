@@ -40,6 +40,10 @@ All fields are optional. Only the fields you provide will be updated.
   Reference to stored portal credentials (UUID). Pass an empty string to clear the value.
 </ParamField>
 
+<ParamField body="managed_filing_enabled" type="boolean">
+  Set to `true` to enable Commenda-managed filing for this registration. When enabled, Commenda handles the filing process on your behalf.
+</ParamField>
+
 <ParamField body="registered_by" type="string">
   Who created the registration.
   
@@ -78,6 +82,12 @@ curl --request POST \
 }
 ```
 
+```json Enable managed filing
+{
+  "managed_filing_enabled": true
+}
+```
+
 ```json Update multiple fields
 {
   "tax_types": ["RST", "DTT"],
@@ -110,6 +120,7 @@ curl --request POST \
     "effective_start_date": "2024-02-01",
     "tax_registration_number": "123-456789-00",
     "credential_id": "cred_abc123def456",
+    "managed_filing_enabled": false,
     "registered_by": "COMMENDA",
     "registration_status": "PENDING",
     "validation_status": "PENDING",

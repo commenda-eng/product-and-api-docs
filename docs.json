@@ -231,6 +231,7 @@
                 "group": "Registration Content V2",
                 "pages": [
                   "engine/indirect-tax/registrations/v2/content/content-v2",
+                  "engine/indirect-tax/registrations/v2/content/supported-regions-GET",
                   "engine/indirect-tax/registrations/v2/content/available-jurisdictions-POST",
                   "engine/indirect-tax/registrations/v2/content/available-registrations-POST",
                   "engine/indirect-tax/registrations/v2/content/registration-conditions-POST",

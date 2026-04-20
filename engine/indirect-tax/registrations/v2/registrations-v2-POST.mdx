@@ -26,10 +26,10 @@ Create a registration to enable tax calculations and automated filing for a juri
   Example: `["RST", "DTT"]`
 </ParamField>
 
-<ParamField body="frequencies" type="array" required>
+<ParamField body="frequencies" type="array">
   Array of filing frequencies. Must exactly match one of the allowed frequency combinations from the content response.
   
-  Minimum 1, maximum 100 items.
+  Maximum 100 items. This field is optional — if omitted, the registration is created without a filing frequency set.
   
   Example: `["QUARTERLY"]` or `["QUARTERLY", "ANNUAL_RECONCILIATION"]`
 </ParamField>
@@ -52,6 +52,10 @@ Create a registration to enable tax calculations and automated filing for a juri
   Reference to stored portal credentials (UUID). Can be added later via update.
 </ParamField>
 
+<ParamField body="managed_filing_enabled" type="boolean">
+  Set to `true` to enable Commenda-managed filing for this registration. When enabled, Commenda handles the filing process on your behalf. Defaults to `false`.
+</ParamField>
+
 <ParamField body="member_state_registration_id" type="string">
   UUID of an existing active domestic registration. Required for Union OSS registrations that have a `PREREQUISITE_REGISTRATION` condition.
   
@@ -69,7 +73,7 @@ Create a registration to enable tax calculations and automated filing for a juri
 | Rule | Description |
 |------|-------------|
 | **Tax types** | Must include all mandatory types and only allowed types for the content ID |
-| **Frequencies** | Must exactly match one allowed frequency combination |
+| **Frequencies** | If provided, must exactly match one allowed frequency combination |
 | **Duplicate prevention** | Only one active (non-archived) registration per `registration_tax_type_id` per corporation |
 | **Conditions** | Prerequisites must be met, mutually exclusive registrations must not be active |
 
@@ -155,6 +159,7 @@ curl --request POST \
     "registration_name": "Sales and Use Tax",
     "effective_start_date": "2024-01-01",
     "registered_by": "COMMENDA",
+    "managed_filing_enabled": false,
     "registration_status": "PENDING",
     "validation_status": "PENDING",
     "created_at": "2024-01-15T10:30:00Z"

@@ -1,0 +1,100 @@
+---
+title: "Get Supported Regions"
+api: "GET https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/content/supported-regions"
+description: "Get the list of supported regions and their jurisdiction filters for tax registrations"
+---
+
+Retrieve the list of regions supported for tax registration. Each region includes jurisdiction filter sets that you can pass directly to the [Available Jurisdictions](/engine/indirect-tax/registrations/v2/content/available-jurisdictions-POST) endpoint to discover registerable jurisdictions within that region.
+
+Use this endpoint to build region-based navigation in your UI or to determine which jurisdiction filters to apply when searching for available registrations.
+
+## Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `regions` | array | List of supported regions |
+| `regions[].region_id` | string | Unique identifier for the region (e.g., `US`, `EU`, `CA`, `GB`) |
+| `regions[].region_name` | string | Human-readable name (e.g., "United States", "European Union") |
+| `regions[].jurisdiction_filter_sets` | array | One or more filter sets to use when querying available jurisdictions |
+| `regions[].jurisdiction_filter_sets[].countries` | array | ISO country codes to filter by |
+| `regions[].jurisdiction_filter_sets[].states` | array | State or province codes to filter by |
+| `regions[].jurisdiction_filter_sets[].types` | array | Jurisdiction types to filter by (e.g., `STATE_OR_PROVINCE`, `COUNTRY`, `TRADEBLOC`) |
+
+<RequestExample>
+```bash cURL
+curl --request GET \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/content/supported-regions' \
+  --header 'Authorization: Bearer <your_token>'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "data": {
+    "regions": [
+      {
+        "region_id": "US",
+        "region_name": "United States",
+        "jurisdiction_filter_sets": [
+          { "countries": ["US"] }
+        ]
+      },
+      {
+        "region_id": "EU",
+        "region_name": "European Union",
+        "jurisdiction_filter_sets": [
+          { "types": ["TRADEBLOC"] },
+          {
+            "countries": ["AT", "BE", "BG", "CY", "CZ", "DE", "DK", "EE", "ES", "FI", "FR", "GR", "HR", "HU", "IE", "IT", "LT", "LU", "LV", "MT", "NL", "PL", "PT", "RO", "SE", "SI", "SK"],
+            "types": ["COUNTRY"]
+          }
+        ]
+      },
+      {
+        "region_id": "CA",
+        "region_name": "Canada",
+        "jurisdiction_filter_sets": [
+          { "countries": ["CA"] }
+        ]
+      },
+      {
+        "region_id": "GB",
+        "region_name": "United Kingdom",
+        "jurisdiction_filter_sets": [
+          { "countries": ["GB"], "types": ["COUNTRY"] }
+        ]
+      }
+    ]
+  }
+}
+```
+</ResponseExample>
+
+## Using filter sets
+
+Each region may return multiple `jurisdiction_filter_sets`. To get all jurisdictions for a region, query the [Available Jurisdictions](/engine/indirect-tax/registrations/v2/content/available-jurisdictions-POST) endpoint once per filter set and combine the results.
+
+For example, the EU region returns two filter sets — one for trade bloc-level registrations (Union OSS, Non-Union OSS, IOSS) and another for individual EU member country registrations.
+
+```bash
+# Get EU trade bloc registrations
+curl --request POST \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/content/available-jurisdictions' \
+  --header 'Authorization: Bearer <your_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{"filters": {"types": ["TRADEBLOC"]}}'
+
+# Get EU member country registrations
+curl --request POST \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/content/available-jurisdictions' \
+  --header 'Authorization: Bearer <your_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{"filters": {"countries": ["DE", "FR", "IT"], "types": ["COUNTRY"]}}'
+```
+
+## Related
+
+- [Available Jurisdictions](/engine/indirect-tax/registrations/v2/content/available-jurisdictions-POST) — Search for jurisdictions using the filter sets
+- [Available Registrations](/engine/indirect-tax/registrations/v2/content/available-registrations-POST) — Get registration options for discovered jurisdictions
+- [V2 Registration Content Overview](/engine/indirect-tax/registrations/v2/content/content-v2) — Full content API workflow

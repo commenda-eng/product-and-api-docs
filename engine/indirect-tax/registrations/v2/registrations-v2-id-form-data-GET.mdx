@@ -1,0 +1,115 @@
+---
+title: "Get form data"
+api: "GET https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/{registration_id}/form-data"
+description: "Retrieve the form data for a V2 registration"
+---
+
+Retrieve the form data associated with a registration, including officer information, jurisdiction details, and metadata. Form data is used during the registration process to collect additional information required by the tax authority.
+
+## Path parameters
+
+<ParamField path="registration_id" type="string" required>
+  The unique identifier (UUID) of the registration.
+</ParamField>
+
+## Query parameters
+
+<ParamField query="corporation_id" type="string" required>
+  The unique identifier for the corporation.
+</ParamField>
+
+## Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `registration_id` | string | The registration this form data belongs to |
+| `corporation_id` | string | The corporation ID |
+| `jurisdiction_id` | string \| null | Jurisdiction identifier |
+| `jurisdiction_type` | string \| null | Jurisdiction type |
+| `jurisdiction_name` | string \| null | Human-readable jurisdiction name |
+| `sales_tax_registration_id` | string \| null | Internal sales tax registration reference |
+| `officer` | object \| null | Officer details (see below) |
+| `metadata` | object \| null | Additional form metadata |
+
+### Officer fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | number | Officer ID |
+| `first_name` | string \| null | First name |
+| `middle_name` | string \| null | Middle name |
+| `last_name` | string \| null | Last name |
+| `email` | string \| null | Email address |
+| `ssn` | string \| null | Social security number (masked) |
+| `has_no_ssn` | boolean \| null | Whether the officer has no SSN |
+| `job_title` | string \| null | Job title |
+| `roles` | array \| null | Roles within the company |
+| `employment_start_date` | string \| null | Employment start date |
+| `date_of_birth` | string \| null | Date of birth |
+| `country_of_citizenship` | string \| null | Country of citizenship |
+| `home_address` | object \| null | Home address with `address_line_1`, `address_line_2`, `city`, `state`, `postal_code`, `country` |
+| `government_id` | object \| null | Government ID document with `id`, `file_name`, `file_url` |
+
+<RequestExample>
+```bash cURL
+curl --request GET \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/7c9e6679-7425-40de-944b-e07fc1f90ae7/form-data?corporation_id=550e8400-e29b-41d4-a716-446655440000' \
+  --header 'Authorization: Bearer <your_token>'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "registration_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "jurisdiction_id": "JUR_US_STATE_CA",
+  "jurisdiction_type": "STATE_OR_PROVINCE",
+  "jurisdiction_name": "California",
+  "sales_tax_registration_id": "st_reg_123",
+  "officer": {
+    "id": 42,
+    "first_name": "Jane",
+    "middle_name": null,
+    "last_name": "Doe",
+    "email": "jane.doe@example.com",
+    "ssn": null,
+    "has_no_ssn": false,
+    "job_title": "CFO",
+    "roles": ["DIRECTOR"],
+    "employment_start_date": "2020-01-15",
+    "date_of_birth": "1985-06-20",
+    "country_of_citizenship": "US",
+    "home_address": {
+      "address_line_1": "123 Main St",
+      "address_line_2": null,
+      "city": "San Francisco",
+      "state": "CA",
+      "postal_code": "94105",
+      "country": "US"
+    },
+    "government_id": null
+  },
+  "metadata": null
+}
+```
+
+```json 200 - No form data yet
+{
+  "registration_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "jurisdiction_id": null,
+  "jurisdiction_type": null,
+  "jurisdiction_name": null,
+  "sales_tax_registration_id": null,
+  "officer": null,
+  "metadata": null
+}
+```
+</ResponseExample>
+
+## Related
+
+- [Update Form Data](/engine/indirect-tax/registrations/v2/registrations-v2-id-form-data-POST) — Update form data for a registration
+- [Get Registration Tasks](/engine/indirect-tax/registrations/v2/registrations-v2-tasks-GET) — View pending tasks
+- [Get Registration](/engine/indirect-tax/registrations/v2/registrations-v2-id-GET) — View registration details

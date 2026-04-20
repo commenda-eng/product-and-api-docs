@@ -25,11 +25,9 @@ The V2 content system adds several capabilities over V1:
     Use [Available Jurisdictions](/engine/indirect-tax/registrations/v2/content/available-jurisdictions-POST) to find jurisdictions where you can register. Filter by country, state, or jurisdiction type.
     
     ```bash
-    curl --request POST \
-      --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/content/available-jurisdictions' \
-      --header 'Authorization: Bearer <your_token>' \
-      --header 'Content-Type: application/json' \
-      --data '{"filters": {"countries": ["US"], "types": ["STATE_OR_PROVINCE"]}}'
+    curl --request GET \
+      --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/content/jurisdictions?corporation_id=550e8400-e29b-41d4-a716-446655440000&countries=US&types=STATE_OR_PROVINCE' \
+      --header 'Authorization: Bearer <your_token>'
     ```
   </Step>
   <Step title="Get registration options">
@@ -88,7 +86,7 @@ The V2 content system adds several capabilities over V1:
 | Endpoint | Description |
 |----------|-------------|
 | [`GET /registrations/v2/content/supported-regions`](/engine/indirect-tax/registrations/v2/content/supported-regions-GET) | Get supported regions and their jurisdiction filters |
-| [`POST /registrations/v2/content/available-jurisdictions`](/engine/indirect-tax/registrations/v2/content/available-jurisdictions-POST) | Search for jurisdictions where you can register |
+| [`GET /registrations/v2/content/jurisdictions`](/engine/indirect-tax/registrations/v2/content/available-jurisdictions-POST) | Search for jurisdictions where you can register |
 | [`POST /registrations/v2/content/available-registrations`](/engine/indirect-tax/registrations/v2/content/available-registrations-POST) | Get registration options for jurisdictions |
 | [`POST /registrations/v2/content/registration-conditions`](/engine/indirect-tax/registrations/v2/content/registration-conditions-POST) | Get conditions for a registration type |
 | [`POST /registrations/v2/content/portal-fields`](/engine/indirect-tax/registrations/v2/content/portal-fields-POST) | Get portal credential requirements |

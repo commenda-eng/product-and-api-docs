@@ -1,0 +1,103 @@
+---
+title: "Update form data"
+api: "POST https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/{registration_id}/form-data"
+description: "Update the form data for a V2 registration"
+---
+
+Update the form data associated with a registration. Use this endpoint to provide additional information required during the registration process, such as tax account dates, officer details, and cross-border trade information.
+
+## Path parameters
+
+<ParamField path="registration_id" type="string" required>
+  The unique identifier (UUID) of the registration.
+</ParamField>
+
+## Request body
+
+<ParamField body="corporation_id" type="string" required>
+  The unique identifier for the corporation.
+</ParamField>
+
+<ParamField body="effective_start_date_of_tax_account" type="string">
+  ISO date (YYYY-MM-DD) when the tax account became effective with the authority.
+</ParamField>
+
+<ParamField body="first_year_taxable_sale" type="number">
+  The year of the first taxable sale in this jurisdiction.
+</ParamField>
+
+<ParamField body="officer_id" type="number">
+  The ID of the officer to associate with this registration.
+</ParamField>
+
+<ParamField body="intra_community_trade" type="boolean">
+  Whether the corporation engages in intra-community trade (EU registrations).
+</ParamField>
+
+<ParamField body="imports_or_exports_goods" type="boolean">
+  Whether the corporation imports or exports goods.
+</ParamField>
+
+<ParamField body="currency" type="string">
+  The ISO 4217 currency code for this registration (e.g., `"USD"`, `"EUR"`).
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl --request POST \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/7c9e6679-7425-40de-944b-e07fc1f90ae7/form-data' \
+  --header 'Authorization: Bearer <your_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+    "effective_start_date_of_tax_account": "2024-01-01",
+    "first_year_taxable_sale": 2023,
+    "officer_id": 42
+  }'
+```
+
+```json US registration
+{
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "effective_start_date_of_tax_account": "2024-01-01",
+  "first_year_taxable_sale": 2023,
+  "officer_id": 42
+}
+```
+
+```json EU registration
+{
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "effective_start_date_of_tax_account": "2024-01-01",
+  "officer_id": 42,
+  "intra_community_trade": true,
+  "imports_or_exports_goods": true,
+  "currency": "EUR"
+}
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "message": "Form data updated successfully."
+}
+```
+
+```json 404 - Not found
+{
+  "error": {
+    "type": "REGISTRATION_NOT_FOUND",
+    "title": "Registration not found.",
+    "status": 404,
+    "instance": "/api/v1/registrations/v2/7c9e6679-7425-40de-944b-e07fc1f90ae7/form-data"
+  }
+}
+```
+</ResponseExample>
+
+## Related
+
+- [Get Form Data](/engine/indirect-tax/registrations/v2/registrations-v2-id-form-data-GET) — View current form data
+- [Get Registration Tasks](/engine/indirect-tax/registrations/v2/registrations-v2-tasks-GET) — View pending tasks
+- [Get Registration](/engine/indirect-tax/registrations/v2/registrations-v2-id-GET) — View registration details

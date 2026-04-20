@@ -1,0 +1,66 @@
+---
+title: "Get registration tasks"
+api: "GET https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/tasks"
+description: "Retrieve all pending registration tasks for a corporation"
+---
+
+Retrieve all registration-related tasks for a corporation. Tasks represent action items in the registration workflow, such as providing additional information or reviewing submissions.
+
+## Query parameters
+
+<ParamField query="corporation_id" type="string" required>
+  The unique identifier for the corporation.
+</ParamField>
+
+## Response fields
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `tasks` | array | List of registration task objects |
+| `tasks[].id` | string | Unique identifier for the task |
+| `tasks[].task_id` | string | Task type identifier |
+| `tasks[].title` | string | Human-readable task title |
+| `tasks[].status` | string | Current task status |
+| `tasks[].assignee_type` | string | Who is responsible for the task |
+| `tasks[].registration_id` | string | The registration this task belongs to |
+| `tasks[].registration_name` | string | Human-readable name of the registration |
+| `tasks[].service_request_id` | string | Associated service request ID |
+
+<RequestExample>
+```bash cURL
+curl --request GET \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/tasks?corporation_id=550e8400-e29b-41d4-a716-446655440000' \
+  --header 'Authorization: Bearer <your_token>'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "tasks": [
+    {
+      "id": "task_abc123",
+      "task_id": "PROVIDE_REGISTRATION_DETAILS",
+      "title": "Provide registration details",
+      "status": "PENDING",
+      "assignee_type": "USER",
+      "registration_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "registration_name": "California — Sales and Use Tax",
+      "service_request_id": "sr_def456"
+    }
+  ]
+}
+```
+
+```json 200 - No tasks
+{
+  "tasks": []
+}
+```
+</ResponseExample>
+
+## Related
+
+- [Get Registration](/engine/indirect-tax/registrations/v2/registrations-v2-id-GET) — View registration details
+- [Get Form Data](/engine/indirect-tax/registrations/v2/registrations-v2-id-form-data-GET) — View form data for a registration task
+- [Tax Registrations V2 Overview](/engine/indirect-tax/registrations/v2/registrations-v2) — Registration workflow

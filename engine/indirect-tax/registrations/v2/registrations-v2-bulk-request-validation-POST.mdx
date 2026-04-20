@@ -1,0 +1,84 @@
+---
+title: "Bulk request validation"
+api: "POST https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/bulk/request-validation"
+description: "Request validation for multiple V2 registrations at once"
+---
+
+Submit multiple registrations for validation in a single request. Each registration is validated independently — if one fails, others may still succeed.
+
+## Request body
+
+<ParamField body="corporation_id" type="string" required>
+  The unique identifier for the corporation.
+</ParamField>
+
+<ParamField body="registration_ids" type="array" required>
+  Array of registration UUIDs to validate. Minimum 1 item.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl --request POST \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/bulk/request-validation' \
+  --header 'Authorization: Bearer <your_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+    "registration_ids": [
+      "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "8d9f7780-8536-51ef-a55c-c2851cbface8"
+    ]
+  }'
+```
+
+```json Request body
+{
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "registration_ids": [
+    "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+    "8d9f7780-8536-51ef-a55c-c2851cbface8"
+  ]
+}
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "results": [
+    {
+      "registration_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "success": true
+    },
+    {
+      "registration_id": "8d9f7780-8536-51ef-a55c-c2851cbface8",
+      "success": true
+    }
+  ],
+  "message": "Bulk validation request completed."
+}
+```
+
+```json 200 - Partial failure
+{
+  "results": [
+    {
+      "registration_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "success": true
+    },
+    {
+      "registration_id": "8d9f7780-8536-51ef-a55c-c2851cbface8",
+      "success": false,
+      "error": "Registration is missing required fields for validation."
+    }
+  ],
+  "message": "Bulk validation request completed."
+}
+```
+</ResponseExample>
+
+## Related
+
+- [Bulk Create Registrations](/engine/indirect-tax/registrations/v2/registrations-v2-bulk-POST) — Create multiple registrations at once
+- [Bulk Update Registration Status](/engine/indirect-tax/registrations/v2/registrations-v2-bulk-registration-status-POST) — Update status for multiple registrations
+- [Tax Registrations V2 Overview](/engine/indirect-tax/registrations/v2/registrations-v2) — Registration concepts and lifecycle

@@ -1,0 +1,92 @@
+---
+title: "Bulk update registration status"
+api: "POST https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/bulk/registration-status"
+description: "Update the registration status for multiple V2 registrations at once"
+---
+
+Update the `registration_status` for multiple registrations in a single request. Each registration is updated independently — if one fails, others may still succeed.
+
+## Request body
+
+<ParamField body="corporation_id" type="string" required>
+  The unique identifier for the corporation.
+</ParamField>
+
+<ParamField body="registration_ids" type="array" required>
+  Array of registration UUIDs to update. Minimum 1 item.
+</ParamField>
+
+<ParamField body="registration_status" type="string" required>
+  The new registration status to apply to all specified registrations.
+
+  Values: `PENDING`, `ACTIVE`
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl --request POST \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/bulk/registration-status' \
+  --header 'Authorization: Bearer <your_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+    "registration_ids": [
+      "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "8d9f7780-8536-51ef-a55c-c2851cbface8"
+    ],
+    "registration_status": "ACTIVE"
+  }'
+```
+
+```json Request body
+{
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "registration_ids": [
+    "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+    "8d9f7780-8536-51ef-a55c-c2851cbface8"
+  ],
+  "registration_status": "ACTIVE"
+}
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "results": [
+    {
+      "registration_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "success": true
+    },
+    {
+      "registration_id": "8d9f7780-8536-51ef-a55c-c2851cbface8",
+      "success": true
+    }
+  ],
+  "message": "Bulk status update completed."
+}
+```
+
+```json 200 - Partial failure
+{
+  "results": [
+    {
+      "registration_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "success": true
+    },
+    {
+      "registration_id": "8d9f7780-8536-51ef-a55c-c2851cbface8",
+      "success": false,
+      "error": "Registration not found."
+    }
+  ],
+  "message": "Bulk status update completed."
+}
+```
+</ResponseExample>
+
+## Related
+
+- [Bulk Create Registrations](/engine/indirect-tax/registrations/v2/registrations-v2-bulk-POST) — Create multiple registrations at once
+- [Bulk Request Validation](/engine/indirect-tax/registrations/v2/registrations-v2-bulk-request-validation-POST) — Request validation for multiple registrations
+- [Tax Registrations V2 Overview](/engine/indirect-tax/registrations/v2/registrations-v2) — Registration concepts and lifecycle

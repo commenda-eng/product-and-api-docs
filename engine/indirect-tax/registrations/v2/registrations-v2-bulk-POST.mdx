@@ -1,0 +1,146 @@
+---
+title: "Bulk create registrations"
+api: "POST https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/bulk"
+description: "Create multiple V2 tax registrations in a single request"
+---
+
+Create multiple registrations for a corporation in one request. Each registration in the array is validated and created independently — if one fails, others may still succeed.
+
+## Request body
+
+<ParamField body="corporation_id" type="string" required>
+  The unique identifier for the corporation.
+</ParamField>
+
+<ParamField body="registrations" type="array" required>
+  Array of registration objects to create. Minimum 1 item.
+
+  <Expandable title="Registration item fields">
+    <ParamField body="registrations[].registration_tax_type_id" type="string" required>
+      The content ID identifying the jurisdiction and tax type combination.
+    </ParamField>
+
+    <ParamField body="registrations[].tax_types" type="array" required>
+      Array of tax types to register for. Must be valid for the selected `registration_tax_type_id`. Minimum 1 item.
+    </ParamField>
+
+    <ParamField body="registrations[].frequencies" type="array" required>
+      Array of filing frequencies. Must match an allowed frequency combination. Minimum 1 item.
+    </ParamField>
+
+    <ParamField body="registrations[].effective_start_date" type="string">
+      ISO date (YYYY-MM-DD) when the registration became or becomes effective.
+    </ParamField>
+
+    <ParamField body="registrations[].registered_by" type="string">
+      Who is creating this registration. Values: `COMMENDA`, `API`, `USER`
+    </ParamField>
+
+    <ParamField body="registrations[].tax_registration_number" type="string">
+      Tax registration ID or permit number issued by the tax authority.
+    </ParamField>
+
+    <ParamField body="registrations[].credential_id" type="string">
+      Reference to stored portal credentials (UUID).
+    </ParamField>
+
+    <ParamField body="registrations[].member_state_registration_id" type="string">
+      UUID of an existing active domestic registration. Required for Union OSS registrations.
+    </ParamField>
+
+    <ParamField body="registrations[].registered_through_registration_tax_type_id" type="string">
+      Content ID of the member country to register through. Required for Non-Union OSS and IOSS registrations.
+    </ParamField>
+  </Expandable>
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl --request POST \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/bulk' \
+  --header 'Authorization: Bearer <your_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+    "registrations": [
+      {
+        "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+        "tax_types": ["RST", "DTT"],
+        "frequencies": ["QUARTERLY"],
+        "effective_start_date": "2024-01-01"
+      },
+      {
+        "registration_tax_type_id": "REG_STATE_CEN_48_RST",
+        "tax_types": ["RST"],
+        "frequencies": ["MONTHLY"],
+        "effective_start_date": "2024-01-01"
+      }
+    ]
+  }'
+```
+
+```json Two US states
+{
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "registrations": [
+    {
+      "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+      "tax_types": ["RST", "DTT"],
+      "frequencies": ["QUARTERLY"],
+      "effective_start_date": "2024-01-01"
+    },
+    {
+      "registration_tax_type_id": "REG_STATE_CEN_48_RST",
+      "tax_types": ["RST"],
+      "frequencies": ["MONTHLY"],
+      "effective_start_date": "2024-01-01"
+    }
+  ]
+}
+```
+</RequestExample>
+
+<ResponseExample>
+```json 201
+{
+  "registrations": [
+    {
+      "id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+      "status": "created"
+    },
+    {
+      "id": "8d9f7780-8536-51ef-a55c-c2851cbface8",
+      "registration_tax_type_id": "REG_STATE_CEN_48_RST",
+      "status": "created"
+    }
+  ],
+  "message": "Bulk registration completed."
+}
+```
+
+```json 201 - Partial success
+{
+  "registrations": [
+    {
+      "id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+      "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+      "status": "created"
+    },
+    {
+      "id": "",
+      "registration_tax_type_id": "REG_STATE_CEN_48_RST",
+      "status": "failed",
+      "error": "A registration already exists for this registration_tax_type_id and corporation."
+    }
+  ],
+  "message": "Bulk registration completed."
+}
+```
+</ResponseExample>
+
+## Related
+
+- [Create Registration](/engine/indirect-tax/registrations/v2/registrations-v2-POST) — Create a single registration
+- [Bulk Request Validation](/engine/indirect-tax/registrations/v2/registrations-v2-bulk-request-validation-POST) — Request validation for multiple registrations
+- [Tax Registrations V2 Overview](/engine/indirect-tax/registrations/v2/registrations-v2) — Registration concepts and lifecycle

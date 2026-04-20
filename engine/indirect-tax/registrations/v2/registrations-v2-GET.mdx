@@ -1,118 +1,86 @@
 ---
 title: "List Registrations"
-api: "POST https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/list"
+api: "GET https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2"
 description: "Retrieve all V2 registrations for a corporation with optional filters and pagination"
 ---
 
 List all V2 registrations for a corporation. Supports filtering by country, state, jurisdiction type, registration status, validation status, and jurisdiction name search. Results are cursor-paginated.
 
-<Note>
-  This endpoint uses POST (not GET) to support complex filtering via the request body.
-</Note>
+## Query parameters
 
-## Request body
-
-<ParamField body="corporation_id" type="string" required>
+<ParamField query="corporation_id" type="string" required>
   The unique identifier for the corporation whose registrations you want to retrieve.
 </ParamField>
 
-<ParamField body="countries" type="array">
+<ParamField query="countries" type="array">
   Filter by ISO 3166-1 alpha-2 country codes. Maximum 100 items.
   
-  Example: `["US", "DE"]`
+  Pass multiple values as comma-separated: `countries=US,DE`
 </ParamField>
 
-<ParamField body="states" type="array">
+<ParamField query="states" type="array">
   Filter by state or province codes. Maximum 100 items.
   
-  Example: `["CA", "NY", "TX"]`
+  Pass multiple values as comma-separated: `states=CA,NY,TX`
 </ParamField>
 
-<ParamField body="jurisdiction_types" type="array">
+<ParamField query="jurisdiction_types" type="array">
   Filter by jurisdiction type. Maximum 100 items.
   
   Values: `STATE_OR_PROVINCE`, `CITY`, `COUNTY`, `DISTRICT`, `LOCAL`, `COUNTRY`, `TERRITORY`, `TRADEBLOC`
 </ParamField>
 
-<ParamField body="jurisdiction_name" type="string">
+<ParamField query="jurisdiction_name" type="string">
   Search by jurisdiction name (partial match).
   
   Example: `"California"` or `"Germany"`
 </ParamField>
 
-<ParamField body="registration_status" type="string">
+<ParamField query="registration_status" type="string">
   Filter by registration status.
 </ParamField>
 
-<ParamField body="validation_status" type="string">
+<ParamField query="validation_status" type="string">
   Filter by validation status.
   
   Values: `PENDING`, `VALID`, `INVALID`
 </ParamField>
 
-<ParamField body="include_archived" type="boolean" default="false">
+<ParamField query="include_archived" type="boolean" default="false">
   Whether to include archived registrations in the results.
 </ParamField>
 
-<ParamField body="cursor" type="string">
+<ParamField query="cursor" type="string">
   Pagination cursor from a previous response. Leave empty for the first page.
 </ParamField>
 
-<ParamField body="limit" type="integer" default="10">
+<ParamField query="limit" type="integer" default="10">
   Maximum number of results to return (1–100).
 </ParamField>
 
 <RequestExample>
 ```bash cURL - All
-curl --request POST \
-  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/list' \
-  --header 'Authorization: Bearer <your_token>' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "corporation_id": "550e8400-e29b-41d4-a716-446655440000"
-  }'
+curl --request GET \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2?corporation_id=550e8400-e29b-41d4-a716-446655440000' \
+  --header 'Authorization: Bearer <your_token>'
 ```
 
 ```bash cURL - Filtered
-curl --request POST \
-  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/list' \
-  --header 'Authorization: Bearer <your_token>' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
-    "countries": ["US"],
-    "states": ["CA", "TX"],
-    "validation_status": "PENDING"
-  }'
+curl --request GET \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2?corporation_id=550e8400-e29b-41d4-a716-446655440000&countries=US&states=CA,TX&validation_status=PENDING' \
+  --header 'Authorization: Bearer <your_token>'
 ```
 
-```json All registrations
-{
-  "corporation_id": "550e8400-e29b-41d4-a716-446655440000"
-}
+```bash cURL - Include archived
+curl --request GET \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2?corporation_id=550e8400-e29b-41d4-a716-446655440000&include_archived=true' \
+  --header 'Authorization: Bearer <your_token>'
 ```
 
-```json By country and state
-{
-  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
-  "countries": ["US"],
-  "states": ["CA", "NY", "TX"]
-}
-```
-
-```json Include archived
-{
-  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
-  "include_archived": true
-}
-```
-
-```json With pagination
-{
-  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
-  "limit": 25,
-  "cursor": "encoded_cursor_string"
-}
+```bash cURL - With pagination
+curl --request GET \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2?corporation_id=550e8400-e29b-41d4-a716-446655440000&limit=25&cursor=encoded_cursor_string' \
+  --header 'Authorization: Bearer <your_token>'
 ```
 </RequestExample>
 
@@ -162,13 +130,13 @@ curl --request POST \
 
 ```json 400 - Missing corporation ID
 {
-  "message": "Failed to parse request body.",
+  "message": "Failed to parse request.",
   "error": {
-    "type": "CLIENT_INVALID_REQUEST_BODY",
-    "title": "Failed to validate the request body",
+    "type": "CLIENT_INVALID_REQUEST",
+    "title": "Failed to validate the request",
     "detail": "corporation_id is required",
     "status": 400,
-    "instance": "/api/v1/registrations/v2/list"
+    "instance": "/api/v1/registrations/v2"
   }
 }
 ```

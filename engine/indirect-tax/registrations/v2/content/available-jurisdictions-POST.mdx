@@ -1,103 +1,66 @@
 ---
-title: "List Available Jurisdictions"
-api: "POST https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/content/available-jurisdictions"
+title: "List available jurisdictions"
+api: "GET https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/content/jurisdictions"
 description: "Search for jurisdictions where you can create V2 tax registrations"
 ---
 
 Search for tax jurisdictions where V2 registrations are available. Returns jurisdictions that match your filters, with cursor-based pagination for large result sets.
 
-## Request body
+## Query parameters
 
-<ParamField body="filters" type="object">
-  Filter criteria for jurisdictions.
-  
-  <Expandable title="Filter options">
-    <ParamField body="filters.countries" type="array">
-      Filter by ISO 3166-1 alpha-2 country codes.
-      
-      Example: `["US", "DE"]`
-    </ParamField>
-    
-    <ParamField body="filters.states" type="array">
-      Filter by state or province codes.
-      
-      Example: `["CA", "NY", "TX"]`
-    </ParamField>
-    
-    <ParamField body="filters.types" type="array">
-      Filter by jurisdiction type.
-      
-      Values: `TRADEBLOC`, `COUNTRY`, `STATE_OR_PROVINCE`, `CITY`, `COUNTY`, `DISTRICT`, `LOCAL`, `TERRITORY`
-    </ParamField>
-  </Expandable>
+<ParamField query="corporation_id" type="string" required>
+  The unique identifier for the corporation.
 </ParamField>
 
-<ParamField body="search" type="string">
+<ParamField query="countries" type="array">
+  Filter by ISO 3166-1 alpha-2 country codes.
+  
+  Pass multiple values as comma-separated: `countries=US,DE`
+</ParamField>
+
+<ParamField query="states" type="array">
+  Filter by state or province codes.
+  
+  Pass multiple values as comma-separated: `states=CA,NY,TX`
+</ParamField>
+
+<ParamField query="types" type="array">
+  Filter by jurisdiction type.
+  
+  Values: `TRADEBLOC`, `COUNTRY`, `STATE_OR_PROVINCE`, `CITY`, `COUNTY`, `DISTRICT`, `LOCAL`, `TERRITORY`
+</ParamField>
+
+<ParamField query="search" type="string">
   Free-text search across jurisdiction names.
   
   Example: `"California"` or `"Germany"`
 </ParamField>
 
-<ParamField body="cursor" type="string">
+<ParamField query="cursor" type="string">
   Pagination cursor from a previous response. Leave empty for the first page.
 </ParamField>
 
-<ParamField body="limit" type="integer" default="10">
+<ParamField query="limit" type="integer" default="10">
   Maximum number of results to return (1–100).
 </ParamField>
 
 <RequestExample>
 ```bash cURL - US states
-curl --request POST \
-  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/content/available-jurisdictions' \
-  --header 'Authorization: Bearer <your_token>' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "filters": {
-      "countries": ["US"],
-      "types": ["STATE_OR_PROVINCE"]
-    },
-    "limit": 50
-  }'
+curl --request GET \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/content/jurisdictions?corporation_id=550e8400-e29b-41d4-a716-446655440000&countries=US&types=STATE_OR_PROVINCE&limit=50' \
+  --header 'Authorization: Bearer <your_token>'
 ```
 
 ```bash cURL - Search
-curl --request POST \
-  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/content/available-jurisdictions' \
-  --header 'Authorization: Bearer <your_token>' \
-  --header 'Content-Type: application/json' \
-  --data '{
-    "search": "Germany",
-    "limit": 10
-  }'
+curl --request GET \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/content/jurisdictions?corporation_id=550e8400-e29b-41d4-a716-446655440000&search=Germany&limit=10' \
+  --header 'Authorization: Bearer <your_token>'
 ```
 
-```json US states
-{
-  "filters": {
-    "countries": ["US"],
-    "types": ["STATE_OR_PROVINCE"]
-  },
-  "limit": 50
-}
-```
-
-```json EU countries
-{
-  "filters": {
-    "types": ["COUNTRY"],
-    "countries": ["DE", "FR", "IT", "ES"]
-  },
-  "limit": 20
-}
-```
-
-```json Trade blocs
-{
-  "filters": {
-    "types": ["TRADEBLOC"]
-  }
-}
+```bash cURL - Trade blocs
+curl --request GET \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/registrations/v2/content/jurisdictions?corporation_id=550e8400-e29b-41d4-a716-446655440000&types=TRADEBLOC' \
+  --header 'Authorization: Bearer <your_token>'
 ```
 </RequestExample>
 
@@ -129,13 +92,13 @@ curl --request POST \
 
 ```json 400 - Invalid request
 {
-  "message": "Failed to parse request body.",
+  "message": "Failed to parse request.",
   "error": {
-    "type": "CLIENT_INVALID_REQUEST_BODY",
-    "title": "Failed to validate the request body",
+    "type": "CLIENT_INVALID_REQUEST",
+    "title": "Failed to validate the request",
     "detail": "limit must be between 1 and 100",
     "status": 400,
-    "instance": "/api/v1/registrations/v2/content/available-jurisdictions"
+    "instance": "/api/v1/registrations/v2/content/jurisdictions"
   }
 }
 ```

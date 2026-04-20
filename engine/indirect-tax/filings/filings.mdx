@@ -1,0 +1,73 @@
+---
+title: "Filings"
+description: "Preview, generate, and manage tax filings for your registered jurisdictions."
+---
+
+## Overview
+
+The Filings API lets you preview upcoming tax filings, generate them for a jurisdiction, and manage their lifecycle. Filings represent individual tax returns that your business must submit to a tax authority for a specific period.
+
+Each filing includes:
+- **Tax period** — the date range the filing covers
+- **Reporting period** — the date range used for reporting (may differ from the tax period)
+- **Due date** — when the return must be filed
+- **Frequency** — how often filings occur (monthly, quarterly, annually, etc.)
+- **Status** — the current state of the filing (`SCHEDULED`, `UPCOMING`, `OVERDUE`, `FILED`, etc.)
+
+## V2 filings
+
+V2 filings work with [V2 registrations](/engine/indirect-tax/registrations/v2/registrations-v2) and use `registration_tax_type_id` to identify the jurisdiction and tax type. This replaces the V1 approach of identifying filings by country and state code.
+
+V2 filings support:
+- **International jurisdictions** — EU member states, UK, Canada, and trade bloc schemes (Union OSS, Non-Union OSS, IOSS)
+- **Composite frequencies** — registrations with multiple filing obligations (e.g., quarterly returns plus annual reconciliation)
+- **Content-driven calendars** — filing dates and periods are determined by a centralized filing calendar
+
+<Info>
+  To use V2 filings, you must first create a [V2 registration](/engine/indirect-tax/registrations/v2/registrations-v2-POST) for the jurisdiction. The `registration_tax_type_id` from that registration is used to identify filings.
+</Info>
+
+## Filing workflow
+
+<Steps>
+  <Step title="Preview filings">
+    Use the [preview endpoint](/engine/indirect-tax/filings/filings-preview-POST) to see what filings would be generated for a registration and time period. This is a read-only operation — no filings are created.
+  </Step>
+  <Step title="Generate filings">
+    Use the [bulk create endpoint](/engine/indirect-tax/filings/filings-bulk-create-POST) to generate the filings. The system creates filing records based on the filing calendar content for your registration.
+  </Step>
+  <Step title="Track and manage">
+    Use the [list endpoint](/engine/indirect-tax/filings/filings-GET-ONE) to view filings and their statuses. Update filings with tax amounts, confirmation numbers, and status changes as you prepare and submit returns.
+  </Step>
+  <Step title="Delete if needed">
+    Use the [bulk delete endpoint](/engine/indirect-tax/filings/filings-bulk-delete-DELETE) to remove filings that are no longer needed. Filed returns cannot be deleted.
+  </Step>
+</Steps>
+
+## Filing response fields
+
+V2 filings include additional fields compared to V1:
+
+| Field | Description |
+|---|---|
+| `registration_tax_type_id` | The V2 content ID linking the filing to a registration |
+| `jurisdiction_name` | Human-readable jurisdiction name (e.g., "California", "Germany") |
+| `jurisdiction_type` | Type of jurisdiction (e.g., `STATE_OR_PROVINCE`, `COUNTRY`, `TRADEBLOC`) |
+| `form_title` | The display name of the filing form |
+| `description` | Additional description for the filing |
+| `reporting_period_start_date` | Start of the reporting period |
+| `reporting_period_end_date` | End of the reporting period |
+
+## Managed filing
+
+When you enable `managed_filing_enabled` on a [V2 registration](/engine/indirect-tax/registrations/v2/registrations-v2-POST), Commenda handles the filing process for that jurisdiction on your behalf. You can toggle this setting when creating or updating a registration.
+
+## API endpoints
+
+| Endpoint | Method | Description |
+|---|---|---|
+| [`/internal/filings/preview`](/engine/indirect-tax/filings/filings-preview-POST) | POST | Preview proposed filings for a registration |
+| [`/internal/filings/bulk/create`](/engine/indirect-tax/filings/filings-bulk-create-POST) | POST | Generate filings for a registration |
+| [`/internal/filings/bulk/delete`](/engine/indirect-tax/filings/filings-bulk-delete-DELETE) | DELETE | Delete filings by registration or filing IDs |
+| [`/filings/{id}`](/engine/indirect-tax/filings/filings-GET-ONE) | GET | Get a single filing |
+| [`/filings/{id}/contributions`](/engine/indirect-tax/filings/filings-contributions-GET) | GET | List filing contributions |

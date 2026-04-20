@@ -1,0 +1,115 @@
+---
+title: "Bulk delete filings"
+api: "DELETE https://transaction-tax.api.in.commenda.io/api/v1/internal/filings/bulk/delete"
+description: "Delete filings by registration, status filters, or explicit filing IDs"
+---
+
+Delete filings that are no longer needed. This endpoint supports three input modes:
+
+- **By filing IDs** — pass an array of specific filing UUIDs to delete
+- **V2 filter** — pass `registration_tax_type_id` with `statuses` and optional `due_after` to delete matching filings
+- **V1 filter** — pass `corporation_id` and `state` for legacy filings
+
+<Warning>
+  Filings with status `FILED` cannot be deleted. Include only non-filed statuses in the `statuses` filter.
+</Warning>
+
+## Request body
+
+### Option 1: delete by filing IDs
+
+<ParamField body="filing_ids" type="array">
+  Array of filing UUIDs to delete. Maximum 100 items.
+
+  Example: `["a1b2c3d4-...", "e5f6a7b8-..."]`
+</ParamField>
+
+### Option 2: V2 filter by registration
+
+<ParamField body="registration_tax_type_id" type="string">
+  The V2 registration content ID. Deletes all filings matching the filters for this registration.
+</ParamField>
+
+<ParamField body="statuses" type="array">
+  Required when using `registration_tax_type_id`. Only filings in these statuses are deleted. `FILED` is not allowed.
+
+  Example: `["SCHEDULED", "UPCOMING"]`
+</ParamField>
+
+<ParamField body="due_after" type="string">
+  Optional date filter. Only filings with a due date after this date are deleted. Format: `YYYY-MM-DD`.
+
+  Example: `"2025-06-01"`
+</ParamField>
+
+### Option 3: V1 filter by state
+
+<ParamField body="corporation_id" type="string">
+  The corporation UUID. Required for V1 filter mode.
+</ParamField>
+
+<ParamField body="state" type="string">
+  State code. Required for V1 filter mode.
+</ParamField>
+
+<RequestExample>
+```bash cURL - By filing IDs
+curl --request DELETE \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/internal/filings/bulk/delete' \
+  --header 'Authorization: Bearer <admin_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "filing_ids": [
+      "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+    ]
+  }'
+```
+
+```bash cURL - V2 filter
+curl --request DELETE \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/internal/filings/bulk/delete' \
+  --header 'Authorization: Bearer <admin_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+    "statuses": ["SCHEDULED", "UPCOMING"],
+    "due_after": "2025-06-01"
+  }'
+```
+
+```json By filing IDs
+{
+  "filing_ids": [
+    "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+  ]
+}
+```
+
+```json V2 filter
+{
+  "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+  "statuses": ["SCHEDULED", "UPCOMING"],
+  "due_after": "2025-06-01"
+}
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "deleted_ids": [
+    "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+    "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+  ],
+  "total_deleted": 2
+}
+```
+</ResponseExample>
+
+## Related
+
+- [Bulk create filings](/engine/indirect-tax/filings/filings-bulk-create-POST) — Generate filings
+- [Preview filings](/engine/indirect-tax/filings/filings-preview-POST) — Preview before generating
+- [Filings overview](/engine/indirect-tax/filings/filings) — Filing concepts and lifecycle

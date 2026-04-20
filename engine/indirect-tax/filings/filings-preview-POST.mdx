@@ -1,0 +1,137 @@
+---
+title: "Preview filings"
+api: "POST https://transaction-tax.api.in.commenda.io/api/v1/internal/filings/preview"
+description: "Preview proposed filings for a registration before generating them"
+---
+
+Preview the filings that would be generated for a given registration and time period. This is a read-only operation — no filings are created. Use this to verify the filing schedule before committing.
+
+The preview endpoint supports two input modes:
+- **V2** — pass `registration_tax_type_id` to preview filings for a V2 registration
+- **V1** — pass `country`, `state`, and `filing_frequency` for legacy registrations
+
+## Request body
+
+<ParamField body="corporation_id" type="string" required>
+  The corporation UUID.
+</ParamField>
+
+<ParamField body="registration_tax_type_id" type="string">
+  The V2 registration content ID. When provided, the V2 filing calendar is used.
+
+  Example: `"REG_STATE_CEN_06_RST"`
+</ParamField>
+
+<ParamField body="tax_period_start_month" type="string" required>
+  The start of the tax period range in `YYYY-MM` format.
+
+  Example: `"2025-01"`
+</ParamField>
+
+<ParamField body="tax_period_end_month" type="string">
+  The end of the tax period range in `YYYY-MM` format. If omitted, only filings for the start month are returned.
+
+  Example: `"2025-12"`
+</ParamField>
+
+<ParamField body="country" type="string">
+  ISO country code. Required for V1 filings when `registration_tax_type_id` is not provided.
+</ParamField>
+
+<ParamField body="state" type="string">
+  State or province code. Required for V1 filings when `registration_tax_type_id` is not provided.
+</ParamField>
+
+<ParamField body="filing_frequency" type="string">
+  Filing frequency. Required for V1 filings when `registration_tax_type_id` is not provided.
+</ParamField>
+
+## How V2 preview works
+
+When you provide a `registration_tax_type_id`, the system:
+
+1. Validates that the registration belongs to the specified corporation
+2. Looks up all filing calendar entries for that `registration_tax_type_id`
+3. Filters entries to those whose tax period falls within the requested date range
+4. Expands composite frequencies — if a registration has multiple frequencies (e.g., `QUARTERLY` and `ANNUAL_RECONCILIATION`), all matching entries are included
+5. Returns the proposed filings with dates, frequencies, and form titles
+
+<RequestExample>
+```bash cURL - V2 preview
+curl --request POST \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/internal/filings/preview' \
+  --header 'Authorization: Bearer <admin_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+    "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+    "tax_period_start_month": "2025-01",
+    "tax_period_end_month": "2025-06"
+  }'
+```
+
+```json V2 preview
+{
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+  "tax_period_start_month": "2025-01",
+  "tax_period_end_month": "2025-06"
+}
+```
+
+```json V1 preview (legacy)
+{
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "country": "US",
+  "state": "CA",
+  "filing_frequency": "QUARTERLY",
+  "tax_period_start_month": "2025-01",
+  "tax_period_end_month": "2025-12"
+}
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "proposed_filings": [
+    {
+      "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+      "jurisdiction_name": "California",
+      "jurisdiction_type": "STATE_OR_PROVINCE",
+      "form_title": "Sales and Use Tax Return",
+      "filing_frequency": "QUARTERLY",
+      "tax_period_start_date": "2025-01-01",
+      "tax_period_end_date": "2025-03-31",
+      "reporting_period_start_date": "2025-01-01",
+      "reporting_period_end_date": "2025-03-31",
+      "filing_due_date": "2025-04-30",
+      "due_date": "2025-04-30",
+      "status": "SCHEDULED"
+    },
+    {
+      "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+      "jurisdiction_name": "California",
+      "jurisdiction_type": "STATE_OR_PROVINCE",
+      "form_title": "Sales and Use Tax Return",
+      "filing_frequency": "QUARTERLY",
+      "tax_period_start_date": "2025-04-01",
+      "tax_period_end_date": "2025-06-30",
+      "reporting_period_start_date": "2025-04-01",
+      "reporting_period_end_date": "2025-06-30",
+      "filing_due_date": "2025-07-31",
+      "due_date": "2025-07-31",
+      "status": "SCHEDULED"
+    }
+  ]
+}
+```
+</ResponseExample>
+
+## Related
+
+- [Bulk create filings](/engine/indirect-tax/filings/filings-bulk-create-POST) — Generate the previewed filings
+- [Filings overview](/engine/indirect-tax/filings/filings) — Filing concepts and lifecycle
+- [V2 registrations](/engine/indirect-tax/registrations/v2/registrations-v2) — Create registrations to enable filings

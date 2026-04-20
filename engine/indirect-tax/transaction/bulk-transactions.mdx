@@ -66,6 +66,7 @@ Files must be uploaded in CSV format, with the headers specified in our bulk upl
 | ship_to_state_code | false | ISO-3166-2 jurisdiction string valid in the destination country | Address to which the product is shipped or where the service is delivered. |
 | ship_to_zip | false | string (Valid postal code in destination country) | Address to which the product is shipped or where the service is delivered. |
 | ship_to_country_code | true | ISO-3166 Country String | Address to which the product is shipped or where the service is delivered. |
+| customer_business_identification_number | false | string | The customer's tax or business registration number (e.g., VAT ID, EIN, GST number). Automatically populated when syncing from integrations that provide this data. |
 | marketplace | false | string | Marketplace name if the transaction is from a marketplace. |
 | tax_remitter_type | false | [Tax Remitter Type](#tax-remitter-type) | Indicates which party is responsible for remitting tax on the transaction. |
 | metadata | false | string (JSON) | Additional metadata for the transaction in JSON format. |

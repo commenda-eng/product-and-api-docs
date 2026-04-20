@@ -951,6 +951,26 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/Error"
+"/registrations/content/supported-regions":
+  get:
+    summary: Get supported regions
+    description: Returns the list of supported regions and their jurisdiction filter sets. Use this to determine which regions are available for registration.
+    operationId: getSupportedRegions
+    tags:
+      - Registration Content
+    responses:
+      '200':
+        description: Supported regions retrieved successfully
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  "$ref": "../components/registrations.yaml#/schemas/SupportedRegionsResponse"
+                message:
+                  type: string
+                  example: Successfully fetched supported regions.
 "/calculate":
   post:
     summary: Calculate sales tax for a transaction

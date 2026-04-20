@@ -235,7 +235,8 @@
                   "engine/indirect-tax/registrations/v2/content/available-registrations-POST",
                   "engine/indirect-tax/registrations/v2/content/registration-conditions-POST",
                   "engine/indirect-tax/registrations/v2/content/portal-fields-POST",
-                  "engine/indirect-tax/registrations/v2/content/tax-type-details-POST"
+                  "engine/indirect-tax/registrations/v2/content/tax-type-details-POST",
+                  "engine/indirect-tax/registrations/v2/content/supported-regions-GET"
                 ]
               }
             ]

@@ -136,6 +136,9 @@ schemas:
         portal_id:
           type: string
           description: Portal ID for the state's tax filing portal.
+        managed_filing_enabled:
+          type: boolean
+          description: Whether managed filing is enabled for this registration.
 
     CloseRegistrationRequest:
       type: object
@@ -206,6 +209,9 @@ schemas:
         credential_id:
           type: string
           description: Reference to stored portal credentials.
+        managed_filing_enabled:
+          type: boolean
+          description: Whether managed filing is enabled for this registration.
         registration_status:
           $ref: '#/schemas/registration_status'
         validation_status:
@@ -452,6 +458,55 @@ schemas:
                             type: string
                           display_order:
                             type: integer
+                          helper_text:
+                            type: string
+                            description: Instructional text to display alongside the field in a UI.
+
+    # Supported Regions
+    SupportedRegionsResponse:
+      type: object
+      properties:
+        regions:
+          type: array
+          items:
+            $ref: '#/schemas/SupportedRegion'
+
+    SupportedRegion:
+      type: object
+      properties:
+        region_id:
+          type: string
+          description: Short identifier for the region.
+          example: "US"
+        region_name:
+          type: string
+          description: Human-readable name of the region.
+          example: "United States"
+        jurisdiction_filter_sets:
+          type: array
+          description: Filter sets that define which jurisdictions belong to this region.
+          items:
+            $ref: '#/schemas/JurisdictionFilterSet'
+
+    JurisdictionFilterSet:
+      type: object
+      properties:
+        countries:
+          type: array
+          items:
+            type: string
+          description: ISO 3166-1 alpha-2 country codes.
+          example: ["US"]
+        states:
+          type: array
+          items:
+            type: string
+          description: State or province codes.
+        types:
+          type: array
+          items:
+            type: string
+          description: Jurisdiction types (e.g., COUNTRY, TRADEBLOC).
 
     # Legacy schemas for backwards compatibility
     RegistrationGet:

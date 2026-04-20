@@ -89,6 +89,16 @@ Use the [Registration Conditions](/engine/indirect-tax/registrations/v2/content/
 
 You can enable Commenda-managed filing on a registration by setting `managed_filing_enabled` to `true` when creating or updating it. When managed filing is enabled, Commenda handles the filing process on your behalf for that jurisdiction.
 
+### Filing management
+
+V2 registrations integrate with the [Filings API](/engine/indirect-tax/filings/filings) to let you preview, generate, and manage tax filings. Use your `registration_tax_type_id` to:
+
+- **[Preview filings](/engine/indirect-tax/filings/filings-preview-POST)** — see what filings would be generated for a time period
+- **[Generate filings](/engine/indirect-tax/filings/filings-bulk-create-POST)** — create filing records from the filing calendar
+- **[Delete filings](/engine/indirect-tax/filings/filings-bulk-delete-DELETE)** — remove filings that are no longer needed
+
+Registrations with composite frequencies (e.g., `QUARTERLY` plus `ANNUAL_RECONCILIATION`) automatically generate filings for all applicable frequencies.
+
 ### Supported regions
 
 Use the [Supported Regions](/engine/indirect-tax/registrations/v2/content/supported-regions-GET) endpoint to retrieve the list of regions available for tax registration (US, EU, Canada, UK). Each region includes jurisdiction filter sets that you can pass directly to the Available Jurisdictions endpoint.

@@ -1,0 +1,125 @@
+---
+title: "Bulk create filings"
+api: "POST https://transaction-tax.api.in.commenda.io/api/v1/internal/filings/bulk/create"
+description: "Generate filings for a registration based on the filing calendar"
+---
+
+Generate filing records for a registration and time period. The system creates filings based on the filing calendar content, with dates, frequencies, and form titles determined by the registration's content configuration.
+
+This endpoint supports two input modes:
+- **V2** — pass `registration_tax_type_id` to generate filings for a V2 registration
+- **V1** — pass `country`, `state`, and `filing_frequency` for legacy registrations
+
+<Note>
+  Use the [preview endpoint](/engine/indirect-tax/filings/filings-preview-POST) first to verify which filings will be created before calling this endpoint.
+</Note>
+
+## Request body
+
+<ParamField body="corporation_id" type="string" required>
+  The corporation UUID.
+</ParamField>
+
+<ParamField body="registration_tax_type_id" type="string">
+  The V2 registration content ID. When provided, the V2 filing path is used.
+
+  Example: `"REG_STATE_CEN_06_RST"`
+</ParamField>
+
+<ParamField body="tax_period_start_month" type="string" required>
+  The start of the tax period range in `YYYY-MM` format.
+
+  Example: `"2025-01"`
+</ParamField>
+
+<ParamField body="tax_period_end_month" type="string">
+  The end of the tax period range in `YYYY-MM` format. If omitted, only filings for the start month are generated.
+
+  Example: `"2025-12"`
+</ParamField>
+
+<ParamField body="country" type="string">
+  ISO country code. Required for V1 filings when `registration_tax_type_id` is not provided.
+</ParamField>
+
+<ParamField body="state" type="string">
+  State or province code. Required for V1 filings when `registration_tax_type_id` is not provided.
+</ParamField>
+
+<ParamField body="filing_frequency" type="string">
+  Filing frequency. Required for V1 filings when `registration_tax_type_id` is not provided.
+</ParamField>
+
+## Behavior
+
+- **Duplicate protection** — if a filing already exists for the same registration, frequency, and period, it is not recreated. Existing filings that are not in `SCHEDULED` status are preserved.
+- **Composite frequencies** — if a registration has multiple frequencies (e.g., `QUARTERLY` and `ANNUAL_RECONCILIATION`), filings are generated for all matching calendar entries.
+- **Ownership validation** — the system verifies that the `registration_tax_type_id` belongs to the specified corporation.
+
+<RequestExample>
+```bash cURL - V2
+curl --request POST \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/internal/filings/bulk/create' \
+  --header 'Authorization: Bearer <admin_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+    "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+    "tax_period_start_month": "2025-01",
+    "tax_period_end_month": "2025-12"
+  }'
+```
+
+```json V2 create
+{
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+  "tax_period_start_month": "2025-01",
+  "tax_period_end_month": "2025-12"
+}
+```
+
+```json V1 create (legacy)
+{
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "country": "US",
+  "state": "CA",
+  "filing_frequency": "QUARTERLY",
+  "tax_period_start_month": "2025-01",
+  "tax_period_end_month": "2025-12"
+}
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "created_filings": [
+    {
+      "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+      "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+      "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+      "jurisdiction_name": "California",
+      "jurisdiction_type": "STATE_OR_PROVINCE",
+      "form_title": "Sales and Use Tax Return",
+      "filing_frequency": "QUARTERLY",
+      "tax_period_start_date": "2025-01-01",
+      "tax_period_end_date": "2025-03-31",
+      "reporting_period_start_date": "2025-01-01",
+      "reporting_period_end_date": "2025-03-31",
+      "filing_due_date": "2025-04-30",
+      "due_date": "2025-04-30",
+      "status": "SCHEDULED",
+      "created_at": 1706700000
+    }
+  ],
+  "total_created": 4
+}
+```
+</ResponseExample>
+
+## Related
+
+- [Preview filings](/engine/indirect-tax/filings/filings-preview-POST) — Preview before generating
+- [Bulk delete filings](/engine/indirect-tax/filings/filings-bulk-delete-DELETE) — Remove generated filings
+- [Filings overview](/engine/indirect-tax/filings/filings) — Filing concepts and lifecycle

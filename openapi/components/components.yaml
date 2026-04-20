@@ -346,15 +346,35 @@ components:
       - QUARTERLY
       - ANNUALLY
       - SEMI_ANNUALLY
-      description: Filing frequency refers to how often a business is required to submit
-        its sales tax returns, which is typically determined by the state based on the
-        business's sales volume and tax liability.
+      - ANNUAL_CALENDAR_YEAR
+      - FISCAL_YEAR
+      - MONTHLY_ACCELERATED_PREPAY_EARLY
+      - QUARTERLY_PREPAY_MONTHLY
+      - ANNUAL_RECONCILIATION
+      - BI_MONTHLY
+      - TRI_ANNUALLY
+      - QUARTERLY_FEB
+      - QUARTERLY_MAR
+      description: >-
+        How often the business is required to submit tax returns.
+        V1 registrations typically use MONTHLY, QUARTERLY, ANNUALLY, or SEMI_ANNUALLY.
+        V2 registrations may use additional frequencies such as ANNUAL_RECONCILIATION
+        (for jurisdictions requiring a separate annual reconciliation filing alongside
+        periodic returns) or region-specific variants like QUARTERLY_FEB and QUARTERLY_MAR.
     Tax_filing_status:
       type: string
       enum:
-      - PENDING
+      - SCHEDULED
+      - ACCRUING
+      - ACTIVE
       - FILED
-      description: Current status of the filing.
+      - OVERDUE
+      description: >-
+        Current status of the filing. SCHEDULED means the filing has been created
+        but the tax period has not yet started. ACCRUING means transactions are being
+        collected for this period. ACTIVE means the filing is ready for review and
+        submission. FILED means the return has been submitted. OVERDUE means the
+        due date has passed without filing.
     FilingsForGetAll:
       type: object
       properties:
@@ -365,10 +385,40 @@ components:
           type: string
           description: The unique identifier for a corporation associated with this
             filing.
+        form_title:
+          type: string
+          description: Name of the tax return form for this filing (e.g., "Sales and Use Tax Return").
+        description:
+          type: string
+          description: Additional details about the filing, such as filing variant or deadline type.
         country:
           "$ref": "#/components/schemas/Country"
         country_specific_details:
           "$ref": "./registrations.yaml#/schemas/CountrySpecificDetails"
+        registration_tax_type_id:
+          type: string
+          nullable: true
+          description: >-
+            The V2 registration content identifier linking this filing to a specific
+            registration tax type. Present for filings created via the V2 path; null
+            for V1 filings.
+          example: "REG_STATE_CEN_06_RST"
+        jurisdiction_name:
+          type: string
+          nullable: true
+          description: >-
+            Human-readable jurisdiction name derived from V2 registration content
+            (e.g., "California", "Germany"). Present for V2 filings; null for V1 filings.
+        jurisdiction_type:
+          type: string
+          nullable: true
+          description: >-
+            Type of jurisdiction for this filing. Present for V2 filings; null for V1 filings.
+          enum:
+            - STATE_OR_PROVINCE
+            - COUNTRY
+            - TRADEBLOC
+            - CITY_OR_COUNTY
         frequency:
           "$ref": "#/components/schemas/filing_frequency"
         period_start_date:
@@ -378,6 +428,17 @@ components:
             period for which the sales tax is being filed (e.g., '2024-09-01' for September
             2024). For a quarter 1 filing where the fiscal year starts in March, the
             period_start_date will be 2024-03-01 and frequency will be QUARTERLY.
+        reporting_period_start_date:
+          type: string
+          format: date
+          description: >-
+            Start date of the reporting period, which may differ from the tax period.
+            For example, a quarterly filing may have a tax period of Jan–Mar but a
+            reporting deadline that references a different window.
+        reporting_period_end_date:
+          type: string
+          format: date
+          description: End date of the reporting period.
         due_date:
           type: string
           format: date
@@ -434,10 +495,40 @@ components:
           type: string
           description: The unique identifier for a corporation associated with this
             filing.
+        form_title:
+          type: string
+          description: Name of the tax return form for this filing (e.g., "Sales and Use Tax Return").
+        description:
+          type: string
+          description: Additional details about the filing, such as filing variant or deadline type.
         country:
           "$ref": "#/components/schemas/Country"
         country_specific_details:
           "$ref": "./registrations.yaml#/schemas/CountrySpecificDetails"
+        registration_tax_type_id:
+          type: string
+          nullable: true
+          description: >-
+            The V2 registration content identifier linking this filing to a specific
+            registration tax type. Present for filings created via the V2 path; null
+            for V1 filings.
+          example: "REG_STATE_CEN_06_RST"
+        jurisdiction_name:
+          type: string
+          nullable: true
+          description: >-
+            Human-readable jurisdiction name derived from V2 registration content
+            (e.g., "California", "Germany"). Present for V2 filings; null for V1 filings.
+        jurisdiction_type:
+          type: string
+          nullable: true
+          description: >-
+            Type of jurisdiction for this filing. Present for V2 filings; null for V1 filings.
+          enum:
+            - STATE_OR_PROVINCE
+            - COUNTRY
+            - TRADEBLOC
+            - CITY_OR_COUNTY
         frequency:
           "$ref": "#/components/schemas/filing_frequency"
         period_start_date:
@@ -447,6 +538,15 @@ components:
             period for which the sales tax is being filed (e.g., '2024-09-01' for September
             2024). For a quarter 1 filing where the fiscal year starts in March, the
             period_start_date will be 2024-03-01 and frequency will be QUARTERLY.
+        reporting_period_start_date:
+          type: string
+          format: date
+          description: >-
+            Start date of the reporting period, which may differ from the tax period.
+        reporting_period_end_date:
+          type: string
+          format: date
+          description: End date of the reporting period.
         due_date:
           type: string
           format: date

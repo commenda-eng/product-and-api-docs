@@ -6,7 +6,9 @@ icon: 'building-columns'
 
 ## Overview
 
-Use bank accounts to manage financial institution information for your business entities. Bank accounts store account details, routing information, and account types for corporations and other legal entities.
+Use bank accounts to manage financial institution information for your business entities. Bank accounts store account details, routing information, and country-specific credentials for corporations and other legal entities.
+
+Bank accounts support a global, content-based model where the required fields adapt to the country where the account is held. A fields configuration endpoint lets you retrieve the exact field requirements for each country at runtime, so your integration can dynamically render the correct form.
 
 ## Prerequisites
 
@@ -14,8 +16,75 @@ Before adding a bank account, ensure you have:
 
 - A business entity created in CommendaOS
 - The business entity ID
-- Bank account details (account number, routing number, bank name)
+- Bank account details (account number, routing number or equivalent, bank name)
 - Account type information (checking, savings, etc.)
+- The country where the bank account is held (ISO 3166-1 alpha-2 code)
+
+## Retrieve country-specific field requirements
+
+Before creating a bank account, call the fields configuration endpoint to discover which credential fields are required or optional for the target country.
+
+```http
+GET /bank-accounts/fields-config
+```
+
+The response contains:
+
+- **`field_definitions`** — all supported bank account fields, their types, labels, and validation rules.
+- **`countries`** — a mapping of ISO country codes to the required and optional credential fields for that country, along with any country-specific validation overrides.
+
+Use this data to render the correct form fields based on the selected country. Fields marked with `required_globally: true` in the definitions (such as `accountHolderName`, `country`, `currency`, and `bankName`) apply to every country. All other fields are country-specific credentials.
+
+**Example response (partial)**
+
+```json
+{
+  "field_definitions": {
+    "accountHolderName": {
+      "label": "Account Holder Name",
+      "type": "string",
+      "required_globally": true,
+      "description": "Full legal name of the account holder"
+    },
+    "routingNumber": {
+      "label": "Routing Number (ABA)",
+      "type": "string",
+      "validation": { "pattern": "^[0-9]{9}$", "length": 9 },
+      "description": "US ABA routing transit number"
+    },
+    "ifscCode": {
+      "label": "IFSC Code",
+      "type": "string",
+      "validation": { "pattern": "^[A-Z]{4}0[A-Z0-9]{6}$", "length": 11 },
+      "description": "Indian Financial System Code"
+    }
+  },
+  "countries": {
+    "US": {
+      "name": "United States",
+      "primary_currency": "USD",
+      "required_fields": ["routingNumber", "accountNumber"],
+      "optional_fields": ["accountType"]
+    },
+    "IN": {
+      "name": "India",
+      "primary_currency": "INR",
+      "required_fields": ["ifscCode", "accountNumber"],
+      "optional_fields": []
+    },
+    "GB": {
+      "name": "United Kingdom",
+      "primary_currency": "GBP",
+      "required_fields": ["sortCode", "accountNumber"],
+      "optional_fields": []
+    }
+  }
+}
+```
+
+<Tip>
+Cache the fields configuration on the client side and refresh it periodically. The configuration rarely changes but may be updated when new countries are added.
+</Tip>
 
 ## Add a bank account
 
@@ -23,14 +92,14 @@ To add a new bank account to a corporation:
 
 ### Step 1: Gather required information
 
-Collect the following details:
+Collect the following base fields (required for all countries):
 
-- **Bank name**: Full legal name of the financial institution
-- **Account number**: Full bank account number
-- **Routing number**: Bank routing/transit number (US) or equivalent
-- **Account type**: Checking, savings, or other account type
-- **Account holder name**: Legal name on the account (should match business entity)
-- **Currency**: Account currency (USD, EUR, etc.)
+- **Bank name** — full legal name of the financial institution
+- **Account holder name** — legal name on the account (should match business entity)
+- **Country** — ISO 3166-1 alpha-2 code (e.g., `US`, `IN`, `GB`)
+- **Currency** — ISO 4217 currency code (e.g., `USD`, `INR`, `GBP`)
+
+Then collect the country-specific credential fields. Use the [fields configuration endpoint](#retrieve-country-specific-field-requirements) to determine which fields are required for the target country.
 
 ### Step 2: Create the bank account
 
@@ -46,30 +115,60 @@ POST /business-entity/:businessEntityId/bank-accounts
 
 **Request body**
 
+Pass country-specific routing and account details inside the `credentials` object. The example below creates a US checking account:
+
 ```json
 {
   "bankName": "First National Bank",
-  "accountNumber": "123456789",
-  "routingNumber": "021000021",
-  "accountType": "CHECKING",
   "accountHolderName": "Acme Corporation",
+  "country": "US",
   "currency": "USD",
+  "accountNumber": "123456789",
+  "credentials": {
+    "routingNumber": "021000021",
+    "accountType": "checking"
+  },
   "isPrimary": true
 }
 ```
+
+For an Indian bank account, the `credentials` object uses different fields:
+
+```json
+{
+  "bankName": "State Bank of India",
+  "accountHolderName": "Acme India Pvt Ltd",
+  "country": "IN",
+  "currency": "INR",
+  "accountNumber": "123456789012",
+  "credentials": {
+    "ifscCode": "SBIN0001234"
+  }
+}
+```
+
+<Info>
+When `credentials.accountType` is set to `checking` or `savings`, the bank account type is automatically mapped to the corresponding account type.
+</Info>
 
 **Response**
 
 ```json
 {
-  "id": 456,
+  "id": "ba_abc123",
   "businessEntityId": 123,
   "bankName": "First National Bank",
+  "accountHolderName": "Acme Corporation",
+  "country": "US",
+  "currency": "USD",
   "accountNumber": "****6789",
   "routingNumber": "021000021",
-  "accountType": "CHECKING",
-  "accountHolderName": "Acme Corporation",
-  "currency": "USD",
+  "credentials": {
+    "routingNumber": "021000021",
+    "accountType": "checking"
+  },
+  "bankAccountType": "Checkings",
+  "subType": "Checkings",
   "isPrimary": true,
   "createdAt": "2024-01-15T10:30:00Z"
 }
@@ -88,7 +187,7 @@ GET /business-entity/:businessEntityId/bank-accounts/:bankAccountId
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `businessEntityId` | integer | Business entity ID |
-| `bankAccountId` | integer | Bank account ID |
+| `bankAccountId` | string | Bank account ID |
 
 ## Update a bank account
 
@@ -113,7 +212,7 @@ PATCH /business-entity/:businessEntityId/bank-accounts/:bankAccountId
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `businessEntityId` | integer | Business entity ID |
-| `bankAccountId` | integer | Bank account ID |
+| `bankAccountId` | string | Bank account ID |
 
 **Request body**
 
@@ -121,10 +220,16 @@ Include only the fields you want to update:
 
 ```json
 {
-  "bankName": "First National Bank - Updated",
-  "isPrimary": false
+  "currency": "EUR",
+  "credentials": {
+    "iban": "DE89370400440532013000"
+  }
 }
 ```
+
+<Info>
+Credential updates are merged with existing values. Sending `{ "credentials": { "iban": "..." } }` adds or overwrites the `iban` field without removing other credential fields already stored on the account.
+</Info>
 
 **Response**
 
@@ -150,19 +255,21 @@ GET /business-entity/:businessEntityId/bank-accounts
 {
   "accounts": [
     {
-      "id": 456,
+      "id": "ba_abc123",
       "bankName": "First National Bank",
       "accountNumber": "****6789",
-      "accountType": "CHECKING",
+      "bankAccountType": "Checkings",
+      "country": "US",
       "currency": "USD",
       "isPrimary": true
     },
     {
-      "id": 457,
-      "bankName": "Second Bank",
+      "id": "ba_def456",
+      "bankName": "HDFC Bank",
       "accountNumber": "****1234",
-      "accountType": "SAVINGS",
-      "currency": "USD",
+      "bankAccountType": "Savings",
+      "country": "IN",
+      "currency": "INR",
       "isPrimary": false
     }
   ]
@@ -182,29 +289,53 @@ DELETE /business-entity/:businessEntityId/bank-accounts/:bankAccountId
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `businessEntityId` | integer | Business entity ID |
-| `bankAccountId` | integer | Bank account ID |
+| `bankAccountId` | string | Bank account ID |
 
 **Response**
 
 Returns `204 No Content` on success.
 
+<Warning>
+You cannot delete a bank account if managed filings is enabled for one or more registrations linked to the corporation. Disable managed filings first.
+</Warning>
+
+## Credentials reference
+
+The `credentials` object holds country-specific bank routing and identification fields. Refer to the [fields configuration endpoint](#retrieve-country-specific-field-requirements) for the full list, or see common examples below.
+
+| Field | Countries | Description |
+|-------|-----------|-------------|
+| `routingNumber` | US | ABA routing transit number (9 digits) |
+| `accountNumber` | Most | Local bank account number |
+| `accountType` | US | `checking` or `savings` |
+| `ifscCode` | IN | Indian Financial System Code (11 characters) |
+| `sortCode` | GB, IE | Bank sort code (6 digits) |
+| `iban` | EU, SEPA countries | International Bank Account Number |
+| `swiftBic` | Global | SWIFT/BIC code (8 or 11 characters) |
+| `bsb` | AU | Bank/State/Branch code (6 digits) |
+| `transitNumber` | CA | Canadian transit number (5 digits) |
+| `institutionNumber` | CA | Canadian institution number (3 digits) |
+| `clabe` | MX | Mexican standardized bank code (18 digits) |
+| `bankCode` | Various | Institution identifier (format varies by country) |
+| `branchCode` | Various | Branch identifier (format varies by country) |
+
 ## Best practices
 
-- **Set a primary account**: Mark one account as primary for default transactions
-- **Verify account numbers**: Double-check account and routing numbers before saving
-- **Update regularly**: Keep bank account information current when accounts change
-- **Secure storage**: Account numbers are automatically masked in responses for security
-- **Currency matching**: Ensure the currency matches your business operations
-- **Account holder names**: Use the exact legal name registered with the bank
+- **Use the fields config** — always call the fields configuration endpoint to determine required fields for a country instead of hardcoding field lists
+- **Set a primary account** — mark one account as primary for default transactions
+- **Verify account numbers** — double-check account and routing numbers before saving
+- **Pass the country** — always include `country` when creating a bank account so server-side validation can enforce the correct credential rules
+- **Update regularly** — keep bank account information current when accounts change
+- **Secure storage** — account numbers are automatically masked in responses for security
+- **Currency matching** — ensure the currency matches the country's primary currency or your business operations
+- **Account holder names** — use the exact legal name registered with the bank
 
 ## Common account types
 
 | Type | Description | Use case |
 |------|-------------|----------|
-| `CHECKING` | Standard checking account | Daily operations, payroll |
-| `SAVINGS` | Savings account | Reserve funds |
-| `MONEY_MARKET` | Money market account | Short-term investments |
-| `ESCROW` | Escrow account | Held funds, transactions |
+| `Checkings` | Standard checking account | Daily operations, payroll |
+| `Savings` | Savings account | Reserve funds |
 
 ## Related resources
 

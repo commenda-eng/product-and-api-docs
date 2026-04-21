@@ -6198,6 +6198,15 @@ components:
           type: string
           nullable: true
           example: '2025-01-01'
+        directorIdentificationNumber:
+          type: string
+          nullable: true
+          description: Director Identification Number (DIN) for Indian directors.
+          example: '00012345'
+        isResidentDirector:
+          type: boolean
+          nullable: true
+          description: Whether this director is a resident director of the business entity.
     CommendaOsBusinessEntityPersonsResponse:
       type: object
       required:
@@ -6270,6 +6279,11 @@ components:
           type: string
           nullable: true
           example: '2025-01-01'
+        directorIdentificationNumber:
+          type: string
+          nullable: true
+          description: Director Identification Number (DIN) for Indian directors.
+          example: '00012345'
         businessEntitiesInfo:
           type: array
           items:
@@ -6300,6 +6314,10 @@ components:
                 type: string
                 nullable: true
                 example: '2025-01-01'
+              isResidentDirector:
+                type: boolean
+                nullable: true
+                description: Whether this director is a resident director of the business entity.
     CommendaOsPersonsResponse:
       type: object
       required:

@@ -133,9 +133,18 @@ POST /business-entity/:businessEntityId/persons/:personId
   "role": "DIRECTOR",
   "startDate": "2020-01-15",
   "endDate": null,
-  "ownershipPercentage": 25.5
+  "ownershipPercentage": 25.5,
+  "isResidentDirector": true
 }
 ```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `role` | string | Governance role (e.g. `DIRECTOR`, `OFFICER`, `SHAREHOLDER`) |
+| `startDate` | string | Start date of the relationship (YYYY-MM-DD) |
+| `endDate` | string \| null | End date, or `null` if current |
+| `ownershipPercentage` | number | Ownership share as a percentage |
+| `isResidentDirector` | boolean | Optional. Whether this person is a resident director of the entity |
 
 **Response**
 

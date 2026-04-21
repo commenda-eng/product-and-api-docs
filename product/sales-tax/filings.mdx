@@ -38,6 +38,29 @@ Each filing shows:
 
 For entities with European Union tax obligations, Commenda supports EU-specific filing formats and requirements. EU filings include additional fields for intra-community transactions and VAT reporting.
 
+### Filing contributions
+
+Commenda automatically computes VAT return box values for EU and UK filings. These computed values — called **filing contributions** — map directly to the boxes on your tax return form (for example, box 81 on a German VAT return for domestic supplies at 19%).
+
+Filing contributions are generated automatically as part of the regular tax breakdown processing cycle. When your transactions are processed, Commenda:
+
+1. **Validates invoices** — checks that all transactions attached to the filing have the required address data (for example, a ship-from address). Transactions with missing data are flagged with an error code so you can correct them.
+2. **Aggregates transaction data** — groups transactions by origin country, destination country, transaction type (sale, return, refund), tax rate, product type, customer type, and remitter type.
+3. **Evaluates box rules** — matches aggregated data against the content-defined rules for each box on the tax return. This includes netting sales and returns, and computing formula-based totals that reference other boxes.
+4. **Writes results** — stores the computed values as filing contributions. Each re-run replaces previous results, so contributions always reflect the latest transaction data.
+
+This process supports:
+
+- **Country-level filings** — standard VAT returns for individual EU member states and the UK (for example, Germany, France, Netherlands, Ireland)
+- **Union OSS filings** — one-stop shop returns that report per-member-state totals for cross-border B2C sales within the EU
+- **IOSS filings** — import one-stop shop returns for distance sales of low-value goods imported into the EU
+
+To view the computed contributions for a filing, click on the filing to open its detail view. You can also retrieve contributions programmatically using the [filing contributions API endpoint](/engine/indirect-tax/filings/filings-contributions-GET).
+
+<Info>
+Filing contributions are recomputed each time the automated processing cycle runs. If you add or update transactions after contributions have been generated, the next processing cycle updates the contributions to reflect the changes.
+</Info>
+
 <Warning>
 Always verify your filing amounts before submission. Once you file a return with the tax authority, corrections may require amended returns.
 </Warning>

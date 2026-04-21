@@ -133,9 +133,18 @@ POST /business-entity/:businessEntityId/persons/:personId
   "role": "DIRECTOR",
   "startDate": "2020-01-15",
   "endDate": null,
-  "ownershipPercentage": 25.5
+  "ownershipPercentage": 25.5,
+  "isResidentDirector": true
 }
 ```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `role` | string | Governance role (e.g. `DIRECTOR`, `OFFICER`, `SHAREHOLDER`) |
+| `startDate` | string | Date the person assumed the role (ISO 8601) |
+| `endDate` | string \| null | Date the person left the role, if applicable |
+| `ownershipPercentage` | number | Equity ownership percentage |
+| `isResidentDirector` | boolean | Whether the person is a resident director of this entity. Used in jurisdictions that require at least one locally resident director (e.g. India). Optional. |
 
 **Response**
 

@@ -533,6 +533,11 @@ schemas:
         type: string
         nullable: true
         example: "2025-01-01"
+      directorIdentificationNumber:
+        type: string
+        nullable: true
+        description: Director Identification Number (DIN) assigned to Indian directors.
+        example: "00012345"
       businessEntitiesInfo:
         type: array
         items:
@@ -563,6 +568,10 @@ schemas:
               type: string
               nullable: true
               example: "2025-01-01"
+            isResidentDirector:
+              type: boolean
+              nullable: true
+              description: Whether this director is a resident director of the business entity. Applicable to jurisdictions that require at least one locally resident director (e.g. India).
   CommendaOsBusinessEntityPerson:
     type: object
     required:
@@ -622,6 +631,11 @@ schemas:
       employmentStartDate:
         type: string
         nullable: true
+      directorIdentificationNumber:
+        type: string
+        nullable: true
+        description: Director Identification Number (DIN) assigned to Indian directors.
+        example: "00012345"
       sharePercentage:
         type: number
         example: 75
@@ -636,6 +650,10 @@ schemas:
         type: string
         nullable: true
         example: "2025-01-01"
+      isResidentDirector:
+        type: boolean
+        nullable: true
+        description: Whether this director is a resident director of the business entity. Applicable to jurisdictions that require at least one locally resident director (e.g. India).
   CommendaOsDocument:
     type: object
     required:

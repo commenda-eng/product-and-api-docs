@@ -39,15 +39,22 @@ Plaid supports thousands of financial institutions. If your bank isn't available
 
 ## Manual entry
 
-If your bank isn't available through Plaid, you can manually enter account details:
+If your bank isn't available through Plaid, you can manually enter account details. The form adapts based on the country you select, so you only see fields relevant to your bank's location.
+
+**Fields required for all countries:**
 
 - **Bank name** — the full name of your financial institution
 - **Account holder name** — the legal name on the account (should match your entity name)
-- **Account number** — your full bank account number
-- **Routing number** — your bank's routing number (9 digits for US banks)
-- **IFSC code** — for Indian accounts
-- **Account type** — checking, savings, money market, escrow, or current
-- **Currency** — the account currency (USD, EUR, etc.)
+- **Country** — the country where your bank account is held
+- **Currency** — the account currency (USD, EUR, GBP, INR, etc.)
+
+**Country-specific fields** appear after you select a country. For example:
+
+- **US accounts** — routing number and account number
+- **Indian accounts** — IFSC code and account number
+- **UK accounts** — sort code and account number
+- **Canadian accounts** — transit number, institution number, and account number
+- **EU accounts** — IBAN (and optionally SWIFT/BIC)
 
 <Tip>
 Double-check your account and routing numbers before saving. Incorrect numbers can cause payment failures.
@@ -58,8 +65,8 @@ Double-check your account and routing numbers before saving. Incorrect numbers c
 From an entity's Bank Accounts tab, you can:
 
 - **Set a primary account** — designate one account as the default for transactions and payments. Only one account can be primary at a time.
-- **Edit account details** — update bank name, account holder name, account type, currency, or primary status
-- **View account details** — see masked account number (last 4 digits), routing number, account type, currency, and date added
+- **Edit account details** — update bank name, account holder name, account type, currency, credentials, or primary status
+- **View account details** — see masked account number (last 4 digits), routing information, account type, country, currency, and date added
 - **Remove an account** — disconnect or delete a bank account from the entity
 
 <Warning>
@@ -75,11 +82,11 @@ Bank connections through Plaid use bank-level encryption. Commenda never stores 
 ### I can't save my bank account
 
 **Common causes:**
-- Missing required fields (bank name, account number, routing number)
-- Invalid routing number format (must be 9 digits for US banks)
+- Missing required fields (bank name, account holder name, country, and the country-specific fields shown in the form)
+- Invalid format for country-specific fields (e.g., routing number must be 9 digits for US banks, IFSC code must be 11 characters for Indian banks)
 - Account number contains invalid characters
 
-**Solution:** Check that all required fields are filled and formatted correctly.
+**Solution:** Check that all required fields are filled and formatted correctly. The form validates fields based on the country you selected.
 
 ### I need to change my account number
 

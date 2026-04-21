@@ -58,6 +58,74 @@ V2 filings include additional fields compared to V1:
 | `reporting_period_start_date` | Start of the reporting period |
 | `reporting_period_end_date` | End of the reporting period |
 
+## Filing contributions
+
+For EU and UK filings, Commenda automatically computes the values for each box on the tax return form. These computed values are called **filing contributions**.
+
+Contributions are generated during the automated tax breakdown processing cycle for any filing that has content-defined box rules (identified by a `filing_content_id`). The engine:
+
+1. Validates that invoices attached to the filing have the required data (such as ship-from addresses)
+2. Aggregates invoice data into buckets grouped by geographic origin/destination, transaction type, tax rate, product type, customer type, and remitter type
+3. Evaluates **AGGREGATE** box rules by matching content-defined filters against invoice buckets and summing the appropriate monetary field (taxable amount, tax amount, or gross amount)
+4. Evaluates **FORMULA** box rules in sequence, referencing previously computed box values with simple arithmetic
+
+### Supported filing types
+
+| Type | Description |
+|---|---|
+| Country-level | Standard VAT returns for a single jurisdiction (e.g., Germany, Netherlands, UK) |
+| Union OSS | One-stop shop returns with per-member-state breakdowns for intra-EU B2C sales |
+| Non-Union OSS | One-stop shop returns for non-EU businesses selling B2C services in the EU |
+| IOSS | Import one-stop shop returns for low-value goods imported into the EU |
+
+For country-level filings, box values are computed once using the filing jurisdiction's rates. For trade-bloc filings (OSS/IOSS), the engine iterates over each destination member state, resolving that state's rates and producing per-jurisdiction contributions.
+
+### Retrieving contributions
+
+Use the [`GET /filings/{id}/contributions`](/engine/indirect-tax/filings/filings-contributions-GET) endpoint to retrieve computed contributions for a filing. Each contribution includes:
+
+| Field | Description |
+|---|---|
+| `filing_contribution_id` | Content-defined identifier linking the value to its box rule definition |
+| `box_id` | The tax return box identifier (e.g., `"81"` for German domestic supplies) |
+| `box_name` | Display name of the box |
+| `box_order` | Display order on the form |
+| `box_type` | Classification (e.g., `TAX_BASE`, `TAX_AMOUNT`) |
+| `value` | Computed amount in minor currency units (e.g., cents) |
+| `filing_through_jurisdiction` | For OSS/IOSS filings, the Commenda jurisdiction ID of the destination member state. Null for country-level filings |
+
+```json
+// Example: GET /filings/{id}/contributions
+{
+  "data": {
+    "count": 3,
+    "contributions": [
+      {
+        "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+        "filing_id": "f1a2b3c4-d5e6-7890-abcd-ef1234567890",
+        "filing_contribution_id": "DE_VAT_01",
+        "filing_through_jurisdiction": null,
+        "value": 150000,
+        "value_type": "INTEGER",
+        "box_id": "81",
+        "box_name": "Supplies and other services",
+        "box_order": 1,
+        "box_type": "TAX_BASE"
+      }
+    ]
+  },
+  "message": "Successfully fetched filing contributions."
+}
+```
+
+### Invoice validation
+
+During contribution processing, Commenda validates that each invoice has the data required for accurate box computation. Invoices missing a ship-from address are flagged with the error code `TRANSACTION.ADDRESSES.SHIP_FROM.MISSING`. Flagged invoices are excluded from contribution calculations until the address data is provided and the next processing cycle runs.
+
+<Info>
+Contributions are idempotent — each processing run replaces all previous contribution values for the filing. This means contributions always reflect the current state of your transaction data.
+</Info>
+
 ## Managed filing
 
 When you enable `managed_filing_enabled` on a [V2 registration](/engine/indirect-tax/registrations/v2/registrations-v2-POST), Commenda handles the filing process for that jurisdiction on your behalf. You can toggle this setting when creating or updating a registration.

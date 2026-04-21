@@ -43,14 +43,15 @@ If your bank isn't available through Plaid, you can manually enter account detai
 
 - **Bank name** — the full name of your financial institution
 - **Account holder name** — the legal name on the account (should match your entity name)
+- **Country** — the country where the bank account is held
 - **Account number** — your full bank account number
 - **Routing number** — your bank's routing number (9 digits for US banks)
-- **IFSC code** — for Indian accounts
 - **Account type** — checking, savings, money market, escrow, or current
-- **Currency** — the account currency (USD, EUR, etc.)
+- **Currency** — the account currency (USD, EUR, INR, etc.)
+- **Country-specific fields** — additional fields that vary by country (for example, IFSC code for India, IBAN for European countries, sort code for the UK, or BSB code for Australia)
 
 <Tip>
-Double-check your account and routing numbers before saving. Incorrect numbers can cause payment failures.
+The form automatically shows the correct fields for the selected country. Double-check your account and routing numbers before saving — incorrect numbers can cause payment failures.
 </Tip>
 
 ## Managing bank accounts
@@ -58,7 +59,7 @@ Double-check your account and routing numbers before saving. Incorrect numbers c
 From an entity's Bank Accounts tab, you can:
 
 - **Set a primary account** — designate one account as the default for transactions and payments. Only one account can be primary at a time.
-- **Edit account details** — update bank name, account holder name, account type, currency, or primary status
+- **Edit account details** — update bank name, account holder name, account type, currency, country-specific credentials, or primary status
 - **View account details** — see masked account number (last 4 digits), routing number, account type, currency, and date added
 - **Remove an account** — disconnect or delete a bank account from the entity
 

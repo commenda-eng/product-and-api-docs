@@ -39,6 +39,12 @@ curl --request GET \
 - Filtering payment intents by `companyId` enforces affiliate ownership — requests for companies outside your affiliate return `403 Forbidden`.
 - `GET /public/documents` is deprecated. Callers should use the Commenda OS documents endpoints instead.
 
+## Partner Incorporation API
+
+New partner integrations that need an incorporation resource lifecycle can use the [Partner Incorporation API](/engine/incorporation/partner-incorporation-introduction).
+
+That surface is scoped under `/partner/incorporation`, creates incorporations directly under a company, and does not create or return payment intents.
+
 ## Commenda OS Read API
 
 A separate Commenda OS API is also available under the same `/public` base URL.

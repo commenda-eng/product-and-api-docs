@@ -1,0 +1,22 @@
+---
+title: "Create an incorporation"
+openapi: "POST /partner/incorporation/companies/{companyId}/incorporations"
+---
+
+Starts an incorporation for a company accessible to your partner account.
+
+This endpoint does not create a payment intent. The response returns the incorporation resource directly.
+
+## Example
+
+```json
+{
+  "country": "US",
+  "countryOptions": {
+    "state": "DE",
+    "corporationType": "LLC"
+  }
+}
+```
+
+Use `GET /partner/incorporation/jurisdiction-catalog` to see currently supported countries and option values.

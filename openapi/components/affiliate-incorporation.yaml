@@ -238,3 +238,149 @@ schemas:
         format: uri
         description: Temporary signed download URL for the file.
         example: https://bucket.s3.amazonaws.com/file.pdf?X-Amz-Signature=example
+  PartnerIncorporationCountry:
+    type: string
+    description: ISO 3166-1 alpha-2 country code for the incorporation jurisdiction.
+    enum:
+      - AE
+      - CA
+      - GB
+      - IE
+      - IN
+      - KY
+      - NZ
+      - SG
+      - US
+  PartnerIncorporationStatus:
+    type: string
+    description: Current lifecycle status for the incorporation.
+    enum:
+      - submitted
+      - in_progress
+      - blocked
+      - completed
+  PartnerIncorporationCountryOptions:
+    type: object
+    description: Country-specific incorporation options. Use the jurisdiction catalog for the currently supported fields and values.
+    additionalProperties: true
+    example:
+      state: DE
+      corporationType: LLC
+  PartnerCreateIncorporationRequest:
+    type: object
+    required:
+      - country
+      - countryOptions
+    properties:
+      country:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountry"
+      countryOptions:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountryOptions"
+  PartnerJurisdictionCatalogField:
+    type: object
+    required:
+      - key
+      - type
+      - required
+    properties:
+      key:
+        type: string
+        description: Key to send inside `countryOptions`.
+        example: corporationType
+      type:
+        type: string
+        enum:
+          - select
+        example: select
+      required:
+        type: boolean
+        example: true
+      options:
+        type: array
+        description: Accepted values for this field.
+        items:
+          type: string
+        example:
+          - CORPORATION
+          - LLC
+  PartnerJurisdictionCatalogCountry:
+    type: object
+    required:
+      - country
+      - fields
+    properties:
+      country:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountry"
+      fields:
+        type: array
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerJurisdictionCatalogField"
+  PartnerJurisdictionCatalogResponse:
+    type: object
+    required:
+      - countries
+    properties:
+      countries:
+        type: array
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerJurisdictionCatalogCountry"
+  PartnerIncorporation:
+    type: object
+    required:
+      - id
+      - companyId
+      - country
+      - countryOptions
+      - incorporationStatus
+      - createdAt
+      - updatedAt
+      - corporationId
+    properties:
+      id:
+        type: string
+        description: Incorporation identifier.
+        example: 0f9a8f5e-7f7c-4c1b-a60a-b1022f9d8c91
+      companyId:
+        type: integer
+        description: Company that owns the incorporation.
+        example: 77
+      country:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountry"
+      countryOptions:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountryOptions"
+      incorporationStatus:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationStatus"
+      createdAt:
+        type: string
+        format: date-time
+        example: 2026-04-21T17:10:00.000Z
+      updatedAt:
+        type: string
+        format: date-time
+        example: 2026-04-21T17:10:00.000Z
+      corporationId:
+        type: integer
+        nullable: true
+        description: Commenda corporation/entity id once one is attached.
+        example: 44
+  PartnerIncorporationResponse:
+    type: object
+    required:
+      - incorporation
+    properties:
+      incorporation:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporation"
+  PartnerIncorporationListResponse:
+    type: object
+    required:
+      - incorporations
+      - count
+    properties:
+      incorporations:
+        type: array
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporation"
+      count:
+        type: integer
+        description: Total matching incorporations before pagination.
+        example: 1

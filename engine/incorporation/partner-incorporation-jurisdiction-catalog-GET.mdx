@@ -1,0 +1,10 @@
+---
+title: "List jurisdiction catalog"
+openapi: "GET /partner/incorporation/jurisdiction-catalog"
+---
+
+Returns the currently supported incorporation countries and country-specific option fields.
+
+Use this endpoint as an informational catalog for rendering choices in your UI. The create incorporation endpoint remains the source of truth for validation.
+
+Field keys map to `countryOptions`. Dotted field keys, such as `corporationTypeOptions.freeZone`, represent nested objects in the create request.

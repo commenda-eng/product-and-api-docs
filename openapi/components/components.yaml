@@ -242,6 +242,26 @@ components:
       $ref: "./affiliate-incorporation.yaml#/schemas/AffiliateListDocumentsResponse"
     AffiliateFileSignedUrlResponse:
       $ref: "./affiliate-incorporation.yaml#/schemas/AffiliateFileSignedUrlResponse"
+    PartnerIncorporationCountry:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountry"
+    PartnerIncorporationStatus:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationStatus"
+    PartnerIncorporationCountryOptions:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountryOptions"
+    PartnerCreateIncorporationRequest:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerCreateIncorporationRequest"
+    PartnerJurisdictionCatalogField:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerJurisdictionCatalogField"
+    PartnerJurisdictionCatalogCountry:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerJurisdictionCatalogCountry"
+    PartnerJurisdictionCatalogResponse:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerJurisdictionCatalogResponse"
+    PartnerIncorporation:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporation"
+    PartnerIncorporationResponse:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationResponse"
+    PartnerIncorporationListResponse:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationListResponse"
     CommendaOsPublicError:
       $ref: "./commenda-os.yaml#/schemas/CommendaOsPublicError"
     CommendaOsBusinessEntityResponse:

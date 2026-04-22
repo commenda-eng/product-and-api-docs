@@ -1,0 +1,70 @@
+---
+title: "Partner Incorporation API"
+description: "Create and track incorporations for partner-owned companies without using the payment-intent based flow."
+---
+
+## Overview
+
+The Partner Incorporation API lets a partner start and track incorporations for companies they manage in Commenda.
+
+Base URL:
+
+```text
+https://api.prod.commenda.io/api/v1/partner/incorporation
+```
+
+Pass your partner API key in the `x-api-key` header on every request.
+
+```bash
+curl --request GET \
+  --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/jurisdiction-catalog' \
+  --header 'x-api-key: <partner_api_key>'
+```
+
+## Flow
+
+1. Create a company with the existing `POST /public/company` endpoint.
+2. Review the informational jurisdiction catalog with `GET /partner/incorporation/jurisdiction-catalog`.
+3. Start an incorporation with `POST /partner/incorporation/companies/{companyId}/incorporations`.
+4. List or retrieve incorporations for status tracking.
+
+## Incorporation status
+
+`incorporationStatus` can be one of:
+
+| Status | Meaning |
+|---|---|
+| `submitted` | Commenda has received the incorporation request. |
+| `in_progress` | Commenda is actively processing the incorporation. |
+| `blocked` | The incorporation needs additional information or resolution before it can continue. |
+| `completed` | The incorporation has been completed. |
+
+This API does not create or return payment intents. Partners using this surface should treat billing as separate from the incorporation resource lifecycle.
+
+## Jurisdiction options
+
+Create requests use a country plus country-specific options instead of a flat product id.
+
+```json
+{
+  "country": "US",
+  "countryOptions": {
+    "state": "DE",
+    "corporationType": "LLC"
+  }
+}
+```
+
+The jurisdiction catalog is informational and may be used to render selection UI, but request validation is enforced by the create endpoint.
+
+Currently supported country options include:
+
+| Country | Required options | Optional options |
+|---|---|---|
+| `US` | `corporationType`: `CORPORATION`, `LLC` | `state`: US state abbreviation |
+| `CA` | `corporationType`: `CORPORATION` | None |
+| `IN` | `corporationType`: `LLP`, `PRIVATE_LIMITED_COMPANY` | None |
+| `AE` | `corporationType`: `FZC` | `corporationTypeOptions.freeZone`: `ADGM`, `DIFC`, `DMCC`, `IFZA` |
+| `GB`, `IE`, `NZ` | `corporationType`: `LIMITED_COMPANY` | None |
+| `KY` | `corporationType`: `EXEMPTED_COMPANY` | None |
+| `SG` | `corporationType`: `PRIVATE_LIMITED_COMPANY` | None |

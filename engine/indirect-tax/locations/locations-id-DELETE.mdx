@@ -1,0 +1,41 @@
+---
+title: "Delete location"
+api: "DELETE https://transaction-tax.api.in.commenda.io/api/v1/locations/{location_id}"
+description: "Archive a location"
+---
+
+Delete (archive) a location. The location is soft-deleted and will no longer appear in list results.
+
+## Path parameters
+
+<ParamField path="location_id" type="string" required>
+  The unique identifier (UUID) of the location to delete.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl --request DELETE \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/locations/b2c3d4e5-f6a7-8901-bcde-f12345678901' \
+  --header 'Authorization: Bearer <your_token>'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 204
+(No content)
+```
+
+```json 404 - Not found
+{
+  "error": {
+    "type": "LOCATION_NOT_FOUND",
+    "title": "Location not found.",
+    "detail": {
+      "description": "The location does not exist or you don't have access."
+    },
+    "status": 404,
+    "instance": "/api/v1/locations/b2c3d4e5-f6a7-8901-bcde-f12345678901"
+  }
+}
+```
+</ResponseExample>

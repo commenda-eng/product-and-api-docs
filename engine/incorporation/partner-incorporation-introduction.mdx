@@ -43,7 +43,11 @@ This API does not create or return payment intents. Partners using this surface 
 
 ## Jurisdiction options
 
-Create requests use a country plus country-specific options instead of a flat product id.
+Create requests use a `country` plus country-specific `countryOptions` instead of a flat product id.
+
+- `country` is the ISO 3166-1 alpha-2 code for the jurisdiction (`AE`, `CA`, `GB`, `IE`, `IN`, `KY`, `NZ`, `SG`, `US`).
+- `countryOptions` is an object whose shape depends on `country`. Every jurisdiction requires `corporationType`; some add extra fields.
+- Send field keys exactly as documented. Unknown fields are rejected.
 
 ```json
 {
@@ -55,16 +59,135 @@ Create requests use a country plus country-specific options instead of a flat pr
 }
 ```
 
-The jurisdiction catalog is informational and may be used to render selection UI, but request validation is enforced by the create endpoint.
+The jurisdiction catalog (`GET /partner/incorporation/jurisdiction-catalog`) is informational and may be used to render selection UI, but request validation is enforced by the create endpoint.
 
-Currently supported country options include:
+### United Arab Emirates (`AE`)
 
-| Country | Required options | Optional options |
-|---|---|---|
-| `US` | `corporationType`: `CORPORATION`, `LLC` | `state`: US state abbreviation |
-| `CA` | `corporationType`: `CORPORATION` | None |
-| `IN` | `corporationType`: `LLP`, `PRIVATE_LIMITED_COMPANY` | None |
-| `AE` | `corporationType`: `FZC` | `corporationTypeOptions.freeZone`: `ADGM`, `DIFC`, `DMCC`, `IFZA` |
-| `GB`, `IE`, `NZ` | `corporationType`: `LIMITED_COMPANY` | None |
-| `KY` | `corporationType`: `EXEMPTED_COMPANY` | None |
-| `SG` | `corporationType`: `PRIVATE_LIMITED_COMPANY` | None |
+```json
+{
+  "country": "AE",
+  "countryOptions": {
+    "corporationType": "FZC",
+    "corporationTypeOptions": {
+      "freeZone": "DMCC"
+    }
+  }
+}
+```
+
+- `corporationType` (required): `FZC` — Free Zone Company.
+- `corporationTypeOptions.freeZone` (optional): free zone where the company will be registered. One of:
+  - `ADGM` — Abu Dhabi Global Market
+  - `DIFC` — Dubai International Financial Centre
+  - `DMCC` — Dubai Multi Commodities Centre
+  - `IFZA` — International Free Zone Authority (Dubai)
+
+### Canada (`CA`)
+
+```json
+{
+  "country": "CA",
+  "countryOptions": {
+    "corporationType": "CORPORATION"
+  }
+}
+```
+
+- `corporationType` (required): `CORPORATION` — federal Canadian corporation.
+
+### United Kingdom (`GB`)
+
+```json
+{
+  "country": "GB",
+  "countryOptions": {
+    "corporationType": "LIMITED_COMPANY"
+  }
+}
+```
+
+- `corporationType` (required): `LIMITED_COMPANY` — private company limited by shares (Ltd).
+
+### Ireland (`IE`)
+
+```json
+{
+  "country": "IE",
+  "countryOptions": {
+    "corporationType": "LIMITED_COMPANY"
+  }
+}
+```
+
+- `corporationType` (required): `LIMITED_COMPANY` — private company limited by shares (LTD).
+
+### India (`IN`)
+
+```json
+{
+  "country": "IN",
+  "countryOptions": {
+    "corporationType": "PRIVATE_LIMITED_COMPANY"
+  }
+}
+```
+
+- `corporationType` (required): one of:
+  - `PRIVATE_LIMITED_COMPANY` — private limited company (Pvt Ltd)
+  - `LLP` — limited liability partnership
+
+### Cayman Islands (`KY`)
+
+```json
+{
+  "country": "KY",
+  "countryOptions": {
+    "corporationType": "EXEMPTED_COMPANY"
+  }
+}
+```
+
+- `corporationType` (required): `EXEMPTED_COMPANY` — Cayman exempted company.
+
+### New Zealand (`NZ`)
+
+```json
+{
+  "country": "NZ",
+  "countryOptions": {
+    "corporationType": "LIMITED_COMPANY"
+  }
+}
+```
+
+- `corporationType` (required): `LIMITED_COMPANY` — New Zealand limited company.
+
+### Singapore (`SG`)
+
+```json
+{
+  "country": "SG",
+  "countryOptions": {
+    "corporationType": "PRIVATE_LIMITED_COMPANY"
+  }
+}
+```
+
+- `corporationType` (required): `PRIVATE_LIMITED_COMPANY` — Singapore private limited company (Pte Ltd).
+
+### United States (`US`)
+
+```json
+{
+  "country": "US",
+  "countryOptions": {
+    "corporationType": "LLC",
+    "state": "DE"
+  }
+}
+```
+
+- `corporationType` (required): one of:
+  - `LLC` — limited liability company
+  - `CORPORATION` — C-corporation
+- `state` (optional): two-letter US state abbreviation per ISO 3166-2 (e.g., `DE` for Delaware, `CA` for California, `NY` for New York). If omitted, the end user can pick the state later in the flow.

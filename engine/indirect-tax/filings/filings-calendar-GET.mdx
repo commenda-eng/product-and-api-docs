@@ -1,0 +1,57 @@
+---
+title: "List filing calendar"
+api: "GET https://transaction-tax.api.in.commenda.io/api/v1/filings/calendar"
+description: "Get the filing calendar for a corporation showing all upcoming and past filings"
+---
+
+Retrieve the filing calendar for a corporation, showing all filings across registrations. Supports cursor-based pagination and an optional V2 mode for enhanced filing data.
+
+## Query parameters
+
+<ParamField query="corporation_id" type="string" required>
+  The unique identifier (UUID) for the corporation.
+</ParamField>
+
+<ParamField query="limit" type="integer">
+  Number of results per page. Default: `10`, maximum: `100`.
+</ParamField>
+
+<ParamField query="cursor" type="string">
+  Pagination cursor from a previous response.
+</ParamField>
+
+<ParamField query="v2" type="string">
+  Set to `true` to use V2 filing calendar logic, which includes V2 registration data and content-driven filing calendars.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl --request GET \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/filings/calendar?corporation_id=550e8400-e29b-41d4-a716-446655440000&limit=20&v2=true' \
+  --header 'Authorization: Bearer <your_token>'
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "message": "Successfully fetched filings.",
+  "data": {
+    "filings": [
+      {
+        "id": "f1a2b3c4-d5e6-7890-abcd-ef1234567890",
+        "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+        "registration_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+        "form_title": "Sales and Use Tax Return",
+        "frequency": "QUARTERLY",
+        "period_start_date": "2024-07-01",
+        "due_date": "2024-10-31",
+        "filing_status": "ACTIVE",
+        "country": "US"
+      }
+    ],
+    "cursor": "eyJpZCI6ImYxYTJiM2M0..."
+  }
+}
+```
+</ResponseExample>

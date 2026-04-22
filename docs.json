@@ -357,9 +357,31 @@
             ]
           },
           {
+            "group": "Credentials",
+            "pages": [
+              "engine/indirect-tax/credentials/credentials",
+              "engine/indirect-tax/credentials/credentials-POST",
+              "engine/indirect-tax/credentials/credentials-GET",
+              "engine/indirect-tax/credentials/credentials-id-GET",
+              "engine/indirect-tax/credentials/credentials-id-POST",
+              "engine/indirect-tax/credentials/credentials-id-DELETE"
+            ]
+          },
+          {
+            "group": "Locations",
+            "pages": [
+              "engine/indirect-tax/locations/locations",
+              "engine/indirect-tax/locations/locations-POST",
+              "engine/indirect-tax/locations/locations-GET",
+              "engine/indirect-tax/locations/locations-id-POST",
+              "engine/indirect-tax/locations/locations-id-DELETE"
+            ]
+          },
+          {
             "group": "Filings",
             "pages": [
               "engine/indirect-tax/filings/filings",
+              "engine/indirect-tax/filings/filings-calendar-GET",
               "engine/indirect-tax/filings/filings-preview-POST",
               "engine/indirect-tax/filings/filings-bulk-create-POST",
               "engine/indirect-tax/filings/filings-bulk-delete-DELETE",

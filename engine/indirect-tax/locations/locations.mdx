@@ -1,0 +1,46 @@
+---
+title: "Locations"
+description: "Track where your corporation has physical or legal presence for tax establishment purposes."
+---
+
+## Overview
+
+The Locations API lets you manage physical locations for a corporation. Locations are used to determine tax nexus, registration obligations, and establishment presence — particularly for EU trade bloc registrations where physical presence in a member state affects which registration schemes are available.
+
+## Location types
+
+| Type | Description |
+|------|-------------|
+| `HEADQUARTERS` | Main administrative office |
+| `BRANCH_OFFICE` | Secondary office location |
+| `RETAIL_LOCATION` | Customer-facing retail store |
+| `FACTORY` | Manufacturing facility |
+| `WAREHOUSE` | Inventory storage or distribution center |
+| `NATURAL_RESOURCE_SITE` | Natural resource extraction site |
+| `REGISTERED_OFFICE` | Official legal address on file with authorities |
+| `REPRESENTATIVE_OFFICE` | Representative office in a foreign jurisdiction |
+| `CONSTRUCTION_SITE` | Active construction project site |
+| `THIRD_PARTY_FULFILLMENT` | Third-party fulfillment center |
+| `REMOTE_EMPLOYEE` | Location where remote employees work |
+| `DEPENDENT_AGENT` | Agent who acts exclusively on behalf of the company |
+| `INDEPENDENT_AGENT` | Agent who acts on behalf of multiple companies |
+| `REGISTRATION` | Location linked to a tax registration |
+| `OTHER` | Other location type |
+
+A single location can have multiple types (e.g., `["HEADQUARTERS", "REGISTERED_OFFICE"]`).
+
+## Establishment rules
+
+Locations are checked when creating EU trade bloc registrations:
+
+- **Union OSS** requires a qualifying EU establishment (headquarters, branch office, warehouse, factory, retail location, or dependent agent) in the member state country.
+- **Non-Union OSS** requires that you have no qualifying EU establishment in any EU country.
+
+## API endpoints
+
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| [`/locations`](/engine/indirect-tax/locations/locations-POST) | POST | Create a location |
+| [`/locations`](/engine/indirect-tax/locations/locations-GET) | GET | List locations for a corporation |
+| [`/locations/{location_id}`](/engine/indirect-tax/locations/locations-id-POST) | POST | Update a location |
+| [`/locations/{location_id}`](/engine/indirect-tax/locations/locations-id-DELETE) | DELETE | Delete (archive) a location |

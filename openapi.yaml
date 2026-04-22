@@ -1329,7 +1329,7 @@ paths:
             type: string
         - name: v2
           in: query
-          description: Set to `true` to use the global registration threshold engine. When enabled, the response uses a `jurisdictions` array with expanded fields including `jurisdiction_id`, `exposure_type`, `exposure_rule_id`, `country`, `subdivision`, and `currency`. When omitted or `false`, the legacy response format with a `states` array is returned.
+          description: Set to `true` to use the global registration threshold engine. When enabled, the response uses a `jurisdictions` array with expanded fields including `jurisdiction_id`, `exposure_type`, `exposure_rule_id`, `subdivision`, and `currency`. When omitted or `false`, the legacy response format with a `states` array is returned.
           required: false
           schema:
             type: string
@@ -4470,12 +4470,11 @@ components:
       type: string
       description: The time frame over which a state evaluates economic nexus. Transactions within this period are counted towards the nexus threshold.
       enum:
-        - PREV_CALENDAR_YEAR
         - PREVIOUS_CALENDAR_YEAR
-        - PREV_OR_CURRENT_CALENDAR_YEAR
+        - PREVIOUS_OR_CURRENT_CALENDAR_YEAR
         - PRECEDING_12_MONTHS
         - PRECEDING_FISCAL_YEAR
-        - PRECEDING_12_MONTHS_ENDING_SEPT_30TH
+        - PRECEDING_12_MONTHS_ENDING_SEPT_30
     IncludableSalesType:
       type: string
       description: Specifies the type of sales that are included when calculating the nexus threshold. This determines which sales are considered for nexus evaluation.
@@ -4633,7 +4632,7 @@ components:
           description: Transaction types automatically excluded from threshold calculations for this rule (e.g., marketplace, B2B, resale).
           items:
             type: string
-          example: ["MARKETPLACE", "B2B"]
+          example: ["TRANSACTION.MARKETPLACE", "CUSTOMER.B2B"]
         establishment_types:
           type: array
           description: Business establishment types that determine which variant of the rule applies (e.g., resident vs. non-resident).
@@ -4641,7 +4640,7 @@ components:
             type: string
           example: []
         max_transaction_value:
-          type: number
+          type: integer
           nullable: true
           description: Maximum value per transaction for inclusion in threshold calculations. Transactions exceeding this cap are excluded. Used by schemes like IOSS where only consignments at or below €150 are included.
     CalculationObjectV2:
@@ -4688,7 +4687,6 @@ components:
         - jurisdiction_name
         - exposure_type
         - exposure_rule_id
-        - country
         - currency
         - rule
         - calculation
@@ -4703,6 +4701,7 @@ components:
           description: The type of jurisdiction.
           enum:
             - STATE
+            - STATE_OR_PROVINCE
             - COUNTRY
             - TRADEBLOC
           example: STATE
@@ -4722,10 +4721,6 @@ components:
           type: string
           description: Unique identifier for the exposure rule being evaluated.
           example: US_CA_ECONOMIC_001
-        country:
-          type: string
-          description: ISO 3166-1 alpha-2 country code. Empty for trade bloc-level rules.
-          example: US
         subdivision:
           type: string
           description: State or province code within the country, if applicable.

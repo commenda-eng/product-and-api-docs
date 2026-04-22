@@ -92,7 +92,6 @@ The v2 response returns an array of jurisdiction objects, each representing one 
         "jurisdiction_name": "New York",
         "exposure_type": "EXPOSURE_ECONOMIC",
         "exposure_rule_id": "us_ny_economic",
-        "country": "US",
         "subdivision": "NY",
         "currency": "USD",
         "rule": {
@@ -101,7 +100,7 @@ The v2 response returns an array of jurisdiction objects, each representing one 
           "threshold_type": "SALES_ONLY",
           "evaluation_period_type": "PREVIOUS_OR_CURRENT_CALENDAR_YEAR",
           "location_based_scope": "DESTINATION",
-          "exclusion_types": ["MARKETPLACE"],
+          "exclusion_types": ["TRANSACTION.MARKETPLACE"],
           "establishment_types": []
         },
         "calculation": {
@@ -121,7 +120,6 @@ The v2 response returns an array of jurisdiction objects, each representing one 
         "jurisdiction_name": "EU Union OSS",
         "exposure_type": "EXPOSURE",
         "exposure_rule_id": "eu_union_oss",
-        "country": "",
         "subdivision": "",
         "currency": "EUR",
         "rule": {
@@ -130,7 +128,7 @@ The v2 response returns an array of jurisdiction objects, each representing one 
           "threshold_type": "SALES_ONLY",
           "evaluation_period_type": "PREVIOUS_OR_CURRENT_CALENDAR_YEAR",
           "location_based_scope": "INTRA_COMMUNITY",
-          "exclusion_types": ["B2B"],
+          "exclusion_types": ["CUSTOMER.B2B"],
           "establishment_types": [],
           "max_transaction_value": 150
         },
@@ -158,11 +156,10 @@ Each jurisdiction object includes:
 | Field | Description |
 |---|---|
 | `jurisdiction_id` | Internal identifier for the jurisdiction. For trade bloc rules, this is the trade bloc ID (e.g., `TRADEBLOC_EU_3000`) |
-| `jurisdiction_type` | `STATE`, `COUNTRY`, or `TRADEBLOC` |
+| `jurisdiction_type` | `STATE`, `STATE_OR_PROVINCE`, `COUNTRY`, or `TRADEBLOC` |
 | `jurisdiction_name` | Human-readable name of the jurisdiction (e.g., "New York", "United Kingdom", "EU Union OSS") |
 | `exposure_type` | Type of exposure obligation: `EXPOSURE`, `EXPOSURE_ECONOMIC`, or `EXPOSURE_PHYSICAL` |
 | `exposure_rule_id` | Identifier for the specific rule being evaluated |
-| `country` | ISO country code, empty for trade bloc-level rules |
 | `subdivision` | State or province code, if applicable |
 | `currency` | Currency of the threshold amounts |
 | `rule` | The threshold rule being applied (see [Exposure rules](#exposure-rules) for field details) |

@@ -6,3 +6,14 @@ openapi: "GET /partner/incorporation/companies/{companyId}/incorporations"
 Lists incorporations for a company accessible to your partner account.
 
 Use `limit` and `offset` for pagination. The `count` field is the total number of matching incorporations before pagination.
+
+## Incorporation status
+
+Each returned incorporation includes `incorporationStatus`:
+
+| Status | Meaning |
+|---|---|
+| `submitted` | Commenda has received the incorporation request. |
+| `in_progress` | Commenda is actively processing the incorporation. |
+| `blocked` | The incorporation needs additional information or resolution before it can continue. |
+| `completed` | The incorporation has been completed. |

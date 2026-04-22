@@ -28,26 +28,11 @@ curl --request GET \
 3. Start an incorporation with `POST /partner/incorporation/companies/{companyId}/incorporations`.
 4. List or retrieve incorporations for status tracking.
 
-## Incorporation status
-
-`incorporationStatus` can be one of:
-
-| Status | Meaning |
-|---|---|
-| `submitted` | Commenda has received the incorporation request. |
-| `in_progress` | Commenda is actively processing the incorporation. |
-| `blocked` | The incorporation needs additional information or resolution before it can continue. |
-| `completed` | The incorporation has been completed. |
-
 This API does not create or return payment intents. Partners using this surface should treat billing as separate from the incorporation resource lifecycle.
 
 ## Jurisdiction options
 
 Create requests use a `country` plus country-specific `countryOptions` instead of a flat product id.
-
-- `country` is the ISO 3166-1 alpha-2 code for the jurisdiction (`AE`, `CA`, `GB`, `IE`, `IN`, `KY`, `NZ`, `SG`, `US`).
-- `countryOptions` is an object whose shape depends on `country`. Every jurisdiction requires `corporationType`; some add extra fields.
-- Send field keys exactly as documented. Unknown fields are rejected.
 
 ```json
 {
@@ -59,135 +44,4 @@ Create requests use a `country` plus country-specific `countryOptions` instead o
 }
 ```
 
-The jurisdiction catalog (`GET /partner/incorporation/jurisdiction-catalog`) is informational and may be used to render selection UI, but request validation is enforced by the create endpoint.
-
-### United Arab Emirates (`AE`)
-
-```json
-{
-  "country": "AE",
-  "countryOptions": {
-    "corporationType": "FZC",
-    "corporationTypeOptions": {
-      "freeZone": "DMCC"
-    }
-  }
-}
-```
-
-- `corporationType` (required): `FZC` — Free Zone Company.
-- `corporationTypeOptions.freeZone` (optional): free zone where the company will be registered. One of:
-  - `ADGM` — Abu Dhabi Global Market
-  - `DIFC` — Dubai International Financial Centre
-  - `DMCC` — Dubai Multi Commodities Centre
-  - `IFZA` — International Free Zone Authority (Dubai)
-
-### Canada (`CA`)
-
-```json
-{
-  "country": "CA",
-  "countryOptions": {
-    "corporationType": "CORPORATION"
-  }
-}
-```
-
-- `corporationType` (required): `CORPORATION` — federal Canadian corporation.
-
-### United Kingdom (`GB`)
-
-```json
-{
-  "country": "GB",
-  "countryOptions": {
-    "corporationType": "LIMITED_COMPANY"
-  }
-}
-```
-
-- `corporationType` (required): `LIMITED_COMPANY` — private company limited by shares (Ltd).
-
-### Ireland (`IE`)
-
-```json
-{
-  "country": "IE",
-  "countryOptions": {
-    "corporationType": "LIMITED_COMPANY"
-  }
-}
-```
-
-- `corporationType` (required): `LIMITED_COMPANY` — private company limited by shares (LTD).
-
-### India (`IN`)
-
-```json
-{
-  "country": "IN",
-  "countryOptions": {
-    "corporationType": "PRIVATE_LIMITED_COMPANY"
-  }
-}
-```
-
-- `corporationType` (required): one of:
-  - `PRIVATE_LIMITED_COMPANY` — private limited company (Pvt Ltd)
-  - `LLP` — limited liability partnership
-
-### Cayman Islands (`KY`)
-
-```json
-{
-  "country": "KY",
-  "countryOptions": {
-    "corporationType": "EXEMPTED_COMPANY"
-  }
-}
-```
-
-- `corporationType` (required): `EXEMPTED_COMPANY` — Cayman exempted company.
-
-### New Zealand (`NZ`)
-
-```json
-{
-  "country": "NZ",
-  "countryOptions": {
-    "corporationType": "LIMITED_COMPANY"
-  }
-}
-```
-
-- `corporationType` (required): `LIMITED_COMPANY` — New Zealand limited company.
-
-### Singapore (`SG`)
-
-```json
-{
-  "country": "SG",
-  "countryOptions": {
-    "corporationType": "PRIVATE_LIMITED_COMPANY"
-  }
-}
-```
-
-- `corporationType` (required): `PRIVATE_LIMITED_COMPANY` — Singapore private limited company (Pte Ltd).
-
-### United States (`US`)
-
-```json
-{
-  "country": "US",
-  "countryOptions": {
-    "corporationType": "LLC",
-    "state": "DE"
-  }
-}
-```
-
-- `corporationType` (required): one of:
-  - `LLC` — limited liability company
-  - `CORPORATION` — C-corporation
-- `state` (optional): two-letter US state abbreviation per ISO 3166-2 (e.g., `DE` for Delaware, `CA` for California, `NY` for New York). If omitted, the end user can pick the state later in the flow.
+See [List jurisdiction catalog](/engine/incorporation/partner-incorporation-jurisdiction-catalog-GET) for available country options and [Create an incorporation](/engine/incorporation/partner-incorporation-incorporations-POST) for request examples.

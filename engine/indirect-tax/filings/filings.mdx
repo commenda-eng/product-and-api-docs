@@ -73,10 +73,14 @@ Contributions are generated during the automated tax breakdown processing cycle 
 
 | Type | Description |
 |---|---|
-| Country-level | Standard VAT returns for a single jurisdiction (e.g., Germany, Netherlands, UK) |
+| Country-level | Standard VAT returns for a single jurisdiction (e.g., Germany, France, Italy) |
 | Union OSS | One-stop shop returns with per-member-state breakdowns for intra-EU B2C sales |
 | Non-Union OSS | One-stop shop returns for non-EU businesses selling B2C services in the EU |
 | IOSS | Import one-stop shop returns for low-value goods imported into the EU |
+
+Country-level filing contributions are supported for 23 EU member states: Austria, Belgium, Bulgaria, Croatia, Cyprus, Czech Republic, Denmark, Finland, France, Germany, Greece, Hungary, Italy, Latvia, Lithuania, Luxembourg, Malta, Poland, Portugal, Romania, Slovakia, Slovenia, and Spain.
+
+Each country includes box rules covering domestic sales at all applicable rate tiers (standard, reduced, super-reduced, and extra-reduced where applicable), domestic purchases, intra-community sales and acquisitions, zero-rated domestic sales, imports, exports, and a formula-based total output VAT box. Sales and returns are automatically netted within each box.
 
 For country-level filings, box values are computed once using the filing jurisdiction's rates. For trade-bloc filings (OSS/IOSS), the engine iterates over each destination member state, resolving that state's rates and producing per-jurisdiction contributions.
 

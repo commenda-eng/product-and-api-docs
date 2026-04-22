@@ -33,12 +33,12 @@ The `/calculate` and `/transactions` endpoints only require `country` at the sch
 Address requirements vary by country and region. Here are some key differences to be aware of:
 
 - **United States (US):** `address_line_1`, `city`, `state`, and `postal_code` are all `REQUIRED`. State codes must be valid 2-letter US state abbreviations (e.g., `CA`, `NY`).
-- **EU countries (e.g., DE, FR):** `address_line_1` and `city` are `REQUIRED`, while `state` and `postal_code` are `OPTIONAL`. When a postal code is provided, it is still validated against the country's regex pattern.
-- **United Kingdom (GB):** `address_line_1` and `city` are `REQUIRED`, while `state` and `postal_code` are `OPTIONAL`. Provided postal codes must match the UK format (e.g., `SW1A 1AA`).
+- **EU countries (e.g., DE, FR):** `address_line_1`, `city`, and `postal_code` are `REQUIRED`, while `state` is `OPTIONAL`. Postal codes are validated against the country's regex pattern (e.g., `^\d{5}$` for DE and FR).
+- **United Kingdom (GB):** `address_line_1`, `city`, and `postal_code` are `REQUIRED`, while `state` is `OPTIONAL`. Postal codes must match the UK format (e.g., `SW1A 1AA`).
 - **Canada (CA):** `address_line_1` and `city` are `REQUIRED`. `state` and `postal_code` requirements follow Canadian postal standards. When provided, state codes must be valid 2-letter province/territory abbreviations (e.g., `ON`, `BC`).
 
 <Note>
-  Even when a field is `OPTIONAL`, providing it improves tax calculation accuracy. For example, including a postal code for EU or GB addresses helps resolve the correct tax jurisdiction.
+  Even when a field is `OPTIONAL`, providing it improves tax calculation accuracy. For example, including a state code for EU or GB addresses can help resolve the correct tax jurisdiction.
 </Note>
 
 ## Postal code validation
@@ -46,7 +46,7 @@ Address requirements vary by country and region. Here are some key differences t
 When `postal_code_regex` is present in the response, you can use it to validate postal codes before submission. For example, the US pattern `^\d{5}(-\d{4})?$` accepts both 5-digit and 9-digit ZIP codes.
 
 <Note>
-The `postal_code` field is **optional** for EU countries (such as DE and FR), GB, and CA. If a postal code is provided for these countries, it is still validated against the country's regex pattern. For the US, postal code remains **required**.
+The `postal_code` field is **required** for the US, EU countries (such as DE and FR), and GB. For CA, postal code is validated against the country's regex pattern when provided. Postal codes are always validated against the country-specific regex when present.
 </Note>
 
 ## Valid state codes

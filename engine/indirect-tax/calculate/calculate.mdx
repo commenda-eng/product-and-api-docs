@@ -22,7 +22,7 @@ For UK (`GB`) calculations, you must include a `ship_from` address in your reque
 
 ### Address validation
 
-When you submit a calculation request, the API validates your addresses against the destination country's requirements. Only `country` is required at the schema level for all addresses. Other fields such as `postal_code` and `state` are conditionally required depending on the destination country. For example, US addresses require both `postal_code` and `state`, while GB addresses treat them as optional. You can look up which fields are required for a given country using the [address requirements endpoint](/engine/indirect-tax/address-requirements/address-requirements-GET) before making a calculation request.
+When you submit a calculation request, the API validates your addresses against the destination country's requirements. Only `country` is required at the schema level for all addresses. Other fields such as `postal_code` and `state` are conditionally required depending on the destination country. For example, US addresses require both `postal_code` and `state`, while GB addresses require `postal_code` but treat `state` as optional. You can look up which fields are required for a given country using the [address requirements endpoint](/engine/indirect-tax/address-requirements/address-requirements-GET) before making a calculation request.
 
 ## Factors affecting tax rates
 
@@ -72,7 +72,7 @@ Each address is validated against per-country requirements that define which fie
 
 - **Field presence** — required fields (e.g., `address_line_1`, `city` for US) must be provided and non-empty.
 - **State code validation** — the state must match one of the valid ISO 3166-2 subdivision codes for the country.
-- **Postal code format** — when a postal code is provided, it must match the country's expected format (e.g., `^\d{5}(-\d{4})?$` for US ZIP codes). Note that `postal_code` is required for the US but optional for EU countries (such as DE and FR), GB, and CA. Providing a postal code when it is optional improves tax jurisdiction accuracy.
+- **Postal code format** — when a postal code is provided, it must match the country's expected format (e.g., `^\d{5}(-\d{4})?$` for US ZIP codes). The `postal_code` field is required for the US, EU countries (such as DE and FR), and GB. For CA, `postal_code` is optional but providing it improves tax jurisdiction accuracy.
 
 Use the [`/address-requirements`](/engine/indirect-tax/address-requirements/address-requirements) endpoint to query which fields and formats are expected for each country before calling `/calculate`.
 

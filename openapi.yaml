@@ -4792,7 +4792,6 @@ components:
       enum:
         - MONTHLY
         - QUARTERLY
-        - ANNUALLY
         - SEMI_ANNUALLY
         - ANNUAL_CALENDAR_YEAR
         - FISCAL_YEAR
@@ -4805,7 +4804,7 @@ components:
         - QUARTERLY_MAR
       description: >-
         How often the business is required to submit tax returns.
-        V1 registrations typically use MONTHLY, QUARTERLY, ANNUALLY, or SEMI_ANNUALLY.
+        V1 registrations typically use MONTHLY, QUARTERLY, SEMI_ANNUALLY, or ANNUAL_CALENDAR_YEAR.
         V2 registrations may use additional frequencies such as ANNUAL_RECONCILIATION
         (for jurisdictions requiring a separate annual reconciliation filing alongside
         periodic returns) or region-specific variants like QUARTERLY_FEB and QUARTERLY_MAR.
@@ -4860,6 +4859,11 @@ components:
             - COUNTRY
             - TRADEBLOC
             - CITY_OR_COUNTY
+        filing_content_id:
+          type: string
+          nullable: true
+          description: Content identifier linking this filing to its filing calendar entry and contribution box rules. Present for V2 filings with content-driven calendars; null for V1 filings.
+          example: FC_DE_3001_VAT
         frequency:
           $ref: '#/components/schemas/filing_frequency'
         period_start_date:
@@ -4952,6 +4956,11 @@ components:
             - COUNTRY
             - TRADEBLOC
             - CITY_OR_COUNTY
+        filing_content_id:
+          type: string
+          nullable: true
+          description: Content identifier linking this filing to its filing calendar entry and contribution box rules. Present for V2 filings with content-driven calendars; null for V1 filings.
+          example: FC_DE_3001_VAT
         frequency:
           $ref: '#/components/schemas/filing_frequency'
         period_start_date:

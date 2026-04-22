@@ -3656,7 +3656,7 @@ components:
         postal_code:
           type: string
           description: |
-            Postal or ZIP code. Required for some countries (e.g., US) and optional for others (e.g., GB, DE). Format varies by country. For US addresses, either 5-digit ZIP or 9-digit ZIP+4 is accepted. Use the `/address-requirements` endpoint to check whether this field is required and to get the validation regex for each country.
+            Postal or ZIP code. Required for many countries (e.g., US, GB, DE, FR) and optional for others (e.g., CA). Format varies by country. For US addresses, either 5-digit ZIP or 9-digit ZIP+4 is accepted. Use the `/address-requirements` endpoint to check whether this field is required and to get the validation regex for each country.
           example: '90401'
         city:
           type: string

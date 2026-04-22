@@ -51,7 +51,7 @@ curl -X GET "https://transaction-tax.api.in.commenda.io/api/v1/address-requireme
     "address_line_3": "IGNORED",
     "city": "REQUIRED",
     "state": "OPTIONAL",
-    "postal_code": "OPTIONAL",
+    "postal_code": "REQUIRED",
     "postal_code_regex": "^[A-Za-z]{1,2}\\d[A-Za-z\\d]? ?\\d[A-Za-z]{2}$"
   },
   "message": "Successfully retrieved address requirements."
@@ -66,7 +66,7 @@ curl -X GET "https://transaction-tax.api.in.commenda.io/api/v1/address-requireme
     "address_line_3": "IGNORED",
     "city": "REQUIRED",
     "state": "OPTIONAL",
-    "postal_code": "OPTIONAL",
+    "postal_code": "REQUIRED",
     "postal_code_regex": "^\\d{5}$"
   },
   "message": "Successfully retrieved address requirements."

@@ -52,7 +52,7 @@ This endpoint supports two input modes:
 
 ## Behavior
 
-- **Duplicate protection** — if a filing already exists for the same registration, frequency, and period, it is not recreated. Existing filings that are not in `SCHEDULED` status are preserved.
+- **Duplicate protection** — if a filing already exists for the same corporation, registration, filing content, due date, and frequency, it is not recreated. This means parallel filing tracks under the same registration (e.g., Germany Standard vs. Dauerfrist) each produce their own filing record, while repeated calls for the same track are safely deduplicated.
 - **Composite frequencies** — if a registration has multiple frequencies (e.g., `QUARTERLY` and `ANNUAL_RECONCILIATION`), filings are generated for all matching calendar entries.
 - **Ownership validation** — the system verifies that the `registration_tax_type_id` belongs to the specified corporation.
 
@@ -99,6 +99,7 @@ curl --request POST \
       "id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
       "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
       "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+      "filing_content_id": "FC_US_06_RST",
       "jurisdiction_name": "California",
       "jurisdiction_type": "STATE_OR_PROVINCE",
       "form_title": "Sales and Use Tax Return",

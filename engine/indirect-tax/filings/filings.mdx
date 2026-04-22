@@ -22,10 +22,22 @@ V2 filings support:
 - **International jurisdictions** — EU member states, UK, Canada, and trade bloc schemes (Union OSS, Non-Union OSS, IOSS)
 - **Composite frequencies** — registrations with multiple filing obligations (e.g., quarterly returns plus annual reconciliation)
 - **Content-driven calendars** — filing dates and periods are determined by a centralized filing calendar
+- **Parallel filing tracks** — some jurisdictions require multiple filing tracks under a single registration (e.g., Germany Standard vs. Dauerfrist, or Netherlands Regular vs. Non-Established). Each track is identified by a unique `filing_content_id`.
 
 <Info>
   To use V2 filings, you must first create a [V2 registration](/engine/indirect-tax/registrations/v2/registrations-v2-POST) for the jurisdiction. The `registration_tax_type_id` from that registration is used to identify filings.
 </Info>
+
+### Filing uniqueness
+
+Each V2 filing is uniquely identified by the combination of:
+- `corporation_id`
+- `registration_tax_type_id`
+- `filing_content_id`
+- `filing_due_date`
+- `filing_frequency`
+
+The `filing_content_id` distinguishes parallel filing tracks under the same registration. For example, if a German VAT registration produces both a standard return and a Dauerfrist (extended deadline) return for the same period, each has a different `filing_content_id` and is treated as a separate filing. When you [bulk create filings](/engine/indirect-tax/filings/filings-bulk-create-POST), the system uses this combination for duplicate detection — existing filings that match on all five fields are skipped.
 
 ## Filing workflow
 
@@ -53,7 +65,7 @@ V2 filings include additional fields compared to V1:
 | `registration_tax_type_id` | The V2 content ID linking the filing to a registration |
 | `jurisdiction_name` | Human-readable jurisdiction name (e.g., "California", "Germany") |
 | `jurisdiction_type` | Type of jurisdiction (e.g., `STATE_OR_PROVINCE`, `COUNTRY`, `TRADEBLOC`) |
-| `filing_content_id` | Content identifier linking the filing to its calendar entry and contribution box rules. Present for V2 filings with content-driven calendars; null for V1 filings. |
+| `filing_content_id` | Content identifier linking the filing to its calendar entry and contribution box rules. Distinguishes parallel filing tracks under one registration (e.g., DE Standard vs. Dauerfrist). Present for V2 filings; null for V1 filings. |
 | `form_title` | The display name of the filing form |
 | `description` | Additional description for the filing |
 | `reporting_period_start_date` | Start of the reporting period |

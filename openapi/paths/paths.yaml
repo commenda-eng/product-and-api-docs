@@ -1332,7 +1332,7 @@
       description: >-
         Set to `true` to use the global registration threshold engine. When enabled, the response
         uses a `jurisdictions` array with expanded fields including `jurisdiction_id`, `exposure_type`,
-        `exposure_rule_id`, `country`, `subdivision`, and `currency`. When omitted or `false`,
+        `exposure_rule_id`, `subdivision`, and `currency`. When omitted or `false`,
         the legacy response format with a `states` array is returned.
       required: false
       schema:

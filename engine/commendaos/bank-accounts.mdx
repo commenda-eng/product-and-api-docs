@@ -17,7 +17,7 @@ Before adding a bank account, ensure you have:
 - A business entity created in CommendaOS
 - The business entity ID
 - Bank account details (account number, routing number or equivalent, bank name)
-- Account type information (checking, savings, etc.)
+- Account type information (`Checkings`, `Savings`, etc.)
 - The country where the bank account is held (ISO 3166-1 alpha-2 code)
 
 ## Retrieve country-specific field requirements
@@ -123,14 +123,18 @@ Pass country-specific routing and account details inside the `credentials` objec
   "accountHolderName": "Acme Corporation",
   "country": "US",
   "currency": "USD",
-  "accountNumber": "123456789",
   "credentials": {
+    "accountNumber": "123456789",
     "routingNumber": "021000021",
-    "accountType": "checking"
+    "accountType": "Checkings"
   },
   "isPrimary": true
 }
 ```
+
+<Info>
+Account and routing details are canonical inside the `credentials` object. Top-level `accountNumber`, `routingNumber`, and `swiftCode` fields are still accepted for backward compatibility and are automatically mirrored into `credentials.accountNumber`, `credentials.routingNumber`, and `credentials.swiftBic`.
+</Info>
 
 For an Indian bank account, the `credentials` object uses different fields:
 
@@ -140,15 +144,15 @@ For an Indian bank account, the `credentials` object uses different fields:
   "accountHolderName": "Acme India Pvt Ltd",
   "country": "IN",
   "currency": "INR",
-  "accountNumber": "123456789012",
   "credentials": {
+    "accountNumber": "123456789012",
     "ifscCode": "SBIN0001234"
   }
 }
 ```
 
 <Info>
-When `credentials.accountType` is set to `checking` or `savings`, the bank account type is automatically mapped to the corresponding account type.
+When `credentials.accountType` is set, its value is used directly for both `bankAccountType` and `subType` on the stored record. Supported values are `Checkings` and `Savings`. If you omit `credentials.accountType`, it is derived from the top-level `bankAccountType` and `subType` fields when provided.
 </Info>
 
 **Response**
@@ -162,10 +166,10 @@ When `credentials.accountType` is set to `checking` or `savings`, the bank accou
   "country": "US",
   "currency": "USD",
   "accountNumber": "****6789",
-  "routingNumber": "021000021",
   "credentials": {
+    "accountNumber": "123456789",
     "routingNumber": "021000021",
-    "accountType": "checking"
+    "accountType": "Checkings"
   },
   "bankAccountType": "Checkings",
   "subType": "Checkings",
@@ -305,9 +309,9 @@ The `credentials` object holds country-specific bank routing and identification 
 
 | Field | Countries | Description |
 |-------|-----------|-------------|
-| `routingNumber` | US | ABA routing transit number (9 digits) |
 | `accountNumber` | Most | Local bank account number |
-| `accountType` | US | `checking` or `savings` |
+| `routingNumber` | US | ABA routing transit number (9 digits) |
+| `accountType` | US | `Checkings` or `Savings` |
 | `ifscCode` | IN | Indian Financial System Code (11 characters) |
 | `sortCode` | GB, IE | Bank sort code (6 digits) |
 | `iban` | EU, SEPA countries | International Bank Account Number |

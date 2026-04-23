@@ -17,22 +17,55 @@ Each filing shows:
 - **Status** — draft, ready to file, filed, or overdue
 - **Amount** — the total tax due
 
+## Filing calendar
+
+Commenda generates filings automatically from your active registrations. The calendar uses each registration's filing frequency (monthly, quarterly, annual) to project the set of filings due for a jurisdiction over a given window.
+
+Before generation, your advisor can preview the calendar to see exactly which filings will be created for the selected period — including the start date, end date, and due date of each one. Generating the calendar:
+
+- Creates a filing row for every projected period.
+- Writes the jurisdiction's country and state onto the filing so it shows up alongside V1 filings in your list.
+- Opens a service request per filing in **ACTIVE**, **OVERDUE**, or **FILED** state so the task workflow below is ready to start.
+
+If a registration's frequency changes (for example, a state moves you from quarterly to monthly), the change is captured in the **Frequency change logs** so you can audit when and why the cadence shifted.
+
 ## Filing workflow
 
+Each filing moves through a three-step task sequence that coordinates work between your Commenda advisor and your team. The tasks appear on the filing's service request so you can track progress and see what's blocking next steps.
+
 <Steps>
+  <Step title="Agent reviews the filing">
+    Your Commenda advisor generates the draft filing report and verifies the aggregated totals against the connected transactions. This task is assigned to the agent and must complete before the next step unlocks.
+  </Step>
   <Step title="Review transactions">
-    Verify that all transactions for the period are accurate and complete.
+    Once the draft is ready, this task is assigned to you. Open the filing to check the transaction list, totals, and any flagged items. Approve the data to hand the filing back to your advisor.
   </Step>
-  <Step title="Review the filing">
-    Click on a filing to see the summary, including total sales, taxable amount, and tax due.
-  </Step>
-  <Step title="Submit the filing">
-    Once you've reviewed it, mark the filing as ready to submit. If you have an advisor or agent managing your filings, they handle the submission.
-  </Step>
-  <Step title="Confirm completion">
-    After you or your advisor submits the return to the tax authority, update the filing status to **Filed** or **Completed**.
+  <Step title="Confirm filing submission">
+    Your advisor submits the return to the tax authority and then confirms the submission on Commenda. The filing status updates to **Filed** once this final task is complete.
   </Step>
 </Steps>
+
+Each step only becomes actionable when the previous one completes — for example, you can't start reviewing transactions until the agent has generated the filing report, and the agent can't confirm submission until your review is done.
+
+## Working on a filing
+
+Opening a filing gives you everything you need to review, sign off, and keep records in one place.
+
+- **Transaction summary** — aggregated totals (gross sales, taxable amount, tax collected) computed from the transactions attached to the filing period.
+- **Prepayments** — any prepayments recorded against the filing, shown alongside the net amount still due.
+- **Documents** — upload evidence, returns, or supporting files directly onto the filing. Uploaded documents stay attached to the filing and can be forwarded to collaborators from the chat room.
+- **Assignment** — advisors can assign a specific team member to a filing so it's clear who owns the next action.
+- **Lock / unlock** — when a filing is ready for review, advisors lock it to freeze the numbers. Unlocking is available if transactions or prepayments need to be corrected before submission.
+
+### Exporting tax breakdowns
+
+From a filing you can export the full tax breakdown for downstream reporting or reconciliation:
+
+- A single-period breakdown for the filing you're viewing.
+- A breakdown with every underlying line item, for audit-level detail.
+- A breakdown across a custom date range, useful when reconciling totals that don't align to a single filing period.
+
+Exports run asynchronously — Commenda returns a job reference and delivers the file once it's ready.
 
 ## EU filings
 

@@ -3318,7 +3318,8 @@ components:
           example: US
         state_or_province:
           type: string
-          description: State or province code.
+          nullable: true
+          description: State or province code. Null for country-level and tradebloc jurisdictions.
           example: CA
         tax_types:
           type: array
@@ -3502,6 +3503,8 @@ components:
                 $ref: '#/components/schemas/jurisdiction_type'
               state_or_province:
                 type: string
+                nullable: true
+                description: State or province code. Null for country-level and tradebloc jurisdictions.
                 example: CA
               country:
                 type: string

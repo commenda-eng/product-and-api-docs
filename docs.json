@@ -118,6 +118,12 @@
               "integrations/quickbooks/overview",
               "integrations/netsuite/overview"
             ]
+          },
+          {
+            "group": "Integration guides",
+            "pages": [
+              "guides/stripe-incremental-sync"
+            ]
           }
         ]
       },

@@ -5,29 +5,56 @@ description: "Connect NetSuite to sync accounting data and automate indirect tax
 
 ## Overview
 
-The NetSuite integration connects your Oracle NetSuite account to Commenda for automatic transaction syncing and indirect tax calculation. Commenda pulls your invoices, contacts, items, and cash sales, then calculates and applies the correct indirect tax on your NetSuite documents.
+The NetSuite integration connects your Oracle NetSuite account to Commenda for automatic transaction syncing and indirect tax calculation. Commenda pulls your receivables (invoices, cash sales, cash refunds), payables (bills and bill credit notes), contacts, and items, then calculates and applies the correct indirect tax on your NetSuite sales documents.
 
 ## Supported features
 
 | Feature | Status |
 |---|---|
-| Transaction syncing | Supported |
-| Tax calculation | Supported |
+| Receivables syncing (invoices, cash sales, cash refunds) | Supported |
+| Payables syncing (bills, bill credit notes) | Supported |
+| Tax calculation on sales documents | Supported |
 | Real-time webhooks | Supported |
 
 ## Data models
 
 Commenda syncs the following data from NetSuite:
 
+### Receivables
+
 - **Invoices** — sales invoices with line items and addresses
-- **Cash refunds** — refund transactions
 - **Cash sales** — point-of-sale and cash transactions (unique to NetSuite)
-- **Contacts** — customer profiles with billing and shipping addresses
+- **Cash refunds** — refund transactions
+
+### Payables
+
+- **Bills** — vendor bills with line items, vendor details, and tax amounts
+- **Bill credit notes** — credits received from vendors against previously issued bills
+
+### Reference data
+
+- **Contacts** — customer and vendor profiles with billing and shipping addresses
 - **Items** — your product and service catalog
 
 <Info>
-Tax calculation also supports **estimates** and **sales orders** in addition to the synced data models.
+Tax calculation also supports **estimates** and **sales orders** in addition to the synced data models. Tax calculation runs on receivable-side documents only — bills and bill credit notes are ingested as-is for reporting and reconciliation.
 </Info>
+
+## Accounts payable
+
+Commenda ingests NetSuite **Bills** and **Bill Credit Notes** into the same unified transaction model used for receivables, so you can report on spend, reconcile vendor activity, and surface purchase data alongside your sales data.
+
+Key behaviors:
+
+- **Vendor resolution.** Vendors on bills are resolved from NetSuite's vendor records (separate from customer records). Commenda fetches vendor details — including billing and shipping addresses — via a passthrough call to NetSuite using the platform vendor ID on each bill.
+- **Amount handling.** Bill amounts are ingested with signs that mirror NetSuite's conventions:
+  - **Bills** — tax amounts are normalized so credits and debits reconcile correctly across the unified model.
+  - **Bill credit notes** — line amounts, quantities, and unit prices are negated so credit notes offset the original bill.
+- **Discount line items.** Document-level discount lines are detected, excluded from the line-item list, and prorated across the remaining product lines so per-line net amounts stay accurate.
+- **Address resolution.** Vendor billing and shipping addresses are resolved from the bill payload first, then fall back to the vendor record. NetSuite's receivable-only SuiteScript flow is skipped for payables, so no plugin configuration is required for bills.
+- **No tax calculation on bills.** Commenda does not calculate or write tax back to bills or bill credit notes — these documents are read-only from a tax perspective and used for ingestion and reporting.
+
+Bills and bill credit notes are enabled automatically when you connect NetSuite. You do not need to change any plugin settings or SuiteScript deployments to sync payables.
 
 ## How tax calculation works
 
@@ -89,9 +116,10 @@ The NetSuite integration requires a custom SuiteScript deployment for full funct
 
 ## Known behaviors
 
-- **Cash sales** is a NetSuite-specific transaction type not found in other integrations
-- Commenda only skips **draft** status transactions — NetSuite is more permissive than other platforms, with statuses like deposited, not deposited, and unknown all eligible for processing
-- Customer IDs in NetSuite use a `customer_` prefix internally, which Commenda handles automatically
+- **Cash sales** is a NetSuite-specific transaction type not found in other integrations.
+- Commenda only skips **draft** status transactions — NetSuite is more permissive than other platforms, with statuses like deposited, not deposited, and unknown all eligible for processing.
+- Customer IDs in NetSuite use a `customer_` prefix internally; vendor IDs on bills and bill credit notes use a `vendor_` prefix. Commenda handles both automatically.
+- Receivables and payables flow through separate resolution paths — customer-side address lookups use the Commenda SuiteScript plugin, while vendor-side lookups use NetSuite passthrough calls.
 
 ## Next steps
 

@@ -11,7 +11,19 @@ Netsuite calculations are not implemented in the commenda logical backend, we bu
 
 We sync the following data models (through Rootfi and logical backend, same as other integrations):
 
-**Netsuite Payment Vouchers: (**INVOICES, INVOICE_CREDIT_NOTES, CASH_REFUNDS, CASH_SALES)
+**Netsuite Payment Vouchers (receivables):** INVOICES, INVOICE_CREDIT_NOTES, CASH_REFUNDS, CASH_SALES
+
+**Netsuite Payables:** BILLS, BILL_CREDIT_NOTES
+
+Bills and bill credit notes flow exclusively through the unified integration pipeline. The legacy rootfi-sync transformer does not handle payables, so every bill or bill credit note is routed through the unified transformer and address-resolver. Vendor platform IDs on the Rootfi payload carry a `vendor_` prefix (receivables use `customer_`); the transformer normalizes these automatically when looking up vendor records.
+
+Amount handling for payables diverges from receivables:
+
+- **BILLS** — tax amounts are sign-flipped so debits and credits reconcile inside Commenda's unified model.
+- **BILL_CREDIT_NOTES** — line-item amounts, unit prices, and quantities are negated so credit notes offset the original bill.
+- Document-level discount lines (`itemtype === "Discount"`) are stripped from the line-item list and prorated across product lines, so per-line net amounts stay accurate after the sign flip.
+
+Vendor address resolution for bills uses the unified pipeline, not the SuiteScript customer plugin path. Addresses are pulled from the bill payload first, then fall back to the vendor record via a Rootfi passthrough (`GET_VENDORS_BY_PLATFORM_IDS`). The customer-focused SuiteScript `customscriptcommenda_get_data` deployment is explicitly skipped for payable record types — calling it would fail because bills reference vendors, not customers.
 
 We follow the following hierarchy:
 

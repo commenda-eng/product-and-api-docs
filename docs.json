@@ -164,17 +164,43 @@
         "icon": "handshake",
         "groups": [
           {
+            "group": "Company setup",
+            "pages": [
+              "engine/incorporation/company-POST"
+            ]
+          },
+          {
             "group": "Partner Incorporation API",
             "pages": [
               "engine/incorporation/partner-incorporation-introduction",
-              "engine/incorporation/partner-incorporation-jurisdiction-catalog-GET",
-              "engine/incorporation/partner-incorporation-requirements-GET",
-              "engine/incorporation/partner-incorporation-incorporations-POST",
-              "engine/incorporation/partner-incorporation-incorporations-GET",
-              "engine/incorporation/partner-incorporation-incorporations-id-GET",
-              "engine/incorporation/partner-incorporation-files-POST",
-              "engine/incorporation/partner-incorporation-submissions-POST",
-              "engine/incorporation/partner-incorporation-submissions-GET"
+              {
+                "group": "Discovery",
+                "pages": [
+                  "engine/incorporation/partner-incorporation-jurisdiction-catalog-GET",
+                  "engine/incorporation/partner-incorporation-requirements-GET"
+                ]
+              },
+              {
+                "group": "Incorporations",
+                "pages": [
+                  "engine/incorporation/partner-incorporation-incorporations-POST",
+                  "engine/incorporation/partner-incorporation-incorporations-GET",
+                  "engine/incorporation/partner-incorporation-incorporations-id-GET"
+                ]
+              },
+              {
+                "group": "Evidence files",
+                "pages": [
+                  "engine/incorporation/partner-incorporation-files-POST"
+                ]
+              },
+              {
+                "group": "Submissions",
+                "pages": [
+                  "engine/incorporation/partner-incorporation-submissions-POST",
+                  "engine/incorporation/partner-incorporation-submissions-GET"
+                ]
+              }
             ]
           },
           {

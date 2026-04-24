@@ -45,7 +45,7 @@ schemas:
         example: 77
   AffiliateServiceCatalog:
     type: string
-    description: Incorporation service types currently supported by the affiliate public API.
+    description: Incorporation service types currently supported by the legacy affiliate API.
     enum:
       - US_CCORP_INCORPORATION
       - US_LLC_INCORPORATION

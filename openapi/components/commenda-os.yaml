@@ -1,6 +1,6 @@
 ---
 schemas:
-  CommendaOsPublicError:
+  CommendaOsPartnerError:
     type: object
     required:
       - statusCode

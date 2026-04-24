@@ -286,8 +286,8 @@ components:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationResponse"
     PartnerIncorporationListResponse:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationListResponse"
-    CommendaOsPublicError:
-      $ref: "./commenda-os.yaml#/schemas/CommendaOsPublicError"
+    CommendaOsPartnerError:
+      $ref: "./commenda-os.yaml#/schemas/CommendaOsPartnerError"
     CommendaOsBusinessEntityResponse:
       $ref: "./commenda-os.yaml#/schemas/CommendaOsBusinessEntityResponse"
     CommendaOsBusinessEntityListResponse:

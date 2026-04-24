@@ -2126,13 +2126,14 @@ paths:
             $ref: '#/components/schemas/PartnerIncorporationCountry'
           description: Incorporation country.
           example: SG
-        - name: corporationType
+        - name: countryOptions
           in: query
-          required: false
+          required: true
+          style: deepObject
+          explode: true
           schema:
-            type: string
-          description: Convenience query parameter for `countryOptions.corporationType`.
-          example: PRIVATE_LIMITED_COMPANY
+            $ref: '#/components/schemas/PartnerIncorporationCountryOptions'
+          description: Country-specific options using deep-object query syntax, for example `countryOptions[corporationType]=PRIVATE_LIMITED_COMPANY`.
       responses:
         '200':
           description: Requirements retrieved successfully
@@ -5961,6 +5962,13 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PartnerJurisdictionCatalogCountry'
+    PartnerIncorporationCountryOptions:
+      type: object
+      description: Country-specific incorporation options. Use the jurisdiction catalog for the currently supported fields and values.
+      additionalProperties: true
+      example:
+        state: DE
+        corporationType: LLC
     PartnerIncorporationRequirements:
       type: object
       description: Requirements DSL for the selected incorporation. Clients can use this to render their own intake UI, but intake updates are always validated against the current server-side DSL.
@@ -5984,13 +5992,6 @@ components:
       properties:
         requirements:
           $ref: '#/components/schemas/PartnerIncorporationRequirements'
-    PartnerIncorporationCountryOptions:
-      type: object
-      description: Country-specific incorporation options. Use the jurisdiction catalog for the currently supported fields and values.
-      additionalProperties: true
-      example:
-        state: DE
-        corporationType: LLC
     PartnerIncorporationStatus:
       type: string
       description: Current lifecycle status for the incorporation.

@@ -25,7 +25,7 @@ curl --request GET \
 
 1. Create a company with the existing `POST /public/company` endpoint.
 2. Review the informational jurisdiction catalog with `GET /partner/incorporation/jurisdiction-catalog`.
-3. Fetch the current requirements DSL with `GET /partner/incorporation/requirements?country=SG&corporationType=PRIVATE_LIMITED_COMPANY`.
+3. Fetch the current requirements DSL with `GET /partner/incorporation/requirements?country=SG&countryOptions[corporationType]=PRIVATE_LIMITED_COMPANY`.
 4. Start an incorporation with `POST /partner/incorporation/companies/{companyId}/incorporations`.
 5. Link already-uploaded files with `POST /partner/incorporation/{incorporationId}/files`.
 6. Update partial or complete intake data with `POST /partner/incorporation/{incorporationId}/intake`.

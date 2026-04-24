@@ -2172,13 +2172,14 @@
           "$ref": "../components/components.yaml#/components/schemas/PartnerIncorporationCountry"
         description: Incorporation country.
         example: SG
-      - name: corporationType
+      - name: countryOptions
         in: query
-        required: false
+        required: true
+        style: deepObject
+        explode: true
         schema:
-          type: string
-        description: Convenience query parameter for `countryOptions.corporationType`.
-        example: PRIVATE_LIMITED_COMPANY
+          "$ref": "../components/components.yaml#/components/schemas/PartnerIncorporationCountryOptions"
+        description: Country-specific options using deep-object query syntax, for example `countryOptions[corporationType]=PRIVATE_LIMITED_COMPANY`.
     responses:
       '200':
         description: Requirements retrieved successfully

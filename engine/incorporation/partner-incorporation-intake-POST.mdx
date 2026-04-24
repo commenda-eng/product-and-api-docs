@@ -9,9 +9,9 @@ Each update is merged into the current intake state and validated against the cu
 
 The Partner API does not expose a submission history endpoint. To read progress after an update, call `GET /partner/incorporation/{incorporationId}` and inspect `intakeState`.
 
-## Mixed resource modes
+## Resource fields
 
-Resource fields can use existing Commenda OS resources, inline data, or patches to existing resources:
+Resource fields can use existing Commenda OS resources or inline data. When an existing resource is missing incorporation-specific details, include supplemental `data` on the same `existingResource` reference. Supplemental data is used for intake validation and does not mutate the Commenda OS resource during Phase 2.
 
 ```json
 {
@@ -37,12 +37,12 @@ Resource fields can use existing Commenda OS resources, inline data, or patches 
         }
       },
       {
-        "mode": "patch",
+        "mode": "existingResource",
         "resourceId": "key_person_003",
         "data": {
           "passportNumber": "K9876543M",
           "residentialAddress": {
-            "mode": "patch",
+            "mode": "existingResource",
             "resourceId": "location_003",
             "data": {
               "postalCode": "079903"

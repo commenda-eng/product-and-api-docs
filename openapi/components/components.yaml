@@ -466,6 +466,98 @@ components:
           description: Total amount of sales tax filed with various jurisdictions for
             this period. May differ slightly from the total tax collected.
           example: 135.92
+        filing_transactions_count:
+          type: integer
+          nullable: true
+          description: >-
+            Number of transactions included in this filing. Useful for reconciling
+            the return against your transaction ledger. Null when the count is not
+            available for the jurisdiction.
+          example: 842
+        filing_adjustments:
+          type: object
+          description: >-
+            Return-level adjustment lines that appear on US state, county, city,
+            and district tax returns. Each field is the monetary value of a line
+            item on the return form and is populated only when the jurisdiction's
+            form includes it. Fields you do not see on the return form for a
+            given filing are returned as `null`.
+          properties:
+            adjustment:
+              type: number
+              nullable: true
+              description: >-
+                Generic positive or negative adjustment line on the return.
+              example: -25.00
+            vendor_discount:
+              type: number
+              nullable: true
+              description: >-
+                Timely-filing vendor compensation (also called a collection
+                allowance) credited to sellers who file and pay on time.
+              example: 136.25
+            discount:
+              type: number
+              nullable: true
+              description: Early-payment or prompt-filing discount applied to the return.
+              example: 0.00
+            rounding:
+              type: number
+              nullable: true
+              description: >-
+                Rounding line used on jurisdictions that round return box values
+                to a fixed precision.
+              example: 0.00
+            penalty:
+              type: number
+              nullable: true
+              description: Late-filing or late-payment penalty assessed on the return.
+              example: 0.00
+            interest:
+              type: number
+              nullable: true
+              description: Interest accrued on a late payment.
+              example: 0.00
+            prepayment:
+              type: number
+              nullable: true
+              description: >-
+                Prepayment credit claimed on this return.
+              example: 0.00
+            prior_payment:
+              type: number
+              nullable: true
+              description: Credit carried forward from a prior period's return.
+              example: 0.00
+            retail_delivery_fee:
+              type: number
+              nullable: true
+              description: >-
+                Retail delivery fee line for jurisdictions that assess a
+                per-delivery surcharge (for example, Colorado and Minnesota).
+              example: 120.00
+            jurisdiction_issued_credit:
+              type: number
+              nullable: true
+              description: >-
+                Credit memo issued by the tax authority, such as a credit from an
+                amended return.
+              example: 0.00
+            marketplace_payment:
+              type: number
+              nullable: true
+              description: >-
+                Tax collected and remitted by a marketplace facilitator on the
+                seller's behalf.
+              example: 243.60
+            tax_remitted:
+              type: number
+              nullable: true
+              description: >-
+                Actual amount remitted to the jurisdiction. May differ from
+                `total_tax_filed` after adjustments, discounts, and credits are
+                applied.
+              example: 3488.75
         payment_details:
           type: object
           properties:
@@ -593,6 +685,14 @@ components:
           description: Total amount of sales tax filed with various jurisdictions for
             this period. May differ slightly from the total tax collected.
           example: 135.92
+        filing_transactions_count:
+          type: integer
+          nullable: true
+          description: >-
+            Number of transactions included in this filing. Useful for reconciling
+            the return against your transaction ledger. Null when the count is not
+            available for the jurisdiction.
+          example: 842
         sales_details:
           type: object
           properties:
@@ -609,6 +709,96 @@ components:
               type: number
               description: Total sales tax collected during the period.
               example: 771.62
+        filing_adjustments:
+          type: object
+          description: >-
+            Return-level adjustment lines that appear on US state, county, city,
+            and district tax returns. Each field is the monetary value of a line
+            item on the return form and is populated only when the jurisdiction's
+            form includes it. Fields you do not see on the return form for a
+            given filing are returned as `null`.
+          properties:
+            adjustment:
+              type: number
+              nullable: true
+              description: >-
+                Generic positive or negative adjustment line on the return. Use
+                this when the jurisdiction's form has a free-form adjustment row
+                (for example, to correct a prior-period reporting error).
+              example: -25.00
+            vendor_discount:
+              type: number
+              nullable: true
+              description: >-
+                Timely-filing vendor compensation (also called a collection
+                allowance) that a number of US states — such as Florida, Illinois,
+                and Texas — credit to sellers who file and pay on time.
+              example: 136.25
+            discount:
+              type: number
+              nullable: true
+              description: >-
+                Early-payment or prompt-filing discount applied to the return.
+              example: 0.00
+            rounding:
+              type: number
+              nullable: true
+              description: >-
+                Rounding line used on jurisdictions that round return box values
+                to a fixed precision.
+              example: 0.00
+            penalty:
+              type: number
+              nullable: true
+              description: Late-filing or late-payment penalty assessed on the return.
+              example: 0.00
+            interest:
+              type: number
+              nullable: true
+              description: Interest accrued on a late payment.
+              example: 0.00
+            prepayment:
+              type: number
+              nullable: true
+              description: >-
+                Prepayment credit claimed on this return. Common on accelerated
+                schedules in states such as California and New York.
+              example: 0.00
+            prior_payment:
+              type: number
+              nullable: true
+              description: >-
+                Credit carried forward from a prior period's return.
+              example: 0.00
+            retail_delivery_fee:
+              type: number
+              nullable: true
+              description: >-
+                Retail delivery fee line for jurisdictions that assess a
+                per-delivery surcharge (for example, Colorado and Minnesota).
+              example: 120.00
+            jurisdiction_issued_credit:
+              type: number
+              nullable: true
+              description: >-
+                Credit memo issued by the tax authority, such as a credit from an
+                amended return.
+              example: 0.00
+            marketplace_payment:
+              type: number
+              nullable: true
+              description: >-
+                Tax collected and remitted by a marketplace facilitator on the
+                seller's behalf.
+              example: 243.60
+            tax_remitted:
+              type: number
+              nullable: true
+              description: >-
+                Actual amount remitted to the jurisdiction. May differ from
+                `total_tax_filed` after adjustments, discounts, and credits are
+                applied.
+              example: 3488.75
         payment_details:
           type: object
           properties:

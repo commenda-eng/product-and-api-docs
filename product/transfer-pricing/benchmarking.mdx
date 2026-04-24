@@ -25,3 +25,44 @@ For each study, you can track:
 ## Requesting a benchmarking study
 
 If you need a new benchmarking study, you can request one through Commenda's service marketplace. Professional advisors will conduct the analysis and deliver the results directly to your Commenda account.
+
+## Generating a benchmark automatically
+
+For supported transaction types, you can generate a benchmarking study directly from a benchmark record instead of requesting one through the marketplace. Commenda submits the details of the intercompany transaction to our benchmarking provider, which returns an arm's length range based on comparable third-party data.
+
+Use automated generation when you want a faster, self-service benchmark and the transaction fits one of the supported categories below. For complex or unusual arrangements, the marketplace route with a human advisor is still recommended.
+
+### Supported transaction types
+
+Pick the transaction type that best describes the intercompany arrangement between the service provider entity and the counterparty:
+
+- **Distribution** — one entity buys goods from a related entity and resells them.
+- **Manufacturing** — one entity manufactures goods for a related entity.
+- **Services** — one entity provides services (e.g., management, technical, support) to a related entity.
+- **Finance** — intercompany loans, cash pooling, or other financing arrangements.
+- **Royalty** — licensing of intellectual property between related entities.
+
+### How it works
+
+<Steps>
+  <Step title="Open the benchmark">
+    Go to **Transfer Pricing** → **Benchmarking** and open the benchmark you want to generate a study for. Make sure the service provider and counterparty entities are set and the relevant fiscal year is selected.
+  </Step>
+  <Step title="Choose a transaction type">
+    Select the transaction type that matches your intercompany arrangement. Commenda will prompt you for the details required for that category.
+  </Step>
+  <Step title="Submit for generation">
+    Submit the request. Commenda sends the transaction details to the benchmarking provider and stores the request and response on the benchmark for audit.
+  </Step>
+  <Step title="Review results">
+    Once processing completes, the benchmark shows the generated arm's length range and comparable data. You can attach the generated report as supporting documentation.
+  </Step>
+</Steps>
+
+<Info>
+Each benchmark can be submitted for generation once successfully. If a submission fails due to missing or invalid inputs, fix the inputs and retry — previous failed attempts do not block a retry. If a submission has already succeeded, create a new benchmark record to run another study.
+</Info>
+
+<Warning>
+Only the sub-object that matches the selected transaction type is required. For example, if you choose **distribution**, fill in the distribution details; do not submit unrelated sub-objects. Mismatched inputs are rejected before submission.
+</Warning>

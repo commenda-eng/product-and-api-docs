@@ -1374,8 +1374,12 @@
 "/filings":
   get:
     summary: List filings
-    description: List state and local sales tax filings for a corporation, filtered
-      by query.
+    description: >-
+      List state and local sales tax filings for a corporation, filtered by query.
+      Pass `v2=true` to use the V2 filings path, which supports additional
+      filters (such as `registration_tax_type_id`, `jurisdiction_ids`,
+      `filing_statuses`, `filing_frequencies`, `from_due_date`, and
+      `to_due_date`) and opt-in expansions via the `extend` query parameter.
     operationId: listFilings
     parameters:
     - name: corporation_id
@@ -1400,6 +1404,84 @@
         minimum: 1
         maximum: 100
         default: 10
+    - name: v2
+      in: query
+      description: >-
+        Set to `true` to use the V2 filings path, which returns V2 content
+        metadata (such as `registration_tax_type_id`, `jurisdiction_name`,
+        `jurisdiction_type`, and `filing_content_id`) and enables the
+        additional filters and `extend` parameter documented below. When
+        omitted or `false`, the legacy filings response is returned.
+      required: false
+      schema:
+        type: string
+        enum:
+          - "true"
+          - "false"
+    - name: extend
+      in: query
+      description: >-
+        Opt-in expansion for the V2 path (requires `v2=true`). Comma-separated
+        list of expansion keys. The only supported value today is
+        `filing_contribution`, which inlines the computed tax-return box
+        contributions on each filing via a `contributions` array. When the
+        parameter is omitted, the `contributions` field is not included in
+        the response. Unknown values return a `400`.
+      required: false
+      schema:
+        type: string
+        example: "filing_contribution"
+    - name: from_due_date
+      in: query
+      description: >-
+        V2 path only (`v2=true`). ISO 8601 date string. Returns only filings
+        whose due date is on or after this value.
+      required: false
+      schema:
+        type: string
+        format: date
+    - name: to_due_date
+      in: query
+      description: >-
+        V2 path only (`v2=true`). ISO 8601 date string. Returns only filings
+        whose due date is on or before this value.
+      required: false
+      schema:
+        type: string
+        format: date
+    - name: registration_tax_type_id
+      in: query
+      description: >-
+        V2 path only (`v2=true`). Filter by V2 registration tax type content
+        identifier (e.g., `REG_STATE_CEN_06_RST`).
+      required: false
+      schema:
+        type: string
+    - name: jurisdiction_ids
+      in: query
+      description: >-
+        V2 path only (`v2=true`). Comma-separated list of Commenda
+        jurisdiction identifiers to filter by. Maximum 100 values.
+      required: false
+      schema:
+        type: string
+        example: "COUNTRY_DE_3018,STATE_CEN_06"
+    - name: filing_statuses
+      in: query
+      description: >-
+        V2 path only (`v2=true`). Comma-separated list of filing statuses to
+        filter by. Maximum 100 values.
+      required: false
+      schema:
+        type: string
+    - name: filing_frequencies
+      in: query
+      description: >-
+        V2 path only (`v2=true`). Comma-separated list of filing frequencies
+        to filter by. Maximum 100 values.
+      required: false
+      schema:
+        type: string
     responses:
       '200':
         description: Filing info for all states

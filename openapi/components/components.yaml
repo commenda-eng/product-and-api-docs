@@ -492,6 +492,17 @@ components:
                 reason:
                   type: string
                   description: Specific information why the payment failed.
+        contributions:
+          type: array
+          nullable: true
+          description: >-
+            Computed tax-return box contributions for this filing. Only
+            populated on the V2 list path (`v2=true`) when called with
+            `extend=filing_contribution`. When the expansion is not
+            requested, this field is omitted from the response. An empty
+            array means the filing has no computed contributions yet.
+          items:
+            "$ref": "../components/filings.yaml#/schemas/FilingContribution"
     FilingsGet:
       type: object
       properties:

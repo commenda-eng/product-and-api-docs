@@ -1,0 +1,51 @@
+---
+title: "Tagging and filtering documents"
+sidebarTitle: "Tagging"
+description: "Use tags to classify documents by fiscal year, period, jurisdiction, and type — then filter the drive to find exactly what you need."
+keywords: ["tags", "document tagging", "filters", "fiscal year", "period", "jurisdiction", "document type"]
+---
+
+Tags are structured labels you attach to files so Commenda can classify and filter them. Unlike folder names, tags are machine-readable: Commenda uses them to drive filters, power searches, and connect documents to the filings and service requests they relate to.
+
+## When to use tags
+
+Use tags whenever a document has meaningful metadata beyond its name — for example, a quarterly sales-tax filing for a US entity for Q2 of FY2025. Tagging the file lets you:
+
+- Filter the drive to just the files that match certain criteria.
+- Find every document for a specific jurisdiction across all your entities.
+- Show the right documents automatically in compliance and service-request views.
+
+## Tag types
+
+Commenda supports several tag categories:
+
+| Tag | Example values | What it represents |
+| --- | --- | --- |
+| **Fiscal year** | FY2024, FY2025 | The fiscal year the document belongs to |
+| **Period** | Q1, Q2, Month 1, Month 6 | The quarter or month within a fiscal year |
+| **Jurisdiction** | US, IN, SG, Delaware, California | The country or region the document is filed in |
+| **Tax type** | Income Tax, GST, VAT, Sales Tax | The tax the document relates to |
+| **Source type** | Upload, Filing, Service Request, Integration | Where the document came from |
+| **Document type** | Invoice, Return, Notice, Certificate | The kind of document |
+
+Fiscal year and period are *explicit* tags — every file can have at most one of each. Jurisdiction, tax type, and document type can have multiple values when it makes sense (for example, a consolidated filing covering multiple states).
+
+## Applying tags
+
+From the drive, select a file and open the details panel. You'll see a **Tags** section where you can:
+
+- Add tags by typing or picking from the dropdown of available values.
+- Remove a tag with the **×** next to it.
+- Assign a **document type** from the dropdown — this is a special tag that enables type-specific behaviour (for example, invoice parsing).
+
+For files uploaded through a service request or a filing workflow, Commenda applies tags automatically based on the context of the upload. You can always adjust them afterwards.
+
+## Filtering the drive
+
+The entity drive view has a filter bar at the top with dropdowns for each tag type. Pick any combination — for example, *FY2025 + Q2 + US + Indirect Tax* — and the drive narrows to only placements that match. The folder tree collapses to hide folders that contain no matching files, so you see exactly the scope you asked for.
+
+Filters are additive: every file in the filtered view matches **all** of the selected criteria.
+
+## Clearing tags
+
+To clear a tag from a file, open the details panel and click the **×** next to the tag. To clear all tags, use **Clear tags** from the file's action menu. Clearing a tag doesn't delete the file — it only removes the metadata.

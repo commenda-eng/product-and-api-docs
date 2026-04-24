@@ -28,8 +28,8 @@ curl --request GET \
 3. Fetch the current requirements DSL with `GET /partner/incorporation/requirements?country=SG&corporationType=PRIVATE_LIMITED_COMPANY`.
 4. Start an incorporation with `POST /partner/incorporation/companies/{companyId}/incorporations`.
 5. Link already-uploaded files with `POST /partner/incorporation/{incorporationId}/files`.
-6. Submit partial or complete intake data with `POST /partner/incorporation/{incorporationId}/submissions`.
-7. Read the incorporation or submission history to track missing requirements and status.
+6. Update partial or complete intake data with `POST /partner/incorporation/{incorporationId}/intake`.
+7. Read the incorporation to track `intakeState`, missing requirements, and status.
 
 This API does not create or return payment intents. Partners using this surface should treat billing as separate from the incorporation resource lifecycle.
 
@@ -51,9 +51,9 @@ See [List jurisdiction catalog](/engine/incorporation/partner-incorporation-juri
 
 ## Two-stage intake
 
-The requirements endpoint returns a DSL with field names, descriptions, validation rules, resource fields, and evidence requirements. Use it to power your own UI, but treat it as informational: Commenda validates every submission against the current server-side requirements.
+The requirements endpoint returns a DSL with field names, descriptions, validation rules, resource fields, and evidence requirements. Use it to power your own UI, but treat it as informational: Commenda validates every intake update against the current server-side requirements.
 
-Submissions are append-only and may be partial. A partial submission returns `intakeState.validation.isComplete: false` plus `missingRequirements` and `invalidRequirements`. Once the current intake state satisfies the DSL, the incorporation moves to `ready_for_review`.
+Intake updates may be partial. Each update is merged into the current intake state and returns `intakeState.validation.isComplete: false` plus `missingRequirements` and `invalidRequirements` until the state is complete. Once the current intake state satisfies the DSL, the incorporation moves to `ready_for_review`.
 
 ## Evidence files
 

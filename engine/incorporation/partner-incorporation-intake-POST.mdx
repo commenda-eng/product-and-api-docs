@@ -1,11 +1,13 @@
 ---
-title: "Submit incorporation requirements"
-openapi: "POST /partner/incorporation/{incorporationId}/submissions"
+title: "Update incorporation intake"
+openapi: "POST /partner/incorporation/{incorporationId}/intake"
 ---
 
-Submits partial or complete requirement data for an incorporation.
+Updates partial or complete requirement data for an incorporation.
 
-Submissions are append-only. Each submission is merged into the current intake state and validated against the current requirements DSL. Incomplete submissions are accepted and return a structured validation summary.
+Each update is merged into the current intake state and validated against the current requirements DSL. Incomplete updates are accepted and return a structured validation summary.
+
+The Partner API does not expose a submission history endpoint. To read progress after an update, call `GET /partner/incorporation/{incorporationId}` and inspect `intakeState`.
 
 ## Mixed resource modes
 

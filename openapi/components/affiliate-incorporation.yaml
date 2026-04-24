@@ -276,12 +276,12 @@ schemas:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountry"
       countryOptions:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountryOptions"
-      submission:
+      intake:
         type: object
-        description: Optional initial partial submission.
+        description: Optional initial partial intake data.
         properties:
           requirements:
-            $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
+            $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirementValues"
   PartnerRequirementsResponse:
     type: object
     required:
@@ -339,7 +339,7 @@ schemas:
           $ref: "./affiliate-incorporation.yaml#/schemas/PartnerJurisdictionCatalogCountry"
   PartnerIncorporationRequirements:
     type: object
-    description: Requirements DSL for the selected incorporation. Clients can use this to render their own intake UI, but submissions are always validated against the current server-side DSL.
+    description: Requirements DSL for the selected incorporation. Clients can use this to render their own intake UI, but intake updates are always validated against the current server-side DSL.
     additionalProperties: true
     example:
       schemaVersion: "2026-04-22"
@@ -385,7 +385,7 @@ schemas:
         type: array
         items:
           $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationIssue"
-  PartnerIncorporationSubmissionState:
+  PartnerIncorporationRequirementValues:
     type: object
     description: Partner-submitted requirement values keyed by DSL field keys.
     additionalProperties: true
@@ -401,13 +401,13 @@ schemas:
       utilityBills:
         - source: uploadedFile
           fileId: 789
-  PartnerCreateSubmissionRequest:
+  PartnerUpdateIntakeRequest:
     type: object
     required:
       - requirements
     properties:
       requirements:
-        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirementValues"
   PartnerIncorporationIntakeState:
     type: object
     required:
@@ -415,7 +415,6 @@ schemas:
       - incorporationId
       - currentState
       - validation
-      - lastSubmissionId
       - createdAt
       - updatedAt
     properties:
@@ -426,41 +425,7 @@ schemas:
         type: string
         example: sr_123
       currentState:
-        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
-      validation:
-        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationSummary"
-      lastSubmissionId:
-        type: string
-        nullable: true
-        example: sub_123
-      createdAt:
-        type: string
-        format: date-time
-      updatedAt:
-        type: string
-        format: date-time
-  PartnerIncorporationSubmission:
-    type: object
-    required:
-      - id
-      - incorporationId
-      - rawPayload
-      - normalizedPayload
-      - validation
-      - createdAt
-      - updatedAt
-    properties:
-      id:
-        type: string
-        example: sub_123
-      incorporationId:
-        type: string
-        example: sr_123
-      rawPayload:
-        type: object
-        additionalProperties: true
-      normalizedPayload:
-        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirementValues"
       validation:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationSummary"
       createdAt:
@@ -469,34 +434,16 @@ schemas:
       updatedAt:
         type: string
         format: date-time
-  PartnerIncorporationSubmissionResponse:
+  PartnerIncorporationIntakeResponse:
     type: object
     required:
-      - submission
       - intakeState
       - requirements
     properties:
-      submission:
-        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmission"
       intakeState:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationIntakeState"
       requirements:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirements"
-  PartnerIncorporationSubmissionsResponse:
-    type: object
-    required:
-      - submissions
-      - count
-    properties:
-      submissions:
-        type: array
-        items:
-          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmission"
-      count:
-        type: integer
-        example: 2
-      intakeState:
-        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationIntakeState"
   PartnerRegisterFileRequest:
     type: object
     required:

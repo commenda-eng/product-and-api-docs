@@ -264,18 +264,14 @@ components:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationIssue"
     PartnerIncorporationValidationSummary:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationSummary"
-    PartnerIncorporationSubmissionState:
-      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
-    PartnerCreateSubmissionRequest:
-      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerCreateSubmissionRequest"
+    PartnerIncorporationRequirementValues:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirementValues"
+    PartnerUpdateIntakeRequest:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerUpdateIntakeRequest"
     PartnerIncorporationIntakeState:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationIntakeState"
-    PartnerIncorporationSubmission:
-      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmission"
-    PartnerIncorporationSubmissionResponse:
-      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionResponse"
-    PartnerIncorporationSubmissionsResponse:
-      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionsResponse"
+    PartnerIncorporationIntakeResponse:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationIntakeResponse"
     PartnerRegisterFileRequest:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerRegisterFileRequest"
     PartnerRegisterFileResponse:

@@ -14,7 +14,7 @@ Create requests use a `country` plus country-specific `countryOptions` instead o
 - `country` is the ISO 3166-1 alpha-2 code for the jurisdiction.
 - `countryOptions` is an object whose shape depends on `country`.
 - `companyId` is the path parameter for the Commenda company that owns the incorporation.
-- `submission.requirements` is optional and can contain an initial partial submission.
+- `intake.requirements` is optional and can contain initial partial intake data.
 - Unknown or unsupported options are rejected by this endpoint.
 
 ## Singapore example
@@ -28,9 +28,9 @@ Create requests use a `country` plus country-specific `countryOptions` instead o
 }
 ```
 
-Use `GET /partner/incorporation/jurisdiction-catalog` to see currently supported countries and option values. Use `GET /partner/incorporation/requirements` before building a submission UI.
+Use `GET /partner/incorporation/jurisdiction-catalog` to see currently supported countries and option values. Use `GET /partner/incorporation/requirements` before building an intake UI.
 
-## Initial partial submission example
+## Initial partial intake example
 
 ```json
 {
@@ -38,7 +38,7 @@ Use `GET /partner/incorporation/jurisdiction-catalog` to see currently supported
   "countryOptions": {
     "corporationType": "PRIVATE_LIMITED_COMPANY"
   },
-  "submission": {
+  "intake": {
     "requirements": {
       "companyNameOptions": [
         { "name": "Acme SG Pte Ltd" }

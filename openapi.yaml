@@ -2112,7 +2112,7 @@ paths:
   /partner/incorporation/requirements:
     get:
       summary: Get incorporation requirements
-      description: Retrieve the current requirements DSL for a selected incorporation jurisdiction and type. This endpoint is informational; submissions are validated against the current server-side DSL.
+      description: Retrieve the current requirements DSL for a selected incorporation jurisdiction and type. This endpoint is informational; intake updates are validated against the current server-side DSL.
       operationId: getPartnerIncorporationRequirements
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -2161,7 +2161,7 @@ paths:
   /partner/incorporation/companies/{companyId}/incorporations:
     post:
       summary: Create an incorporation
-      description: Create an incorporation for a partner-owned company without creating or returning a payment intent. You may include an initial partial submission.
+      description: Create an incorporation for a partner-owned company without creating or returning a payment intent. You may include initial partial intake data.
       operationId: createPartnerIncorporation
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -2374,11 +2374,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AffiliatePublicError'
-  /partner/incorporation/{incorporationId}/submissions:
+  /partner/incorporation/{incorporationId}/intake:
     post:
-      summary: Submit incorporation requirements
-      description: Submit partial or complete requirement data for an incorporation. Submissions are append-only; each write returns the updated intake state and validation summary.
-      operationId: createPartnerIncorporationSubmission
+      summary: Update incorporation intake
+      description: Update partial or complete requirement data for an incorporation. Each write returns the updated intake state and validation summary.
+      operationId: updatePartnerIncorporationIntake
       servers:
         - url: https://api.prod.commenda.io/api/v1
       security:
@@ -2395,60 +2395,20 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PartnerCreateSubmissionRequest'
+              $ref: '#/components/schemas/PartnerUpdateIntakeRequest'
       responses:
         '201':
-          description: Submission accepted and validated
+          description: Intake update accepted and validated
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PartnerIncorporationSubmissionResponse'
+                $ref: '#/components/schemas/PartnerIncorporationIntakeResponse'
         '400':
-          description: Malformed submission payload
+          description: Malformed intake payload
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/AffiliatePublicError'
-        '401':
-          description: Missing or invalid partner API key
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AffiliatePublicError'
-        '403':
-          description: Incorporation is not accessible to the partner
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AffiliatePublicError'
-        '404':
-          description: Incorporation not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AffiliatePublicError'
-    get:
-      summary: List incorporation submissions
-      description: List append-only submission history and return the latest intake state when one exists.
-      operationId: listPartnerIncorporationSubmissions
-      servers:
-        - url: https://api.prod.commenda.io/api/v1
-      security:
-        - xApiKeyAuth: []
-      parameters:
-        - name: incorporationId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Incorporation identifier returned by create or list endpoints.
-      responses:
-        '200':
-          description: Submission history retrieved successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerIncorporationSubmissionsResponse'
         '401':
           description: Missing or invalid partner API key
           content:
@@ -6015,7 +5975,7 @@ components:
             $ref: '#/components/schemas/PartnerJurisdictionCatalogCountry'
     PartnerIncorporationRequirements:
       type: object
-      description: Requirements DSL for the selected incorporation. Clients can use this to render their own intake UI, but submissions are always validated against the current server-side DSL.
+      description: Requirements DSL for the selected incorporation. Clients can use this to render their own intake UI, but intake updates are always validated against the current server-side DSL.
       additionalProperties: true
       example:
         schemaVersion: '2026-04-22'
@@ -6109,7 +6069,7 @@ components:
           type: integer
           description: Total matching incorporations before pagination.
           example: 1
-    PartnerIncorporationSubmissionState:
+    PartnerIncorporationRequirementValues:
       type: object
       description: Partner-submitted requirement values keyed by DSL field keys.
       additionalProperties: true
@@ -6135,12 +6095,12 @@ components:
           $ref: '#/components/schemas/PartnerIncorporationCountry'
         countryOptions:
           $ref: '#/components/schemas/PartnerIncorporationCountryOptions'
-        submission:
+        intake:
           type: object
-          description: Optional initial partial submission.
+          description: Optional initial partial intake data.
           properties:
             requirements:
-              $ref: '#/components/schemas/PartnerIncorporationSubmissionState'
+              $ref: '#/components/schemas/PartnerIncorporationRequirementValues'
     PartnerIncorporationValidationIssue:
       type: object
       required:
@@ -6180,7 +6140,6 @@ components:
         - incorporationId
         - currentState
         - validation
-        - lastSubmissionId
         - createdAt
         - updatedAt
       properties:
@@ -6191,13 +6150,9 @@ components:
           type: string
           example: sr_123
         currentState:
-          $ref: '#/components/schemas/PartnerIncorporationSubmissionState'
+          $ref: '#/components/schemas/PartnerIncorporationRequirementValues'
         validation:
           $ref: '#/components/schemas/PartnerIncorporationValidationSummary'
-        lastSubmissionId:
-          type: string
-          nullable: true
-          example: sub_123
         createdAt:
           type: string
           format: date-time
@@ -6215,67 +6170,19 @@ components:
           $ref: '#/components/schemas/PartnerIncorporationRequirements'
         intakeState:
           $ref: '#/components/schemas/PartnerIncorporationIntakeState'
-    PartnerIncorporationSubmission:
-      type: object
-      required:
-        - id
-        - incorporationId
-        - rawPayload
-        - normalizedPayload
-        - validation
-        - createdAt
-        - updatedAt
-      properties:
-        id:
-          type: string
-          example: sub_123
-        incorporationId:
-          type: string
-          example: sr_123
-        rawPayload:
-          type: object
-          additionalProperties: true
-        normalizedPayload:
-          $ref: '#/components/schemas/PartnerIncorporationSubmissionState'
-        validation:
-          $ref: '#/components/schemas/PartnerIncorporationValidationSummary'
-        createdAt:
-          type: string
-          format: date-time
-        updatedAt:
-          type: string
-          format: date-time
-    PartnerIncorporationSubmissionsResponse:
-      type: object
-      required:
-        - submissions
-        - count
-      properties:
-        submissions:
-          type: array
-          items:
-            $ref: '#/components/schemas/PartnerIncorporationSubmission'
-        count:
-          type: integer
-          example: 2
-        intakeState:
-          $ref: '#/components/schemas/PartnerIncorporationIntakeState'
-    PartnerCreateSubmissionRequest:
+    PartnerUpdateIntakeRequest:
       type: object
       required:
         - requirements
       properties:
         requirements:
-          $ref: '#/components/schemas/PartnerIncorporationSubmissionState'
-    PartnerIncorporationSubmissionResponse:
+          $ref: '#/components/schemas/PartnerIncorporationRequirementValues'
+    PartnerIncorporationIntakeResponse:
       type: object
       required:
-        - submission
         - intakeState
         - requirements
       properties:
-        submission:
-          $ref: '#/components/schemas/PartnerIncorporationSubmission'
         intakeState:
           $ref: '#/components/schemas/PartnerIncorporationIntakeState'
         requirements:

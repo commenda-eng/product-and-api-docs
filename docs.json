@@ -195,10 +195,9 @@
                 ]
               },
               {
-                "group": "Submissions",
+                "group": "Intake",
                 "pages": [
-                  "engine/incorporation/partner-incorporation-submissions-POST",
-                  "engine/incorporation/partner-incorporation-submissions-GET"
+                  "engine/incorporation/partner-incorporation-intake-POST"
                 ]
               }
             ]

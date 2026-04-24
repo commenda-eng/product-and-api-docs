@@ -396,11 +396,9 @@ schemas:
         - name: Acme Global Pte Ltd
       registeredAddressMode: standardAddress
       passportScans:
-        - source: uploadedFile
-          fileId: 456
+        - fileId: 456
       utilityBills:
-        - source: uploadedFile
-          fileId: 789
+        - fileId: 789
   PartnerUpdateIntakeRequest:
     type: object
     required:

@@ -2265,12 +2265,6 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
-      '404':
-        description: Company not found
-        content:
-          application/json:
-            schema:
-              "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
   get:
     summary: List incorporations for a company
     description: List incorporations visible to the authenticated partner for a single company.
@@ -2326,12 +2320,6 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
-      '404':
-        description: Company not found
-        content:
-          application/json:
-            schema:
-              "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
 "/partner/incorporation/companies/{companyId}/incorporations/{incorporationId}":
   get:
     summary: Get an incorporation
@@ -2374,7 +2362,7 @@
             schema:
               "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
       '404':
-        description: Company or incorporation not found
+        description: Incorporation not found
         content:
           application/json:
             schema:

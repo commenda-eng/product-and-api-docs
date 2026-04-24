@@ -1,0 +1,79 @@
+---
+title: "Submit incorporation requirements"
+openapi: "POST /partner/incorporation/{incorporationId}/submissions"
+---
+
+Submits partial or complete requirement data for an incorporation.
+
+Submissions are append-only. Each submission is merged into the current intake state and validated against the current requirements DSL. Incomplete submissions are accepted and return a structured validation summary.
+
+## Mixed resource modes
+
+Resource fields can use existing Commenda OS resources, inline data, or patches to existing resources:
+
+```json
+{
+  "requirements": {
+    "directors": [
+      {
+        "mode": "existingResource",
+        "resourceId": "key_person_001"
+      },
+      {
+        "mode": "inlineData",
+        "data": {
+          "firstName": "Asha",
+          "lastName": "Raman",
+          "email": "asha@example.com",
+          "nationality": "SG",
+          "passportNumber": "E1234567N",
+          "dateOfBirth": "1988-02-14",
+          "residentialAddress": {
+            "mode": "existingResource",
+            "resourceId": "location_001"
+          }
+        }
+      },
+      {
+        "mode": "patch",
+        "resourceId": "key_person_003",
+        "data": {
+          "passportNumber": "K9876543M",
+          "residentialAddress": {
+            "mode": "patch",
+            "resourceId": "location_003",
+            "data": {
+              "postalCode": "079903"
+            }
+          }
+        }
+      }
+    ]
+  }
+}
+```
+
+## Evidence linking
+
+Register files first with `POST /partner/incorporation/{incorporationId}/files`, then link the returned `fileId`:
+
+```json
+{
+  "requirements": {
+    "passportScans": [
+      {
+        "source": "uploadedFile",
+        "fileId": 456
+      }
+    ],
+    "utilityBills": [
+      {
+        "source": "uploadedFile",
+        "fileId": 789
+      }
+    ]
+  }
+}
+```
+
+For Singapore private limited companies, both `passportScans` and `utilityBills` are required evidence requirements.

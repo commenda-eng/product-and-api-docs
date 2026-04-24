@@ -2109,11 +2109,125 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AffiliatePublicError'
-  /partner/incorporation/companies/{companyId}/incorporations:
+  /partner/incorporation/requirements:
+    get:
+      summary: Get incorporation requirements
+      description: Retrieve the current requirements DSL for a selected incorporation jurisdiction and type. This endpoint is informational; submissions are validated against the current server-side DSL.
+      operationId: getPartnerIncorporationRequirements
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: country
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerIncorporationCountry'
+          description: Incorporation country.
+          example: SG
+        - name: corporationType
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Convenience query parameter for `countryOptions.corporationType`.
+          example: PRIVATE_LIMITED_COMPANY
+      responses:
+        '200':
+          description: Requirements retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerRequirementsResponse'
+        '400':
+          description: Unsupported or malformed incorporation selection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '404':
+          description: Requirements are not available for the requested selection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+  /partner/incorporation:
     post:
       summary: Create an incorporation
-      description: Start an incorporation for a partner-owned company without creating or returning a payment intent.
+      description: Create an incorporation for a partner-owned company without creating or returning a payment intent. You may include an initial partial submission.
       operationId: createPartnerIncorporation
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerCreateIncorporationRequest'
+            examples:
+              singaporePrivateLimited:
+                summary: Singapore private limited company
+                value:
+                  companyId: 77
+                  country: SG
+                  countryOptions:
+                    corporationType: PRIVATE_LIMITED_COMPANY
+              singaporeWithInitialSubmission:
+                summary: Singapore private limited with initial partial submission
+                value:
+                  companyId: 77
+                  country: SG
+                  countryOptions:
+                    corporationType: PRIVATE_LIMITED_COMPANY
+                  submission:
+                    requirements:
+                      companyNameOptions:
+                        - name: Acme SG Pte Ltd
+      responses:
+        '201':
+          description: Incorporation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerIncorporationResponse'
+        '400':
+          description: Unsupported country, invalid country options, or missing company id
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Company is not accessible to the partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '404':
+          description: Company not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+  /partner/incorporation/companies/{companyId}/incorporations:
+    post:
+      summary: Create an incorporation for a company
+      description: Legacy company-scoped create route. Prefer `POST /partner/incorporation`, which carries `companyId` in the request body and supports initial submissions.
+      operationId: createPartnerIncorporationForCompany
       servers:
         - url: https://api.prod.commenda.io/api/v1
       security:
@@ -2130,7 +2244,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PartnerCreateIncorporationRequest'
+              $ref: '#/components/schemas/PartnerCreateCompanyScopedIncorporationRequest'
             examples:
               usDelawareLlc:
                 summary: US Delaware LLC
@@ -2280,6 +2394,193 @@ paths:
                 $ref: '#/components/schemas/AffiliatePublicError'
         '404':
           description: Company or incorporation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+  /partner/incorporation/{incorporationId}:
+    get:
+      summary: Get an incorporation
+      description: Retrieve one incorporation visible to the authenticated partner. Use this direct route for Phase 2 intake state reads.
+      operationId: getPartnerIncorporationById
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: incorporationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Incorporation identifier returned by create or list endpoints.
+      responses:
+        '200':
+          description: Incorporation retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerIncorporationResponse'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Incorporation is not accessible to the partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '404':
+          description: Incorporation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+  /partner/incorporation/{incorporationId}/submissions:
+    post:
+      summary: Submit incorporation requirements
+      description: Submit partial or complete requirement data for an incorporation. Submissions are append-only; each write returns the normalized current state and validation summary.
+      operationId: createPartnerIncorporationSubmission
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: incorporationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Incorporation identifier returned by create or list endpoints.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerCreateSubmissionRequest'
+      responses:
+        '201':
+          description: Submission accepted and validated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerIncorporationSubmissionResponse'
+        '400':
+          description: Malformed submission payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Incorporation is not accessible to the partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '404':
+          description: Incorporation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+    get:
+      summary: List incorporation submissions
+      description: List append-only submission history and return the latest normalized current state.
+      operationId: listPartnerIncorporationSubmissions
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: incorporationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Incorporation identifier returned by create or list endpoints.
+      responses:
+        '200':
+          description: Submission history retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerIncorporationSubmissionsResponse'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Incorporation is not accessible to the partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '404':
+          description: Incorporation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+  /partner/incorporation/{incorporationId}/files:
+    post:
+      summary: Register an incorporation file
+      description: Register an already-uploaded file in the incorporation context and receive a `fileId` that can be referenced by evidence requirements.
+      operationId: registerPartnerIncorporationFile
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: incorporationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Incorporation identifier returned by create or list endpoints.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerRegisterFileRequest'
+      responses:
+        '201':
+          description: File registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerRegisterFileResponse'
+        '400':
+          description: Malformed file registration payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Incorporation is not accessible to the partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '404':
+          description: Incorporation not found
           content:
             application/json:
               schema:
@@ -5777,6 +6078,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PartnerJurisdictionCatalogCountry'
+    PartnerIncorporationRequirements:
+      type: object
+      description: Requirements DSL for the selected incorporation. Clients can use this to render their own intake UI, but submissions are always validated against the current server-side DSL.
+      additionalProperties: true
+      example:
+        schemaVersion: '2026-04-22'
+        requirementsVersion: sg-private-limited-company-2026-04-22
+        dslVersion: mvp-2026-04-22
+        key: sg.private_limited_company
+        country: SG
+        countryOptions:
+          corporationType: PRIVATE_LIMITED_COMPANY
+        name: Singapore Private Limited Company Incorporation Requirements
+        blocks:
+          - key: companyNames
+            name: Company name options
+    PartnerRequirementsResponse:
+      type: object
+      required:
+        - requirements
+      properties:
+        requirements:
+          $ref: '#/components/schemas/PartnerIncorporationRequirements'
     PartnerIncorporationCountryOptions:
       type: object
       description: Country-specific incorporation options. Use the jurisdiction catalog for the currently supported fields and values.
@@ -5784,18 +6108,56 @@ components:
       example:
         state: DE
         corporationType: LLC
+    PartnerIncorporationSubmissionState:
+      type: object
+      description: Partner-submitted requirement values keyed by DSL field keys.
+      additionalProperties: true
+      example:
+        companyNameOptions:
+          - name: Acme SG Pte Ltd
+          - name: Acme Asia Pte Ltd
+          - name: Acme Global Pte Ltd
+        registeredAddressMode: standardAddress
+        passportScans:
+          - source: uploadedFile
+            fileId: 456
+        utilityBills:
+          - source: uploadedFile
+            fileId: 789
+    PartnerCreateIncorporationRequest:
+      type: object
+      required:
+        - companyId
+        - country
+        - countryOptions
+      properties:
+        companyId:
+          type: integer
+          description: Company that should own the incorporation.
+          example: 77
+        country:
+          $ref: '#/components/schemas/PartnerIncorporationCountry'
+        countryOptions:
+          $ref: '#/components/schemas/PartnerIncorporationCountryOptions'
+        submission:
+          type: object
+          description: Optional initial partial submission. The payload is validated the same way as `POST /partner/incorporation/{incorporationId}/submissions`.
+          properties:
+            requirements:
+              $ref: '#/components/schemas/PartnerIncorporationSubmissionState'
     PartnerIncorporationStatus:
       type: string
       description: Current lifecycle status for the incorporation.
       enum:
-        - submitted
+        - collecting_information
+        - ready_for_review
         - in_progress
-        - blocked
         - completed
     PartnerIncorporation:
       type: object
       required:
         - id
+        - serviceRequestId
         - companyId
         - country
         - countryOptions
@@ -5808,6 +6170,10 @@ components:
           type: string
           description: Incorporation identifier.
           example: 0f9a8f5e-7f7c-4c1b-a60a-b1022f9d8c91
+        serviceRequestId:
+          type: string
+          description: Temporary bridge/debugging field. Use `id` as the primary incorporation identifier.
+          example: sr_123
         companyId:
           type: integer
           description: Company that owns the incorporation.
@@ -5831,6 +6197,51 @@ components:
           nullable: true
           description: Commenda corporation/entity id once one is attached.
           example: 44
+    PartnerIncorporationValidationIssue:
+      type: object
+      required:
+        - path
+        - message
+      properties:
+        path:
+          type: string
+          description: Dot/bracket path for the missing or invalid requirement.
+          example: documents.passportScans
+        message:
+          type: string
+          example: Passport scans is required
+    PartnerIncorporationValidationSummary:
+      type: object
+      required:
+        - isComplete
+        - missingRequirements
+        - invalidRequirements
+      properties:
+        isComplete:
+          type: boolean
+          description: True when the current submitted state satisfies the current requirements DSL.
+          example: false
+        missingRequirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartnerIncorporationValidationIssue'
+        invalidRequirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartnerIncorporationValidationIssue'
+    PartnerIncorporationResponse:
+      type: object
+      required:
+        - incorporation
+      properties:
+        incorporation:
+          $ref: '#/components/schemas/PartnerIncorporation'
+        requirements:
+          $ref: '#/components/schemas/PartnerIncorporationRequirements'
+        submittedData:
+          $ref: '#/components/schemas/PartnerIncorporationSubmissionState'
+        validation:
+          $ref: '#/components/schemas/PartnerIncorporationValidationSummary'
     PartnerIncorporationListResponse:
       type: object
       required:
@@ -5845,7 +6256,7 @@ components:
           type: integer
           description: Total matching incorporations before pagination.
           example: 1
-    PartnerCreateIncorporationRequest:
+    PartnerCreateCompanyScopedIncorporationRequest:
       type: object
       required:
         - country
@@ -5855,13 +6266,125 @@ components:
           $ref: '#/components/schemas/PartnerIncorporationCountry'
         countryOptions:
           $ref: '#/components/schemas/PartnerIncorporationCountryOptions'
-    PartnerIncorporationResponse:
+        submission:
+          type: object
+          description: Optional initial partial submission.
+          properties:
+            requirements:
+              $ref: '#/components/schemas/PartnerIncorporationSubmissionState'
+    PartnerIncorporationSubmission:
       type: object
       required:
-        - incorporation
+        - id
+        - incorporationId
+        - rawPayload
+        - normalizedPayload
+        - currentState
+        - validation
+        - createdAt
+        - updatedAt
       properties:
-        incorporation:
-          $ref: '#/components/schemas/PartnerIncorporation'
+        id:
+          type: string
+          example: sub_123
+        incorporationId:
+          type: string
+          example: sr_123
+        rawPayload:
+          type: object
+          additionalProperties: true
+        normalizedPayload:
+          $ref: '#/components/schemas/PartnerIncorporationSubmissionState'
+        currentState:
+          $ref: '#/components/schemas/PartnerIncorporationSubmissionState'
+        validation:
+          $ref: '#/components/schemas/PartnerIncorporationValidationSummary'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    PartnerIncorporationSubmissionsResponse:
+      type: object
+      required:
+        - submissions
+        - count
+        - currentState
+        - validation
+      properties:
+        submissions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartnerIncorporationSubmission'
+        count:
+          type: integer
+          example: 2
+        currentState:
+          $ref: '#/components/schemas/PartnerIncorporationSubmissionState'
+        validation:
+          $ref: '#/components/schemas/PartnerIncorporationValidationSummary'
+    PartnerCreateSubmissionRequest:
+      type: object
+      required:
+        - requirements
+      properties:
+        requirements:
+          $ref: '#/components/schemas/PartnerIncorporationSubmissionState'
+    PartnerIncorporationSubmissionResponse:
+      type: object
+      required:
+        - submission
+        - requirements
+      properties:
+        submission:
+          $ref: '#/components/schemas/PartnerIncorporationSubmission'
+        requirements:
+          $ref: '#/components/schemas/PartnerIncorporationRequirements'
+    PartnerRegisterFileRequest:
+      type: object
+      required:
+        - fileName
+        - fileUrl
+        - mimeType
+      properties:
+        fileName:
+          type: string
+          example: passport.pdf
+        fileUrl:
+          type: string
+          description: Storage URL for a previously uploaded file.
+          example: s3://bucket/passport.pdf
+        mimeType:
+          type: string
+          example: application/pdf
+        fileSize:
+          type: integer
+          example: 123456
+    PartnerRegisterFileResponse:
+      type: object
+      required:
+        - file
+      properties:
+        file:
+          type: object
+          required:
+            - fileId
+            - fileName
+            - mimeType
+          properties:
+            fileId:
+              type: integer
+              example: 456
+            fileName:
+              type: string
+              example: passport.pdf
+            mimeType:
+              type: string
+              example: application/pdf
+            fileSize:
+              type: integer
+              example: 123456
     AffiliatePaymentIntentStatus:
       type: string
       enum:

@@ -25,8 +25,11 @@ curl --request GET \
 
 1. Create a company with the existing `POST /public/company` endpoint.
 2. Review the informational jurisdiction catalog with `GET /partner/incorporation/jurisdiction-catalog`.
-3. Start an incorporation with `POST /partner/incorporation/companies/{companyId}/incorporations`.
-4. List or retrieve incorporations for status tracking.
+3. Fetch the current requirements DSL with `GET /partner/incorporation/requirements?country=SG&corporationType=PRIVATE_LIMITED_COMPANY`.
+4. Start an incorporation with `POST /partner/incorporation`.
+5. Register uploaded files with `POST /partner/incorporation/{incorporationId}/files`.
+6. Submit partial or complete intake data with `POST /partner/incorporation/{incorporationId}/submissions`.
+7. Read the incorporation or submission history to track missing requirements and status.
 
 This API does not create or return payment intents. Partners using this surface should treat billing as separate from the incorporation resource lifecycle.
 
@@ -45,3 +48,22 @@ Create requests use a `country` plus country-specific `countryOptions` instead o
 ```
 
 See [List jurisdiction catalog](/engine/incorporation/partner-incorporation-jurisdiction-catalog-GET) for available country options and [Create an incorporation](/engine/incorporation/partner-incorporation-incorporations-POST) for request examples.
+
+## Two-stage intake
+
+The requirements endpoint returns a DSL with field names, descriptions, validation rules, resource fields, and evidence requirements. Use it to power your own UI, but treat it as informational: Commenda validates every submission against the current server-side requirements.
+
+Submissions are append-only and may be partial. A partial submission returns `validation.isComplete: false` plus `missingRequirements` and `invalidRequirements`. Once the current submitted state satisfies the DSL, the incorporation moves to `ready_for_review`.
+
+## Evidence files
+
+For files such as passport scans and utility bills, upload the file to storage first, then register it through the incorporation file endpoint. The returned `fileId` can be referenced from evidence fields:
+
+```json
+{
+  "source": "uploadedFile",
+  "fileId": 456
+}
+```
+
+Singapore private limited company intake currently requires both `passportScans` and `utilityBills`; one does not satisfy the other.

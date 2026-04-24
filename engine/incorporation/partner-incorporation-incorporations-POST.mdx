@@ -1,11 +1,11 @@
 ---
 title: "Create an incorporation"
-openapi: "POST /partner/incorporation/companies/{companyId}/incorporations"
+openapi: "POST /partner/incorporation"
 ---
 
 Starts an incorporation for a company accessible to your partner account.
 
-This endpoint does not create a payment intent. The response returns the incorporation resource directly.
+This endpoint does not create a payment intent. The response returns the incorporation resource directly, plus the current requirements and validation summary when available.
 
 ## Request shape
 
@@ -13,31 +13,38 @@ Create requests use a `country` plus country-specific `countryOptions` instead o
 
 - `country` is the ISO 3166-1 alpha-2 code for the jurisdiction.
 - `countryOptions` is an object whose shape depends on `country`.
+- `companyId` is the Commenda company that owns the incorporation.
+- `submission.requirements` is optional and can contain an initial partial submission.
 - Unknown or unsupported options are rejected by this endpoint.
 
-## United States example
+## Singapore example
 
 ```json
 {
-  "country": "US",
+  "companyId": 77,
+  "country": "SG",
   "countryOptions": {
-    "state": "DE",
-    "corporationType": "LLC"
+    "corporationType": "PRIVATE_LIMITED_COMPANY"
   }
 }
 ```
 
-Use `GET /partner/incorporation/jurisdiction-catalog` to see currently supported countries and option values.
+Use `GET /partner/incorporation/jurisdiction-catalog` to see currently supported countries and option values. Use `GET /partner/incorporation/requirements` before building a submission UI.
 
-## United Arab Emirates example
+## Initial partial submission example
 
 ```json
 {
-  "country": "AE",
+  "companyId": 77,
+  "country": "SG",
   "countryOptions": {
-    "corporationType": "FZC",
-    "corporationTypeOptions": {
-      "freeZone": "DMCC"
+    "corporationType": "PRIVATE_LIMITED_COMPANY"
+  },
+  "submission": {
+    "requirements": {
+      "companyNameOptions": [
+        { "name": "Acme SG Pte Ltd" }
+      ]
     }
   }
 }
@@ -57,4 +64,4 @@ Use `GET /partner/incorporation/jurisdiction-catalog` to see currently supported
 
 ## Response status
 
-New incorporations are returned with `incorporationStatus: "submitted"`.
+New incorporations are returned with `incorporationStatus: "collecting_information"` until required intake data and evidence validate. Once the current submitted state is complete, the status becomes `ready_for_review`.

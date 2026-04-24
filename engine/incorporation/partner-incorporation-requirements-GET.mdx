@@ -1,0 +1,18 @@
+---
+title: "Get incorporation requirements"
+openapi: "GET /partner/incorporation/requirements"
+---
+
+Returns the current requirements DSL for a selected incorporation.
+
+For Singapore private limited companies:
+
+```bash
+curl --request GET \
+  --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/requirements?country=SG&corporationType=PRIVATE_LIMITED_COMPANY' \
+  --header 'x-api-key: <partner_api_key>'
+```
+
+Use the returned DSL to render your intake UI and to understand required fields, resource fields, evidence requirements, and validation constraints.
+
+The requirements response is informational. Submissions are always validated against the current server-side DSL, so clients should handle `missingRequirements` and `invalidRequirements` from submission responses.

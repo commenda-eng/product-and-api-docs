@@ -1,0 +1,19 @@
+---
+title: "Register an incorporation file"
+openapi: "POST /partner/incorporation/{incorporationId}/files"
+---
+
+Registers an already-uploaded file in the incorporation context and returns a `fileId`.
+
+Use this endpoint before linking files to evidence requirements such as `passportScans` or `utilityBills`.
+
+```json
+{
+  "fileName": "passport.pdf",
+  "fileUrl": "s3://your-bucket/passport.pdf",
+  "mimeType": "application/pdf",
+  "fileSize": 123456
+}
+```
+
+MIME compatibility is checked when the file is linked in a submission, not only when it is registered.

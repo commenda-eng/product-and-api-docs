@@ -250,12 +250,36 @@ components:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountryOptions"
     PartnerCreateIncorporationRequest:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerCreateIncorporationRequest"
+    PartnerCreateCompanyScopedIncorporationRequest:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerCreateCompanyScopedIncorporationRequest"
     PartnerJurisdictionCatalogField:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerJurisdictionCatalogField"
     PartnerJurisdictionCatalogCountry:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerJurisdictionCatalogCountry"
     PartnerJurisdictionCatalogResponse:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerJurisdictionCatalogResponse"
+    PartnerRequirementsResponse:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerRequirementsResponse"
+    PartnerIncorporationRequirements:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirements"
+    PartnerIncorporationValidationIssue:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationIssue"
+    PartnerIncorporationValidationSummary:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationSummary"
+    PartnerIncorporationSubmissionState:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
+    PartnerCreateSubmissionRequest:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerCreateSubmissionRequest"
+    PartnerIncorporationSubmission:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmission"
+    PartnerIncorporationSubmissionResponse:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionResponse"
+    PartnerIncorporationSubmissionsResponse:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionsResponse"
+    PartnerRegisterFileRequest:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerRegisterFileRequest"
+    PartnerRegisterFileResponse:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerRegisterFileResponse"
     PartnerIncorporation:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporation"
     PartnerIncorporationResponse:

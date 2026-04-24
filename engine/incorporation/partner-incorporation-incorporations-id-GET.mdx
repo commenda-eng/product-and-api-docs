@@ -1,11 +1,11 @@
 ---
 title: "Get an incorporation"
-openapi: "GET /partner/incorporation/companies/{companyId}/incorporations/{incorporationId}"
+openapi: "GET /partner/incorporation/{incorporationId}"
 ---
 
-Retrieves a single incorporation for a company accessible to your partner account.
+Retrieves a single incorporation accessible to your partner account.
 
-Use this endpoint to refresh the current `incorporationStatus` for an ongoing incorporation.
+Use this endpoint to refresh `incorporationStatus`, `submittedData`, and the latest validation summary for an ongoing incorporation.
 
 ## Incorporation status
 
@@ -13,7 +13,7 @@ Use this endpoint to refresh the current `incorporationStatus` for an ongoing in
 
 | Status | Meaning |
 |---|---|
-| `submitted` | Commenda has received the incorporation request. |
+| `collecting_information` | Required intake information or evidence is still missing or invalid. |
+| `ready_for_review` | Intake validates against the current requirements DSL and is ready for Commenda review. |
 | `in_progress` | Commenda is actively processing the incorporation. |
-| `blocked` | The incorporation needs additional information or resolution before it can continue. |
 | `completed` | The incorporation has been completed. |

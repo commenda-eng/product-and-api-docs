@@ -494,9 +494,13 @@
                 "pages": [
                   "engine/incorporation/partner-incorporation-introduction",
                   "engine/incorporation/partner-incorporation-jurisdiction-catalog-GET",
+                  "engine/incorporation/partner-incorporation-requirements-GET",
                   "engine/incorporation/partner-incorporation-incorporations-POST",
                   "engine/incorporation/partner-incorporation-incorporations-GET",
-                  "engine/incorporation/partner-incorporation-incorporations-id-GET"
+                  "engine/incorporation/partner-incorporation-incorporations-id-GET",
+                  "engine/incorporation/partner-incorporation-files-POST",
+                  "engine/incorporation/partner-incorporation-submissions-POST",
+                  "engine/incorporation/partner-incorporation-submissions-GET"
                 ]
               },
               {

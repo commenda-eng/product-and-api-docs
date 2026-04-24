@@ -255,9 +255,9 @@ schemas:
     type: string
     description: Current lifecycle status for the incorporation.
     enum:
-      - submitted
+      - collecting_information
+      - ready_for_review
       - in_progress
-      - blocked
       - completed
   PartnerIncorporationCountryOptions:
     type: object
@@ -269,6 +269,27 @@ schemas:
   PartnerCreateIncorporationRequest:
     type: object
     required:
+      - companyId
+      - country
+      - countryOptions
+    properties:
+      companyId:
+        type: integer
+        description: Company that should own the incorporation.
+        example: 77
+      country:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountry"
+      countryOptions:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountryOptions"
+      submission:
+        type: object
+        description: Optional initial partial submission. The payload is validated the same way as `POST /partner/incorporation/{incorporationId}/submissions`.
+        properties:
+          requirements:
+            $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
+  PartnerCreateCompanyScopedIncorporationRequest:
+    type: object
+    required:
       - country
       - countryOptions
     properties:
@@ -276,6 +297,19 @@ schemas:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountry"
       countryOptions:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountryOptions"
+      submission:
+        type: object
+        description: Optional initial partial submission.
+        properties:
+          requirements:
+            $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
+  PartnerRequirementsResponse:
+    type: object
+    required:
+      - requirements
+    properties:
+      requirements:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirements"
   PartnerJurisdictionCatalogField:
     type: object
     required:
@@ -324,10 +358,188 @@ schemas:
         type: array
         items:
           $ref: "./affiliate-incorporation.yaml#/schemas/PartnerJurisdictionCatalogCountry"
+  PartnerIncorporationRequirements:
+    type: object
+    description: Requirements DSL for the selected incorporation. Clients can use this to render their own intake UI, but submissions are always validated against the current server-side DSL.
+    additionalProperties: true
+    example:
+      schemaVersion: "2026-04-22"
+      requirementsVersion: sg-private-limited-company-2026-04-22
+      dslVersion: mvp-2026-04-22
+      key: sg.private_limited_company
+      country: SG
+      countryOptions:
+        corporationType: PRIVATE_LIMITED_COMPANY
+      name: Singapore Private Limited Company Incorporation Requirements
+      blocks:
+        - key: companyNames
+          name: Company name options
+  PartnerIncorporationValidationIssue:
+    type: object
+    required:
+      - path
+      - message
+    properties:
+      path:
+        type: string
+        description: Dot/bracket path for the missing or invalid requirement.
+        example: documents.passportScans
+      message:
+        type: string
+        example: Passport scans is required
+  PartnerIncorporationValidationSummary:
+    type: object
+    required:
+      - isComplete
+      - missingRequirements
+      - invalidRequirements
+    properties:
+      isComplete:
+        type: boolean
+        description: True when the current submitted state satisfies the current requirements DSL.
+        example: false
+      missingRequirements:
+        type: array
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationIssue"
+      invalidRequirements:
+        type: array
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationIssue"
+  PartnerIncorporationSubmissionState:
+    type: object
+    description: Partner-submitted requirement values keyed by DSL field keys.
+    additionalProperties: true
+    example:
+      companyNameOptions:
+        - name: Acme SG Pte Ltd
+        - name: Acme Asia Pte Ltd
+        - name: Acme Global Pte Ltd
+      registeredAddressMode: standardAddress
+      passportScans:
+        - source: uploadedFile
+          fileId: 456
+      utilityBills:
+        - source: uploadedFile
+          fileId: 789
+  PartnerCreateSubmissionRequest:
+    type: object
+    required:
+      - requirements
+    properties:
+      requirements:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
+  PartnerIncorporationSubmission:
+    type: object
+    required:
+      - id
+      - incorporationId
+      - rawPayload
+      - normalizedPayload
+      - currentState
+      - validation
+      - createdAt
+      - updatedAt
+    properties:
+      id:
+        type: string
+        example: sub_123
+      incorporationId:
+        type: string
+        example: sr_123
+      rawPayload:
+        type: object
+        additionalProperties: true
+      normalizedPayload:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
+      currentState:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
+      validation:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationSummary"
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+  PartnerIncorporationSubmissionResponse:
+    type: object
+    required:
+      - submission
+      - requirements
+    properties:
+      submission:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmission"
+      requirements:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirements"
+  PartnerIncorporationSubmissionsResponse:
+    type: object
+    required:
+      - submissions
+      - count
+      - currentState
+      - validation
+    properties:
+      submissions:
+        type: array
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmission"
+      count:
+        type: integer
+        example: 2
+      currentState:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
+      validation:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationSummary"
+  PartnerRegisterFileRequest:
+    type: object
+    required:
+      - fileName
+      - fileUrl
+      - mimeType
+    properties:
+      fileName:
+        type: string
+        example: passport.pdf
+      fileUrl:
+        type: string
+        description: Storage URL for a previously uploaded file.
+        example: s3://bucket/passport.pdf
+      mimeType:
+        type: string
+        example: application/pdf
+      fileSize:
+        type: integer
+        example: 123456
+  PartnerRegisterFileResponse:
+    type: object
+    required:
+      - file
+    properties:
+      file:
+        type: object
+        required:
+          - fileId
+          - fileName
+          - mimeType
+        properties:
+          fileId:
+            type: integer
+            example: 456
+          fileName:
+            type: string
+            example: passport.pdf
+          mimeType:
+            type: string
+            example: application/pdf
+          fileSize:
+            type: integer
+            example: 123456
   PartnerIncorporation:
     type: object
     required:
       - id
+      - serviceRequestId
       - companyId
       - country
       - countryOptions
@@ -340,6 +552,10 @@ schemas:
         type: string
         description: Incorporation identifier.
         example: 0f9a8f5e-7f7c-4c1b-a60a-b1022f9d8c91
+      serviceRequestId:
+        type: string
+        description: Temporary bridge/debugging field. Use `id` as the primary incorporation identifier.
+        example: sr_123
       companyId:
         type: integer
         description: Company that owns the incorporation.
@@ -370,6 +586,12 @@ schemas:
     properties:
       incorporation:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporation"
+      requirements:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirements"
+      submittedData:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
+      validation:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationSummary"
   PartnerIncorporationListResponse:
     type: object
     required:

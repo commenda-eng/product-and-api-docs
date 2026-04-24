@@ -33,6 +33,122 @@ curl --request GET \
 
 This API does not create or return payment intents. Partners using this surface should treat billing as separate from the incorporation resource lifecycle.
 
+## End-to-end Singapore example
+
+This example assumes you already created a company and have a `companyId`. It starts a Singapore private limited company incorporation, links already-uploaded files, submits mixed intake data, and reads back progress.
+
+```bash
+curl --request GET \
+  --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/requirements?country=SG&countryOptions[corporationType]=PRIVATE_LIMITED_COMPANY' \
+  --header 'x-api-key: <partner_api_key>'
+```
+
+```bash
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/companies/<company_id>/incorporations' \
+  --header 'content-type: application/json' \
+  --header 'x-api-key: <partner_api_key>' \
+  --data '{
+    "country": "SG",
+    "countryOptions": {
+      "corporationType": "PRIVATE_LIMITED_COMPANY"
+    }
+  }'
+```
+
+Use the returned `incorporation.id` in later calls.
+
+```bash
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/<incorporation_id>/files' \
+  --header 'content-type: application/json' \
+  --header 'x-api-key: <partner_api_key>' \
+  --data '{ "fileId": 456 }'
+
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/<incorporation_id>/files' \
+  --header 'content-type: application/json' \
+  --header 'x-api-key: <partner_api_key>' \
+  --data '{ "fileId": 789 }'
+```
+
+```bash
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/<incorporation_id>/intake' \
+  --header 'content-type: application/json' \
+  --header 'x-api-key: <partner_api_key>' \
+  --data '{
+    "requirements": {
+      "companyNameOptions": [
+        { "name": "Acme SG Pte. Ltd." },
+        { "name": "Acme Asia Pte. Ltd." },
+        { "name": "Acme Global Pte. Ltd." }
+      ],
+      "directors": [
+        {
+          "mode": "existingResource",
+          "resourceId": "key_person_001"
+        },
+        {
+          "mode": "inlineData",
+          "data": {
+            "firstName": "Asha",
+            "lastName": "Raman",
+            "email": "asha@example.com",
+            "nationality": "SG",
+            "passportNumber": "E1234567N",
+            "dateOfBirth": "1988-02-14",
+            "residentialAddress": {
+              "mode": "inlineData",
+              "data": {
+                "addressLine1": "1 Raffles Place",
+                "city": "Singapore",
+                "postalCode": "048616",
+                "country": "SG"
+              }
+            }
+          }
+        },
+        {
+          "mode": "patch",
+          "resourceId": "key_person_003",
+          "data": {
+            "passportNumber": "K9876543M",
+            "residentialAddress": {
+              "mode": "patch",
+              "resourceId": "location_003",
+              "data": {
+                "postalCode": "079903"
+              }
+            }
+          }
+        }
+      ],
+      "shareholders": [
+        {
+          "shareholderType": "individual",
+          "individualShareholder": {
+            "mode": "existingResource",
+            "resourceId": "key_person_001"
+          },
+          "ownershipPercentage": 100
+        }
+      ],
+      "registeredAddressMode": "standardAddress",
+      "passportScans": [{ "fileId": 456 }],
+      "utilityBills": [{ "fileId": 789 }]
+    }
+  }'
+```
+
+```bash
+curl --request GET \
+  --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/<incorporation_id>' \
+  --header 'x-api-key: <partner_api_key>'
+```
+
+The read response includes `intakeState.validation`. When `isComplete` is `true`, the incorporation can move from `collecting_information` to `ready_for_review`.
+
 ## Jurisdiction options
 
 Create requests use a `country` plus country-specific `countryOptions` instead of a flat product id.

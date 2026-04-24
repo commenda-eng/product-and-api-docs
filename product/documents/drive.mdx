@@ -1,0 +1,78 @@
+---
+title: "The drive"
+sidebarTitle: "Drive"
+description: "Browse, organize, and manage documents across your entities and company."
+keywords: ["drive", "folders", "documents", "file management", "file placements"]
+---
+
+The **Drive** is the central file browser in Commenda. It shows every document stored against an entity or across your whole company, organized into a consistent folder tree that mirrors how tax, compliance, and governance work actually happens.
+
+## Views
+
+The drive has two top-level views:
+
+- **Entity view** — the full folder tree for a single entity, with tag-based filters and dynamic folders (per person, per service request).
+- **Company view** — a roll-up of every entity in the company so you can see all documents from a single pane.
+
+Switch between them from the selector at the top of the drive.
+
+## The folder tree
+
+Every entity is provisioned with the same base taxonomy the first time it's created, so documents always land in a predictable place:
+
+| Folder | What goes here |
+| --- | --- |
+| General | Miscellaneous files that don't fit elsewhere |
+| Corporate Governance → Formation Documents | Certificates of incorporation, articles, bylaws |
+| Corporate Governance → Key Persons | A dynamic subfolder per director, officer, or signatory |
+| Corporate Governance → Registrations & Licenses | Tax registrations, business licenses, government IDs |
+| Corporate Governance → Board & Shareholder Records | Minutes, resolutions, share certificates |
+| Corporate Governance → Notices and Correspondence | Government notices, letters, correspondence |
+| Filings & Tax Compliance → Direct Tax | Income tax filings, supporting schedules |
+| Filings & Tax Compliance → Indirect Tax | Sales tax, VAT, GST filings |
+| Filings & Tax Compliance → Transfer Pricing | Transfer pricing documentation, master files, local files |
+| Filings & Tax Compliance → Entity Compliance | Annual returns, registered agent filings |
+| Filings & Tax Compliance → Payroll & Employment | Payroll returns, employment filings |
+| Filings & Tax Compliance → Customs & Trade | Customs declarations, import/export documents |
+| Bookkeeping & Financial Reporting → Financial Statements | Balance sheets, P&Ls, trial balances |
+| Service Delivery → Service Request | A dynamic subfolder per service request |
+
+Some folders (Key Persons, Service Request) generate child folders dynamically based on your data — each new director or service request gets its own folder automatically.
+
+## Custom folders
+
+You can create your own folders anywhere in the tree if the default structure doesn't fit. Right-click a folder and choose **New folder**, or use the **+ Folder** button in the toolbar. Custom folders can be nested, renamed, moved, and deleted just like standard ones.
+
+## File placements
+
+Files in Commenda can appear in more than one place at once — for example, a single tax filing can sit in both the **Direct Tax** folder and a **Service Request** folder. These are called *placements*. Renaming or moving a placement only affects that one copy; the underlying file is still one file with one version history.
+
+## Organizing files
+
+From the drive you can:
+
+- **Rename** a file or folder.
+- **Move** files to a different folder using drag-and-drop or the **Move to** action.
+- **Download** individual files, multiple files, or entire folders as a zip archive.
+- **Trash** files and folders. See [Trash and restore](#trash-and-restore).
+- **Tag** files with fiscal year, period, jurisdiction, tax type, and document type. See [Tagging and filtering documents](/product/documents/tagging).
+
+Most actions support bulk selection — hold <kbd>Shift</kbd> or <kbd>Cmd/Ctrl</kbd> to select multiple files and act on them at once.
+
+## Search
+
+The search bar at the top of the drive searches file names across every entity in the company. Results include the file, the folder it lives in, and its tags so you can jump directly to it.
+
+## Trash and restore
+
+Deleting a file or folder moves it to **Trash** rather than destroying it. From the Trash view you can:
+
+- **Restore** a file or folder to its original location.
+- **Permanently delete** items you no longer need.
+- Preview what will be deleted before acting on a folder — Commenda shows how many files and subfolders are inside.
+
+Deleting a folder trashes everything it contains. Restoring the folder brings its contents back with it.
+
+## Bulk download
+
+Select one or more files or folders and choose **Download** to get a zip archive. For large selections, Commenda generates the archive in the background and emails you a link when it's ready.

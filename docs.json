@@ -89,6 +89,8 @@
             "group": "Documents",
             "pages": [
               "product/documents/overview",
+              "product/documents/drive",
+              "product/documents/tagging",
               "product/documents/secure-information-requests"
             ]
           },

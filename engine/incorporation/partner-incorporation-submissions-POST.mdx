@@ -55,7 +55,7 @@ Resource fields can use existing Commenda OS resources, inline data, or patches 
 
 ## Evidence linking
 
-Register files first with `POST /partner/incorporation/{incorporationId}/files`, then link the returned `fileId`:
+Upload files through Commenda OS first, link the existing `fileId` with `POST /partner/incorporation/{incorporationId}/files`, then reference that `fileId`:
 
 ```json
 {

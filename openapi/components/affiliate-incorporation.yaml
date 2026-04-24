@@ -266,27 +266,6 @@ schemas:
     example:
       state: DE
       corporationType: LLC
-  PartnerCreateIncorporationRequest:
-    type: object
-    required:
-      - companyId
-      - country
-      - countryOptions
-    properties:
-      companyId:
-        type: integer
-        description: Company that should own the incorporation.
-        example: 77
-      country:
-        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountry"
-      countryOptions:
-        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountryOptions"
-      submission:
-        type: object
-        description: Optional initial partial submission. The payload is validated the same way as `POST /partner/incorporation/{incorporationId}/submissions`.
-        properties:
-          requirements:
-            $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
   PartnerCreateCompanyScopedIncorporationRequest:
     type: object
     required:
@@ -396,7 +375,7 @@ schemas:
     properties:
       isComplete:
         type: boolean
-        description: True when the current submitted state satisfies the current requirements DSL.
+        description: True when the current intake state satisfies the current requirements DSL.
         example: false
       missingRequirements:
         type: array
@@ -429,6 +408,37 @@ schemas:
     properties:
       requirements:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
+  PartnerIncorporationIntakeState:
+    type: object
+    required:
+      - id
+      - incorporationId
+      - currentState
+      - validation
+      - lastSubmissionId
+      - createdAt
+      - updatedAt
+    properties:
+      id:
+        type: string
+        example: state_123
+      incorporationId:
+        type: string
+        example: sr_123
+      currentState:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
+      validation:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationSummary"
+      lastSubmissionId:
+        type: string
+        nullable: true
+        example: sub_123
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
   PartnerIncorporationSubmission:
     type: object
     required:
@@ -436,7 +446,6 @@ schemas:
       - incorporationId
       - rawPayload
       - normalizedPayload
-      - currentState
       - validation
       - createdAt
       - updatedAt
@@ -452,8 +461,6 @@ schemas:
         additionalProperties: true
       normalizedPayload:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
-      currentState:
-        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
       validation:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationSummary"
       createdAt:
@@ -466,10 +473,13 @@ schemas:
     type: object
     required:
       - submission
+      - intakeState
       - requirements
     properties:
       submission:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmission"
+      intakeState:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationIntakeState"
       requirements:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirements"
   PartnerIncorporationSubmissionsResponse:
@@ -477,8 +487,6 @@ schemas:
     required:
       - submissions
       - count
-      - currentState
-      - validation
     properties:
       submissions:
         type: array
@@ -487,30 +495,17 @@ schemas:
       count:
         type: integer
         example: 2
-      currentState:
-        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
-      validation:
-        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationSummary"
+      intakeState:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationIntakeState"
   PartnerRegisterFileRequest:
     type: object
     required:
-      - fileName
-      - fileUrl
-      - mimeType
+      - fileId
     properties:
-      fileName:
-        type: string
-        example: passport.pdf
-      fileUrl:
-        type: string
-        description: Storage URL for a previously uploaded file.
-        example: s3://bucket/passport.pdf
-      mimeType:
-        type: string
-        example: application/pdf
-      fileSize:
+      fileId:
         type: integer
-        example: 123456
+        description: Existing Commenda file id to link to this incorporation.
+        example: 456
   PartnerRegisterFileResponse:
     type: object
     required:
@@ -521,7 +516,6 @@ schemas:
         required:
           - fileId
           - fileName
-          - mimeType
         properties:
           fileId:
             type: integer
@@ -588,10 +582,8 @@ schemas:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporation"
       requirements:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirements"
-      submittedData:
-        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationSubmissionState"
-      validation:
-        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationSummary"
+      intakeState:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationIntakeState"
   PartnerIncorporationListResponse:
     type: object
     required:

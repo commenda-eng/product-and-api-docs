@@ -26,8 +26,8 @@ curl --request GET \
 1. Create a company with the existing `POST /public/company` endpoint.
 2. Review the informational jurisdiction catalog with `GET /partner/incorporation/jurisdiction-catalog`.
 3. Fetch the current requirements DSL with `GET /partner/incorporation/requirements?country=SG&corporationType=PRIVATE_LIMITED_COMPANY`.
-4. Start an incorporation with `POST /partner/incorporation`.
-5. Register uploaded files with `POST /partner/incorporation/{incorporationId}/files`.
+4. Start an incorporation with `POST /partner/incorporation/companies/{companyId}/incorporations`.
+5. Link already-uploaded files with `POST /partner/incorporation/{incorporationId}/files`.
 6. Submit partial or complete intake data with `POST /partner/incorporation/{incorporationId}/submissions`.
 7. Read the incorporation or submission history to track missing requirements and status.
 
@@ -53,11 +53,11 @@ See [List jurisdiction catalog](/engine/incorporation/partner-incorporation-juri
 
 The requirements endpoint returns a DSL with field names, descriptions, validation rules, resource fields, and evidence requirements. Use it to power your own UI, but treat it as informational: Commenda validates every submission against the current server-side requirements.
 
-Submissions are append-only and may be partial. A partial submission returns `validation.isComplete: false` plus `missingRequirements` and `invalidRequirements`. Once the current submitted state satisfies the DSL, the incorporation moves to `ready_for_review`.
+Submissions are append-only and may be partial. A partial submission returns `intakeState.validation.isComplete: false` plus `missingRequirements` and `invalidRequirements`. Once the current intake state satisfies the DSL, the incorporation moves to `ready_for_review`.
 
 ## Evidence files
 
-For files such as passport scans and utility bills, upload the file to storage first, then register it through the incorporation file endpoint. The returned `fileId` can be referenced from evidence fields:
+For files such as passport scans and utility bills, upload the file through Commenda OS first, then link that existing `fileId` through the incorporation file endpoint. The same `fileId` can be referenced from evidence fields:
 
 ```json
 {

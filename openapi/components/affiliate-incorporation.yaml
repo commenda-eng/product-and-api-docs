@@ -254,7 +254,7 @@ schemas:
       - US
   PartnerIncorporationStatus:
     type: string
-    description: Current lifecycle status for the incorporation.
+    description: Current lifecycle status for the incorporation. `ready_for_review` is returned only after the partner submits a currently complete incorporation.
     enum:
       - collecting_information
       - ready_for_review
@@ -387,7 +387,7 @@ schemas:
     properties:
       isComplete:
         type: boolean
-        description: True when the current intake state satisfies the current requirements DSL.
+        description: True when the current intake state satisfies the current requirements DSL and is eligible to submit for review.
         example: false
       missingRequirements:
         type: array

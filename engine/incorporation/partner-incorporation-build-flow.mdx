@@ -1,6 +1,6 @@
 ---
 title: "Build an incorporation flow"
-description: "Implement a partner-owned incorporation workflow from company creation through ready-for-review validation."
+description: "Implement a partner-owned incorporation workflow from company creation through final submit for review."
 ---
 
 This guide shows the recommended implementation sequence for a partner-owned incorporation flow. Use the endpoint reference pages for exact request and response schemas.
@@ -21,7 +21,7 @@ The Partner Incorporation API does not create or return payment intents. Billing
 | Participants | Who is involved? | Register reusable people/entities as directors and shareholders. |
 | Documents | How do I attach files? | Follow [Upload documents for incorporation](/engine/incorporation/partner-incorporation-document-upload-flow): upload files directly to S3, create company documents to obtain `fileId`, register each file to the incorporation, then link it as a typed participant document. |
 | Intake | What non-participant fields are needed? | Submit partial or complete intake updates. |
-| Completion | How do I know it is ready? | Read the incorporation and check `intakeState.validation.isComplete` and `incorporationStatus`. |
+| Completion | How do I hand it to Commenda? | Read validation, call the submit endpoint when `intakeState.validation.isComplete` is `true`, then track `incorporationStatus`. |
 
 ## ID map
 
@@ -271,7 +271,7 @@ curl --request POST \
   }'
 ```
 
-### 8. Read completion state
+### 8. Check readiness to submit
 
 ```bash
 curl --request GET \
@@ -279,7 +279,17 @@ curl --request GET \
   --header 'x-api-key: <partner_api_key>'
 ```
 
-Check `intakeState.validation.isComplete`. When it is `true`, the incorporation is eligible for `ready_for_review`.
+Check `intakeState.validation.isComplete`. When it is `true`, the incorporation is eligible to submit for Commenda review.
+
+### 9. Submit for review
+
+```bash
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/0f9a8f5e-7f7c-4c1b-a60a-b1022f9d8c91/submit' \
+  --header 'x-api-key: <partner_api_key>'
+```
+
+The submit endpoint refreshes validation before accepting the handoff. If the incorporation is incomplete, it returns `400` with validation details. If it succeeds, the response returns `incorporationStatus: "ready_for_review"`.
 
 ## Requirements DSL quick guide
 
@@ -305,11 +315,11 @@ Fetch requirements after the user chooses a jurisdiction and corporation type. Y
 
 ## Completion semantics
 
-There is no final submit endpoint in the MVP. Completion is derived from the current state.
+`intakeState.validation.isComplete` means the current data satisfies the requirements DSL and is eligible to submit. It does not by itself hand the incorporation to Commenda.
 
 ```text
 collecting_information
-  -> ready_for_review   when intakeState.validation.isComplete is true
+  -> ready_for_review   after POST /partner/incorporation/{incorporationId}/submit succeeds
   -> in_progress        when Commenda starts processing
   -> completed          when the incorporation is complete
 ```
@@ -329,3 +339,4 @@ Before Commenda starts processing, if validation later becomes incomplete, reads
 | `404` when linking document | The participant or file cannot be found | Register the participant and file first. |
 | `400` when linking document | File is not registered to the incorporation or document kind is not required | Call the file registration endpoint, then use a required `documentKind`. |
 | `400` for intake | Field value does not match the current DSL | Read `invalidRequirements` and update the field. |
+| `400` on submit | The current state is incomplete | Read the returned validation details or call `GET /partner/incorporation/{incorporationId}`, then fix missing/invalid requirements before retrying submit. |

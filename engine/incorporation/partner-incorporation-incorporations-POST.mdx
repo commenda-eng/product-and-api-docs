@@ -64,4 +64,4 @@ Use `GET /partner/incorporation/jurisdiction-catalog` to see currently supported
 
 ## Response status
 
-New incorporations are returned with `incorporationStatus: "collecting_information"` until required intake data, participant roles, and documents validate. Once the current incorporation state is complete, the status becomes `ready_for_review`.
+New incorporations are returned with `incorporationStatus: "collecting_information"`. Once required intake data, participant roles, and documents validate, call `POST /partner/incorporation/{incorporationId}/submit`; after submit succeeds, the status becomes `ready_for_review`.

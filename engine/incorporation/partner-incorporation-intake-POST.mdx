@@ -9,6 +9,8 @@ Each update is merged into the current intake state and validated against the cu
 
 The Partner API does not expose a submission history endpoint. To read progress after an update, call `GET /partner/incorporation/{incorporationId}` and inspect `intakeState`.
 
+When `intakeState.validation.isComplete` is `true`, call `POST /partner/incorporation/{incorporationId}/submit` to hand the incorporation to Commenda for review.
+
 Participant roles and participant documents are managed through the participant and document endpoints, not by sending array indexes or document files inside this intake payload.
 
 ## Intake fields

@@ -2473,6 +2473,53 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
+"/partner/incorporation/{incorporationId}/submit":
+  post:
+    summary: Submit an incorporation
+    description: Submit a currently complete incorporation for Commenda review. The server refreshes validation before accepting the submit request. `intakeState.validation.isComplete` means eligible to submit; `ready_for_review` is returned only after this endpoint succeeds.
+    operationId: submitPartnerIncorporation
+    servers:
+      - url: https://api.prod.commenda.io/api/v1
+    security:
+      - xApiKeyAuth: []
+    parameters:
+      - name: incorporationId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Incorporation identifier returned by create or list endpoints.
+    responses:
+      "200":
+        description: Incorporation submitted for review
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/PartnerIncorporationResponse"
+      "400":
+        description: Incorporation is incomplete or has invalid requirements
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
+      "401":
+        description: Missing or invalid partner API key
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
+      "403":
+        description: Incorporation is not accessible to the partner
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
+      "404":
+        description: Incorporation not found
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
 "/partner/incorporation/{incorporationId}/files":
   post:
     summary: Register an incorporation file

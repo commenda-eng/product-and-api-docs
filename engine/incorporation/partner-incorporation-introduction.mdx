@@ -37,7 +37,8 @@ curl --request GET \
 8. Register company files with `POST /partner/incorporation/{incorporationId}/files`.
 9. Link registered files as participant documents with `POST /partner/incorporation/{incorporationId}/documents`.
 10. Update partial or complete non-participant intake data with `POST /partner/incorporation/{incorporationId}/intake`.
-11. Read the incorporation to track `intakeState`, participants, missing requirements, and status.
+11. Submit a complete incorporation for Commenda review with `POST /partner/incorporation/{incorporationId}/submit`.
+12. Read the incorporation to track `intakeState`, participants, missing requirements, and status.
 
 This API does not create or return payment intents. Partners using this surface should treat billing as separate from the incorporation resource lifecycle.
 
@@ -45,7 +46,7 @@ KYC, e-signature execution, and document-review workflows are not part of the MV
 
 ## End-to-end Singapore example
 
-This example assumes you already created a company and have a `companyId`. It starts a Singapore private limited company incorporation, registers one individual as both director and shareholder, uploads and links documents for that participant, submits the remaining intake data, and reads back progress.
+This example assumes you already created a company and have a `companyId`. It starts a Singapore private limited company incorporation, registers one individual as both director and shareholder, uploads and links documents for that participant, sends the remaining intake data, submits the incorporation for review, and reads back progress.
 
 ```bash
 curl --request GET \
@@ -204,7 +205,17 @@ curl --request GET \
   --header 'x-api-key: <partner_api_key>'
 ```
 
-The read response includes `intakeState.validation`. When `isComplete` is `true`, the incorporation can move from `collecting_information` to `ready_for_review`.
+The read response includes `intakeState.validation`. When `isComplete` is `true`, the incorporation is eligible to submit for Commenda review.
+
+Submit the complete incorporation for Commenda review:
+
+```bash
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/<incorporation_id>/submit' \
+  --header 'x-api-key: <partner_api_key>'
+```
+
+After submit succeeds, reads return `incorporationStatus: "ready_for_review"` until Commenda starts processing.
 
 ## Jurisdiction options
 
@@ -232,6 +243,6 @@ Documents are typed files attached to participants. Files remain the low-level s
 
 The requirements endpoint returns a DSL with field names, descriptions, validation rules, participant rules, document rules, and other incorporation requirements. Use it to power your own UI, but treat it as informational: Commenda validates every intake update against the current server-side requirements.
 
-Intake updates may be partial. Each update is merged into the current intake state and returns `intakeState.validation.isComplete: false` plus `missingRequirements` and `invalidRequirements` until the state is complete. Participant and document requirements are evaluated from registered participants and linked documents. Once the current incorporation state satisfies the DSL, the incorporation moves to `ready_for_review`.
+Intake updates may be partial. Each update is merged into the current intake state and returns `intakeState.validation.isComplete: false` plus `missingRequirements` and `invalidRequirements` until the state is complete. Participant and document requirements are evaluated from registered participants and linked documents. Once the current incorporation state satisfies the DSL, call `POST /partner/incorporation/{incorporationId}/submit` to move the incorporation to `ready_for_review`.
 
 Country-specific validation rules, such as ownership totals, address requirements, and required participant documents, are determined by the current requirements DSL for the selected incorporation.

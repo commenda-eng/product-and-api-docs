@@ -3367,6 +3367,59 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/CommendaOsPartnerError"
+"/partner/commenda-os/companies/{companyId}/documents":
+  post:
+    summary: Upload a company document
+    description: Upload binary content as a company-scoped Commenda document. Optionally link the uploaded file to one business entity or one key person in the same company.
+    operationId: uploadPartnerCommendaOsCompanyDocument
+    servers:
+      - url: https://api.prod.commenda.io/api/v1
+    security:
+      - xApiKeyAuth: []
+    parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Commenda company identifier accessible to the authenticated partner.
+    requestBody:
+      required: true
+      content:
+        multipart/form-data:
+          schema:
+            "$ref": "../components/components.yaml#/components/schemas/CommendaOsCompanyDocumentUploadRequest"
+    responses:
+      "201":
+        description: Company document uploaded successfully
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsCompanyDocumentUploadResponse"
+      "400":
+        description: Missing file, invalid document type, invalid resource id, or both personId and businessEntityId were provided
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPartnerError"
+      "401":
+        description: Missing or invalid partner API key
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPartnerError"
+      "403":
+        description: Company or linked resource does not belong to this partner firm
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPartnerError"
+      "404":
+        description: Company, business entity, or key person not found
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPartnerError"
 "/partner/commenda-os/companies/{companyId}/business-entities/{businessEntityId}/documents":
   get:
     summary: List documents for a business entity

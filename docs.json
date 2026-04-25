@@ -239,6 +239,7 @@
               {
                 "group": "Documents",
                 "pages": [
+                  "engine/commendaos/partner-api/commenda-os-documents-POST",
                   "engine/commendaos/partner-api/commenda-os-business-entities-id-documents-GET",
                   "engine/commendaos/partner-api/commenda-os-business-entities-id-documents-supported-GET"
                 ]

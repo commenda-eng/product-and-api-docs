@@ -774,6 +774,77 @@ schemas:
       canBeAddedByAddDocument:
         type: boolean
         nullable: true
+  CommendaOsCompanyDocumentUploadRequest:
+    type: object
+    required:
+      - file
+    properties:
+      file:
+        type: string
+        format: binary
+        description: Binary file content uploaded with multipart/form-data.
+      documentSubType:
+        type: string
+        description: Optional Commenda document subtype. Defaults to `Other` when omitted.
+        example: Other
+      documentName:
+        type: string
+        description: Human-readable document name. Used as the explicit document type when `documentSubType` is `Other`.
+        example: Passport scan
+      businessEntityId:
+        type: integer
+        description: Optional business entity to link this uploaded file to. Do not provide together with `personId`.
+        example: 44
+      personId:
+        type: integer
+        description: Optional key person to link this uploaded file to. Do not provide together with `businessEntityId`.
+        example: 12
+  CommendaOsCompanyDocumentUpload:
+    type: object
+    required:
+      - fileId
+      - fileName
+      - mimeType
+      - fileSize
+      - documentSubType
+      - companyId
+    properties:
+      fileId:
+        type: integer
+        description: Commenda file id. Use this value when registering a file to an incorporation.
+        example: 456
+      fileName:
+        type: string
+        example: passport.pdf
+      mimeType:
+        type: string
+        example: application/pdf
+      fileSize:
+        type: integer
+        nullable: true
+        example: 382144
+      documentSubType:
+        type: string
+        example: Other
+      documentName:
+        type: string
+        example: Passport scan
+      companyId:
+        type: integer
+        example: 77
+      businessEntityId:
+        type: integer
+        example: 44
+      personId:
+        type: integer
+        example: 12
+  CommendaOsCompanyDocumentUploadResponse:
+    type: object
+    required:
+      - file
+    properties:
+      file:
+        $ref: "./commenda-os.yaml#/schemas/CommendaOsCompanyDocumentUpload"
   CommendaOsRegistration:
     type: object
     required:

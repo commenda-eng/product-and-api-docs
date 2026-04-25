@@ -3303,6 +3303,59 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CommendaOsPartnerError'
+  /partner/commenda-os/companies/{companyId}/documents:
+    post:
+      summary: Upload a company document
+      description: Upload binary content as a company-scoped Commenda document. Optionally link the uploaded file to one business entity or one key person in the same company.
+      operationId: uploadPartnerCommendaOsCompanyDocument
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Commenda company identifier accessible to the authenticated partner.
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CommendaOsCompanyDocumentUploadRequest'
+      responses:
+        '201':
+          description: Company document uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsCompanyDocumentUploadResponse'
+        '400':
+          description: Missing file, invalid document type, invalid resource id, or both personId and businessEntityId were provided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+        '403':
+          description: Company or linked resource does not belong to this partner firm
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+        '404':
+          description: Company, business entity, or key person not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
   /partner/commenda-os/companies/{companyId}/business-entities/{businessEntityId}/documents:
     get:
       summary: List documents for a business entity
@@ -7695,6 +7748,77 @@ components:
       properties:
         governmentIdentifier:
           $ref: '#/components/schemas/CommendaOsGovernmentIdentifier'
+    CommendaOsCompanyDocumentUploadRequest:
+      type: object
+      required:
+        - file
+      properties:
+        file:
+          type: string
+          format: binary
+          description: Binary file content uploaded with multipart/form-data.
+        documentSubType:
+          type: string
+          description: Optional Commenda document subtype. Defaults to `Other` when omitted.
+          example: Other
+        documentName:
+          type: string
+          description: Human-readable document name. Used as the explicit document type when `documentSubType` is `Other`.
+          example: Passport scan
+        businessEntityId:
+          type: integer
+          description: Optional business entity to link this uploaded file to. Do not provide together with `personId`.
+          example: 44
+        personId:
+          type: integer
+          description: Optional key person to link this uploaded file to. Do not provide together with `businessEntityId`.
+          example: 12
+    CommendaOsCompanyDocumentUpload:
+      type: object
+      required:
+        - fileId
+        - fileName
+        - mimeType
+        - fileSize
+        - documentSubType
+        - companyId
+      properties:
+        fileId:
+          type: integer
+          description: Commenda file id. Use this value when registering a file to an incorporation.
+          example: 456
+        fileName:
+          type: string
+          example: passport.pdf
+        mimeType:
+          type: string
+          example: application/pdf
+        fileSize:
+          type: integer
+          nullable: true
+          example: 382144
+        documentSubType:
+          type: string
+          example: Other
+        documentName:
+          type: string
+          example: Passport scan
+        companyId:
+          type: integer
+          example: 77
+        businessEntityId:
+          type: integer
+          example: 44
+        personId:
+          type: integer
+          example: 12
+    CommendaOsCompanyDocumentUploadResponse:
+      type: object
+      required:
+        - file
+      properties:
+        file:
+          $ref: '#/components/schemas/CommendaOsCompanyDocumentUpload'
     CommendaOsDocument:
       type: object
       required:

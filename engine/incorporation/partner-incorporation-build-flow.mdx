@@ -16,10 +16,10 @@ The Partner Incorporation API does not create or return payment intents. Billing
 | Setup | What container owns the work? | Create a company and save `companyId`. |
 | Discovery | What can I incorporate? | Read the jurisdiction catalog and choose `country` plus `countryOptions`. |
 | Requirements | What data do I need? | Fetch the requirements DSL for the selected jurisdiction/type. |
-| Resource prep | What reusable records must exist? | Create or reuse Commenda OS people, business entities, and locations. |
 | Incorporation | How do I start the case? | Create the incorporation and save `incorporation.id`. |
+| Resource prep | What reusable records must exist? | Create or reuse Commenda OS people, business entities, and locations. |
 | Participants | Who is involved? | Register reusable people/entities as directors and shareholders. |
-| Documents | How do I attach files? | Obtain `fileId`, register it to the incorporation, then link it as a typed participant document. |
+| Documents | How do I attach files? | Upload or reuse company documents to obtain `fileId`, register each file to the incorporation, then link it as a typed participant document. |
 | Intake | What non-participant fields are needed? | Submit partial or complete intake updates. |
 | Completion | How do I know it is ready? | Read the incorporation and check `intakeState.validation.isComplete` and `incorporationStatus`. |
 
@@ -33,7 +33,7 @@ The Partner Incorporation API does not create or return payment intents. Billing
 | `corporationId` | Incorporation response | Commenda OS business-entity endpoints after available | May be `null` while intake is still being collected. |
 | Person `id` | `POST /partner/commenda-os/companies/{companyId}/persons` | Participant `resource.resourceId` | Encode as a string, for example `"12"`. |
 | `participantId` | Register participant | Link participant documents | Incorporation-scoped participant id. |
-| `fileId` | Existing Commenda file or shared file upload path | Register file; link participant document | The incorporation API does not upload binary content. |
+| `fileId` | `POST /partner/commenda-os/companies/{companyId}/documents` or existing Commenda file lookup | Register file; link participant document | Company-scoped file id. The incorporation API registers and links it; upload happens in Commenda OS. |
 | `documentId` | Link participant document | Read/list participant state | Incorporation-scoped typed document link. |
 
 ## Happy path: Singapore private limited company
@@ -146,7 +146,23 @@ For Singapore private limited companies, registered shareholder participant `own
 
 ### 6. Register and link documents
 
-The incorporation API starts from an existing Commenda `fileId`; it does not upload binary content. Obtain `fileId` from an existing Commenda file visible to the company, or from the [shared file upload path](/engine/indirect-tax/files/files-POST) enabled for your integration. If your partner integration does not yet have a file upload path, coordinate with Commenda before building this step.
+Upload each source document through Commenda OS, or reuse an existing company-visible file, before registering it to the incorporation. If you upload a new file, save the returned `file.fileId`.
+
+```bash
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/partner/commenda-os/companies/77/documents' \
+  --header 'x-api-key: <partner_api_key>' \
+  --form 'file=@passport.pdf;type=application/pdf' \
+  --form 'personId=12' \
+  --form 'documentName=Passport scan'
+
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/partner/commenda-os/companies/77/documents' \
+  --header 'x-api-key: <partner_api_key>' \
+  --form 'file=@utility-bill.pdf;type=application/pdf' \
+  --form 'personId=12' \
+  --form 'documentName=Utility bill'
+```
 
 Register each file to the incorporation:
 
@@ -228,7 +244,7 @@ Check `intakeState.validation.isComplete`. When it is `true`, the incorporation 
 | `schemaVersion` / `dslVersion` | Descriptive server-side requirement version | Useful for logs and debugging. Clients do not send a requirements version back. |
 | `blocks` | UI-friendly groups of fields | Render fields by block if you want a guided UI. |
 | `fields` | Incorporation-level data, such as company names or registered address choice | Submit these keys under `requirements` in the intake endpoint. |
-| `conditions` | Rules that make a field required only when another field has a value | Re-evaluate the UI when the controlling field changes. |
+| `required.when` / `visibility` | Rules that make a field required or visible only when another field has a value | Re-evaluate the UI when the controlling field changes. |
 | `participantRequirements` | Required roles such as director or shareholder | Satisfy these by registering participants, not by sending arrays in intake. |
 | `documentRequirements` | Required typed documents for a participant role/type | Satisfy these by linking files as participant documents. |
 
@@ -254,7 +270,7 @@ collecting_information
   -> completed          when the incorporation is complete
 ```
 
-If validation later becomes incomplete, reads return `collecting_information` again. Public correction, rejection, and webhook flows are not part of the MVP surface.
+Before Commenda starts processing, if validation later becomes incomplete, reads return `collecting_information` again. Public correction, rejection, and webhook flows are not part of the MVP surface.
 
 ## Common errors and fixes
 

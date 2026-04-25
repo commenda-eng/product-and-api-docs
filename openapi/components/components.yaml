@@ -357,6 +357,12 @@ components:
       $ref: "./commenda-os.yaml#/schemas/CommendaOsDocumentsResponse"
     CommendaOsSupportedDocumentsResponse:
       $ref: "./commenda-os.yaml#/schemas/CommendaOsSupportedDocumentsResponse"
+    CommendaOsCompanyDocumentUploadRequest:
+      $ref: "./commenda-os.yaml#/schemas/CommendaOsCompanyDocumentUploadRequest"
+    CommendaOsCompanyDocumentUpload:
+      $ref: "./commenda-os.yaml#/schemas/CommendaOsCompanyDocumentUpload"
+    CommendaOsCompanyDocumentUploadResponse:
+      $ref: "./commenda-os.yaml#/schemas/CommendaOsCompanyDocumentUploadResponse"
     CommendaOsRegistrationResponse:
       $ref: "./commenda-os.yaml#/schemas/CommendaOsRegistrationResponse"
     CommendaOsRegistrationsResponse:

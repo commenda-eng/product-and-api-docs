@@ -2015,8 +2015,8 @@ paths:
                 $ref: '#/components/schemas/Error'
   /public/company:
     post:
-      summary: Create a company for an affiliate
-      description: Create a new company for an affiliate integration.
+      summary: Create a company
+      description: Create a new company container for partner and legacy affiliate workflows. Partner Incorporation API callers should save the returned `companyId`.
       operationId: createAffiliateCompany
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -2042,7 +2042,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AffiliatePublicError'
         '401':
-          description: Missing or invalid affiliate API key
+          description: Missing or invalid partner or affiliate API key
           content:
             application/json:
               schema:
@@ -2182,13 +2182,6 @@ paths:
             schema:
               $ref: '#/components/schemas/PartnerCreateCompanyScopedIncorporationRequest'
             examples:
-              usDelawareLlc:
-                summary: US Delaware LLC
-                value:
-                  country: US
-                  countryOptions:
-                    state: DE
-                    corporationType: LLC
               singaporePrivateLimited:
                 summary: Singapore private limited company
                 value:
@@ -2419,7 +2412,7 @@ paths:
   /partner/incorporation/{incorporationId}/files:
     post:
       summary: Register an incorporation file
-      description: Register an existing Commenda file to the incorporation context and return a `fileId` that can be linked as a participant document.
+      description: Register an existing Commenda file to the incorporation context and return a `fileId` that can be linked as a participant document. This endpoint does not upload binary content.
       operationId: registerPartnerIncorporationFile
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -6165,6 +6158,7 @@ components:
     PartnerIncorporationCountry:
       type: string
       description: ISO 3166-1 alpha-2 country code for the incorporation jurisdiction.
+      example: SG
       enum:
         - AE
         - CA
@@ -6228,8 +6222,7 @@ components:
       description: Country-specific incorporation options. Use the jurisdiction catalog for the currently supported fields and values.
       additionalProperties: true
       example:
-        state: DE
-        corporationType: LLC
+        corporationType: PRIVATE_LIMITED_COMPANY
     PartnerIncorporationRequirements:
       type: object
       description: Requirements DSL for the selected incorporation. Clients can use this to render their own intake UI, but intake updates are always validated against the current server-side DSL.
@@ -6404,7 +6397,7 @@ components:
           example: state_123
         incorporationId:
           type: string
-          example: sr_123
+          example: 0f9a8f5e-7f7c-4c1b-a60a-b1022f9d8c91
         currentState:
           $ref: '#/components/schemas/PartnerIncorporationRequirementValues'
         validation:

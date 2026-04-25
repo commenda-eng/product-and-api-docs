@@ -241,6 +241,7 @@ schemas:
   PartnerIncorporationCountry:
     type: string
     description: ISO 3166-1 alpha-2 country code for the incorporation jurisdiction.
+    example: SG
     enum:
       - AE
       - CA
@@ -264,8 +265,7 @@ schemas:
     description: Country-specific incorporation options. Use the jurisdiction catalog for the currently supported fields and values.
     additionalProperties: true
     example:
-      state: DE
-      corporationType: LLC
+      corporationType: PRIVATE_LIMITED_COMPANY
   PartnerCreateCompanyScopedIncorporationRequest:
     type: object
     required:
@@ -429,7 +429,7 @@ schemas:
         example: state_123
       incorporationId:
         type: string
-        example: sr_123
+        example: 0f9a8f5e-7f7c-4c1b-a60a-b1022f9d8c91
       currentState:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirementValues"
       validation:

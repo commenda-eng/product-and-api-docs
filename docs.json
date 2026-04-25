@@ -164,6 +164,7 @@
             "group": "Partner Incorporation API",
             "pages": [
               "engine/incorporation/partner-incorporation-introduction",
+              "engine/incorporation/partner-incorporation-build-flow",
               {
                 "group": "Discovery",
                 "pages": [

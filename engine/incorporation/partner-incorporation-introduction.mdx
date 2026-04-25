@@ -7,6 +7,10 @@ description: "Create and track incorporations for partner-owned companies withou
 
 The Partner Incorporation API lets a partner start and track incorporations for companies they manage in Commenda.
 
+<Info>
+If you are implementing the flow for the first time, start with [Build an incorporation flow](/engine/incorporation/partner-incorporation-build-flow). It includes the recommended sequence, ID handoffs, validation behavior, and a Singapore happy path.
+</Info>
+
 Base URL:
 
 ```text
@@ -24,10 +28,10 @@ curl --request GET \
 ## Flow
 
 1. Create a company with the existing `POST /public/company` endpoint.
-2. Create or reference reusable people, business entities, and addresses through the Commenda OS Partner API. If an individual director or shareholder does not exist yet, create one with `POST /partner/commenda-os/companies/{companyId}/persons`.
-3. Review the informational jurisdiction catalog with `GET /partner/incorporation/jurisdiction-catalog`.
-4. Fetch the current requirements DSL with `GET /partner/incorporation/requirements?country=SG&countryOptions[corporationType]=PRIVATE_LIMITED_COMPANY`.
-5. Start an incorporation with `POST /partner/incorporation/companies/{companyId}/incorporations`.
+2. Review the informational jurisdiction catalog with `GET /partner/incorporation/jurisdiction-catalog`.
+3. Fetch the current requirements DSL with `GET /partner/incorporation/requirements?country=SG&countryOptions[corporationType]=PRIVATE_LIMITED_COMPANY`.
+4. Start an incorporation with `POST /partner/incorporation/companies/{companyId}/incorporations`.
+5. Create or reference reusable people, business entities, and addresses through the Commenda OS Partner API. If an individual director or shareholder does not exist yet, create one with `POST /partner/commenda-os/companies/{companyId}/persons`.
 6. Register people or business entities as incorporation participants with `POST /partner/incorporation/{incorporationId}/participants`.
 7. Register already-uploaded files with `POST /partner/incorporation/{incorporationId}/files`.
 8. Link registered files as participant documents with `POST /partner/incorporation/{incorporationId}/documents`.

@@ -18,3 +18,5 @@ The `fileId` must first be registered to this incorporation with `POST /partner/
 ```
 
 For Singapore private limited companies, each individual director and individual shareholder needs both `passport_scan` and `utility_bill` documents. One document kind does not satisfy the other.
+
+For Singapore, `passport_scan` and `utility_bill` documents currently accept PDF, JPEG, and PNG files. If a registered file has an unsupported MIME type, this endpoint returns a validation error.

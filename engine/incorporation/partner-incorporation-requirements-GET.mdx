@@ -16,3 +16,17 @@ curl --request GET \
 Use the returned DSL to render your intake UI and to understand required fields, participant roles, document requirements, and validation constraints.
 
 The requirements response is informational. Intake updates are always validated against the current server-side DSL, so clients should handle `missingRequirements` and `invalidRequirements` from intake responses.
+
+## How to use the DSL
+
+| DSL area | What it means | How to satisfy it |
+| --- | --- | --- |
+| `blocks` | UI-friendly groupings of incorporation-level fields | Render these groups in your intake UI if useful. |
+| `fields` | Data submitted through `POST /partner/incorporation/{incorporationId}/intake` | Send values under `requirements` using each field key. |
+| `conditions` | Rules that make fields required only when another value is selected | Recompute visible/required fields when users change controlling values. |
+| `participantRequirements` | Required participant roles such as director or shareholder | Register reusable Commenda OS resources with `POST /partner/incorporation/{incorporationId}/participants`. |
+| `documentRequirements` | Required typed documents for participant roles/types | Register files, then link them with `POST /partner/incorporation/{incorporationId}/documents`. |
+
+Validation paths in `missingRequirements` and `invalidRequirements` correspond to DSL fields or participant/document requirements. For example, `companyNameOptions` points to an intake field, while `participants.participant_123.documents.passport_scan` points to a missing participant document.
+
+You may cache the requirements response by `country` plus `countryOptions`, but do not send a requirements version back to Commenda. If validation returns new missing or invalid requirements, update your UI from the latest response.

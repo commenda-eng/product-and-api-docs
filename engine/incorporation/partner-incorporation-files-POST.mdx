@@ -7,10 +7,14 @@ Registers an already-uploaded Commenda file to the incorporation context and ret
 
 Use this endpoint before linking files as participant documents such as `passport_scan` or `utility_bill`.
 
+<Info>
+This endpoint does not upload binary content. Before calling it, obtain a Commenda `fileId` from an existing file visible to the company, or from the [shared file upload path](/engine/indirect-tax/files/files-POST) enabled for your integration.
+</Info>
+
 ```json
 {
   "fileId": 456
 }
 ```
 
-MIME compatibility is checked when the file is linked as a typed participant document, not only when it is registered.
+MIME compatibility is checked when the file is linked as a typed participant document, not only when it is registered. For Singapore private limited companies, `passport_scan` and `utility_bill` currently accept PDF, JPEG, and PNG files.

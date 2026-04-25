@@ -7,6 +7,8 @@ Retrieves a single incorporation accessible to your partner account.
 
 Use this endpoint to refresh `incorporationStatus` and the latest `intakeState` for an ongoing incorporation.
 
+There is no final submit endpoint in the MVP. `ready_for_review` is derived from the current intake, participants, and documents. Poll this endpoint after writes to confirm whether `intakeState.validation.isComplete` and `incorporationStatus` have changed.
+
 ## Incorporation status
 
 `incorporationStatus` can be one of:

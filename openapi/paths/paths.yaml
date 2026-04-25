@@ -2079,8 +2079,8 @@
               "$ref": "../components/components.yaml#/components/schemas/Error"
 "/public/company":
   post:
-    summary: Create a company for an affiliate
-    description: Create a new company for an affiliate integration.
+    summary: Create a company
+    description: Create a new company container for partner and legacy affiliate workflows. Partner Incorporation API callers should save the returned `companyId`.
     operationId: createAffiliateCompany
     servers:
       - url: https://api.prod.commenda.io/api/v1
@@ -2106,7 +2106,7 @@
             schema:
               "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
       "401":
-        description: Missing or invalid affiliate API key
+        description: Missing or invalid partner or affiliate API key
         content:
           application/json:
             schema:
@@ -2246,13 +2246,6 @@
           schema:
             "$ref": "../components/components.yaml#/components/schemas/PartnerCreateCompanyScopedIncorporationRequest"
           examples:
-            usDelawareLlc:
-              summary: US Delaware LLC
-              value:
-                country: US
-                countryOptions:
-                  state: DE
-                  corporationType: LLC
             singaporePrivateLimited:
               summary: Singapore private limited company
               value:
@@ -2483,7 +2476,7 @@
 "/partner/incorporation/{incorporationId}/files":
   post:
     summary: Register an incorporation file
-    description: Register an existing Commenda file to the incorporation context and return a `fileId` that can be linked as a participant document.
+    description: Register an existing Commenda file to the incorporation context and return a `fileId` that can be linked as a participant document. This endpoint does not upload binary content.
     operationId: registerPartnerIncorporationFile
     servers:
       - url: https://api.prod.commenda.io/api/v1

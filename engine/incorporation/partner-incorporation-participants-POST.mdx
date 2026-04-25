@@ -31,3 +31,38 @@ The `resource.resourceId` value is the numeric Commenda OS person or business en
 ```
 
 For Singapore private limited companies, individual participants with a `director` or `shareholder` role require participant documents such as `passport_scan` and `utility_bill`.
+
+## Role examples
+
+Director only:
+
+```json
+{
+  "participantType": "individual",
+  "resource": {
+    "resourceType": "keyPerson",
+    "resourceId": "12"
+  },
+  "roles": [
+    { "role": "director" }
+  ]
+}
+```
+
+Shareholder only:
+
+```json
+{
+  "participantType": "individual",
+  "resource": {
+    "resourceType": "keyPerson",
+    "resourceId": "13"
+  },
+  "roles": [
+    {
+      "role": "shareholder",
+      "ownershipPercentage": 40
+    }
+  ]
+}
+```

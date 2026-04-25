@@ -45,7 +45,7 @@ schemas:
         example: 77
   AffiliateServiceCatalog:
     type: string
-    description: Incorporation service types currently supported by the affiliate public API.
+    description: Incorporation service types currently supported by the legacy affiliate API.
     enum:
       - US_CCORP_INCORPORATION
       - US_LLC_INCORPORATION
@@ -238,3 +238,521 @@ schemas:
         format: uri
         description: Temporary signed download URL for the file.
         example: https://bucket.s3.amazonaws.com/file.pdf?X-Amz-Signature=example
+  PartnerIncorporationCountry:
+    type: string
+    description: ISO 3166-1 alpha-2 country code for the incorporation jurisdiction.
+    example: SG
+    enum:
+      - AE
+      - CA
+      - GB
+      - IE
+      - IN
+      - KY
+      - NZ
+      - SG
+      - US
+  PartnerIncorporationStatus:
+    type: string
+    description: Current lifecycle status for the incorporation. `ready_for_review` is returned only after the partner submits a currently complete incorporation.
+    enum:
+      - collecting_information
+      - ready_for_review
+      - in_progress
+      - completed
+  PartnerIncorporationCountryOptions:
+    type: object
+    description: Country-specific incorporation options. Use the jurisdiction catalog for the currently supported fields and values.
+    additionalProperties: true
+    example:
+      corporationType: PRIVATE_LIMITED_COMPANY
+  PartnerCreateCompanyScopedIncorporationRequest:
+    type: object
+    required:
+      - country
+      - countryOptions
+    properties:
+      country:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountry"
+      countryOptions:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountryOptions"
+      intake:
+        type: object
+        description: Optional initial partial intake data.
+        properties:
+          requirements:
+            $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirementValues"
+  PartnerRequirementsResponse:
+    type: object
+    required:
+      - requirements
+    properties:
+      requirements:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirements"
+  PartnerJurisdictionCatalogField:
+    type: object
+    required:
+      - key
+      - type
+      - required
+    properties:
+      key:
+        type: string
+        description: Key to send inside `countryOptions`.
+        example: corporationType
+      type:
+        type: string
+        enum:
+          - select
+        example: select
+      required:
+        type: boolean
+        example: true
+      options:
+        type: array
+        description: Accepted values for this field.
+        items:
+          type: string
+        example:
+          - CORPORATION
+          - LLC
+  PartnerJurisdictionCatalogCountry:
+    type: object
+    required:
+      - country
+      - fields
+    properties:
+      country:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountry"
+      fields:
+        type: array
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerJurisdictionCatalogField"
+  PartnerJurisdictionCatalogResponse:
+    type: object
+    required:
+      - countries
+    properties:
+      countries:
+        type: array
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerJurisdictionCatalogCountry"
+  PartnerIncorporationRequirements:
+    type: object
+    description: Requirements DSL for the selected incorporation. Clients can use this to render their own intake UI, but intake updates are always validated against the current server-side DSL.
+    additionalProperties: true
+    example:
+      schemaVersion: "2026-04-22"
+      dslVersion: mvp-2026-04-22
+      key: sg.private_limited_company
+      country: SG
+      countryOptions:
+        corporationType: PRIVATE_LIMITED_COMPANY
+      name: Singapore Private Limited Company Incorporation Requirements
+      blocks:
+        - key: companyNames
+          name: Company name options
+      participantRequirements:
+        - key: directors
+          name: Directors
+          role: director
+          allowedParticipantTypes:
+            - individual
+          allowedResourceTypes:
+            - keyPerson
+          documentRequirements:
+            - documentKind: passport_scan
+              name: Passport scan
+            - documentKind: utility_bill
+              name: Utility bill
+  PartnerIncorporationValidationIssue:
+    type: object
+    required:
+      - path
+      - message
+    properties:
+      path:
+        type: string
+        description: Dot/bracket path for the missing or invalid requirement.
+        example: participants.participant_123.documents.passport_scan
+      message:
+        type: string
+        example: Participant participant_123 requires a passport_scan document
+  PartnerIncorporationValidationSummary:
+    type: object
+    required:
+      - isComplete
+      - missingRequirements
+      - invalidRequirements
+    properties:
+      isComplete:
+        type: boolean
+        description: True when the current intake state satisfies the current requirements DSL and is eligible to submit for review.
+        example: false
+      missingRequirements:
+        type: array
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationIssue"
+      invalidRequirements:
+        type: array
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationIssue"
+  PartnerIncorporationRequirementValues:
+    type: object
+    description: Partner-submitted requirement values keyed by DSL field keys.
+    additionalProperties: true
+    example:
+      companyNameOptions:
+        - name: Acme SG Pte Ltd
+        - name: Acme Asia Pte Ltd
+        - name: Acme Global Pte Ltd
+      registeredAddressMode: standardAddress
+  PartnerUpdateIntakeRequest:
+    type: object
+    required:
+      - requirements
+    properties:
+      requirements:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirementValues"
+  PartnerIncorporationIntakeState:
+    type: object
+    required:
+      - id
+      - incorporationId
+      - currentState
+      - validation
+      - createdAt
+      - updatedAt
+    properties:
+      id:
+        type: string
+        example: state_123
+      incorporationId:
+        type: string
+        example: 0f9a8f5e-7f7c-4c1b-a60a-b1022f9d8c91
+      currentState:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirementValues"
+      validation:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationSummary"
+      createdAt:
+        type: string
+        format: date-time
+      updatedAt:
+        type: string
+        format: date-time
+  PartnerIncorporationIntakeResponse:
+    type: object
+    required:
+      - intakeState
+      - requirements
+    properties:
+      intakeState:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationIntakeState"
+      requirements:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirements"
+  PartnerRegisterFileRequest:
+    type: object
+    required:
+      - fileId
+    properties:
+      fileId:
+        type: integer
+        description: Existing Commenda file id to register to this incorporation.
+        example: 456
+  PartnerRegisterFileResponse:
+    type: object
+    required:
+      - file
+    properties:
+      file:
+        type: object
+        required:
+          - fileId
+          - fileName
+        properties:
+          fileId:
+            type: integer
+            example: 456
+          fileName:
+            type: string
+            example: passport.pdf
+          mimeType:
+            type: string
+            example: application/pdf
+          fileSize:
+            type: integer
+            example: 123456
+  PartnerIncorporationParticipantType:
+    type: string
+    description: Type of reusable Commenda OS resource registered to the incorporation.
+    enum:
+      - individual
+      - corporate
+  PartnerIncorporationParticipantResourceType:
+    type: string
+    description: Commenda OS resource type represented by this participant.
+    enum:
+      - keyPerson
+      - businessEntity
+  PartnerIncorporationParticipantRoleName:
+    type: string
+    description: Role the participant holds in this incorporation.
+    enum:
+      - director
+      - shareholder
+  PartnerIncorporationParticipantResource:
+    type: object
+    required:
+      - resourceType
+      - resourceId
+    properties:
+      resourceType:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantResourceType"
+      resourceId:
+        type: string
+        pattern: "^[0-9]+$"
+        description: Numeric Commenda OS identifier encoded as a string. For `keyPerson`, use the person id returned by Commenda OS. For `businessEntity`, use the business entity id.
+        example: "12"
+  PartnerIncorporationParticipantRole:
+    type: object
+    required:
+      - role
+    properties:
+      role:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantRoleName"
+      ownershipPercentage:
+        type: number
+        description: Required when the participant has a shareholder role and ownership is represented by percentage.
+        minimum: 0
+        maximum: 100
+        example: 100
+  PartnerRegisterParticipantRequest:
+    type: object
+    required:
+      - participantType
+      - resource
+      - roles
+    properties:
+      participantType:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantType"
+      resource:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantResource"
+      roles:
+        type: array
+        minItems: 1
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantRole"
+    example:
+      participantType: individual
+      resource:
+        resourceType: keyPerson
+        resourceId: "12"
+      roles:
+        - role: director
+        - role: shareholder
+          ownershipPercentage: 100
+  PartnerIncorporationDocumentKind:
+    type: string
+    description: Type of document linked to an incorporation participant.
+    enum:
+      - passport_scan
+      - utility_bill
+  PartnerIncorporationParticipantDocumentStatus:
+    type: string
+    description: Current status of the participant document link.
+    enum:
+      - submitted
+  PartnerIncorporationParticipantDocument:
+    type: object
+    required:
+      - documentId
+      - participantId
+      - documentKind
+      - fileId
+      - status
+    properties:
+      documentId:
+        type: string
+        description: Identifier for this participant document link.
+        example: document_123
+      participantId:
+        type: string
+        description: Participant this document belongs to.
+        example: participant_123
+      documentKind:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationDocumentKind"
+      fileId:
+        type: integer
+        description: Registered Commenda file satisfying this document requirement.
+        example: 456
+      status:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantDocumentStatus"
+  PartnerLinkParticipantDocumentRequest:
+    type: object
+    required:
+      - participantId
+      - documentKind
+      - fileId
+    properties:
+      participantId:
+        type: string
+        description: Participant this document belongs to.
+        example: participant_123
+      documentKind:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationDocumentKind"
+      fileId:
+        type: integer
+        description: File id previously registered to this incorporation.
+        example: 456
+    example:
+      participantId: participant_123
+      documentKind: passport_scan
+      fileId: 456
+  PartnerIncorporationParticipant:
+    type: object
+    required:
+      - participantId
+      - participantType
+      - resource
+      - roles
+      - documents
+    properties:
+      participantId:
+        type: string
+        description: Incorporation-specific participant identifier.
+        example: participant_123
+      participantType:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantType"
+      resource:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantResource"
+      roles:
+        type: array
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantRole"
+      documents:
+        type: array
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantDocument"
+    example:
+      participantId: participant_123
+      participantType: individual
+      resource:
+        resourceType: keyPerson
+        resourceId: "12"
+      roles:
+        - role: director
+        - role: shareholder
+          ownershipPercentage: 100
+      documents:
+        - documentId: document_123
+          participantId: participant_123
+          documentKind: passport_scan
+          fileId: 456
+          status: submitted
+        - documentId: document_124
+          participantId: participant_123
+          documentKind: utility_bill
+          fileId: 789
+          status: submitted
+  PartnerIncorporationParticipantResponse:
+    type: object
+    required:
+      - participant
+    properties:
+      participant:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipant"
+  PartnerIncorporationParticipantsResponse:
+    type: object
+    required:
+      - participants
+      - count
+    properties:
+      participants:
+        type: array
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipant"
+      count:
+        type: integer
+        description: Number of participants returned.
+        example: 1
+  PartnerIncorporationParticipantDocumentResponse:
+    type: object
+    required:
+      - document
+    properties:
+      document:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantDocument"
+  PartnerIncorporation:
+    type: object
+    required:
+      - id
+      - serviceRequestId
+      - companyId
+      - country
+      - countryOptions
+      - incorporationStatus
+      - createdAt
+      - updatedAt
+      - corporationId
+    properties:
+      id:
+        type: string
+        description: Incorporation identifier.
+        example: 0f9a8f5e-7f7c-4c1b-a60a-b1022f9d8c91
+      serviceRequestId:
+        type: string
+        description: Temporary bridge/debugging field. Use `id` as the primary incorporation identifier.
+        example: sr_123
+      companyId:
+        type: integer
+        description: Company that owns the incorporation.
+        example: 77
+      country:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountry"
+      countryOptions:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationCountryOptions"
+      incorporationStatus:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationStatus"
+      createdAt:
+        type: string
+        format: date-time
+        example: 2026-04-21T17:10:00.000Z
+      updatedAt:
+        type: string
+        format: date-time
+        example: 2026-04-21T17:10:00.000Z
+      corporationId:
+        type: integer
+        nullable: true
+        description: Commenda corporation/entity id once one is attached.
+        example: 44
+  PartnerIncorporationResponse:
+    type: object
+    required:
+      - incorporation
+    properties:
+      incorporation:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporation"
+      requirements:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirements"
+      intakeState:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationIntakeState"
+      participants:
+        type: array
+        description: Participants registered to this incorporation, when requested or available.
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipant"
+  PartnerIncorporationListResponse:
+    type: object
+    required:
+      - incorporations
+      - count
+    properties:
+      incorporations:
+        type: array
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporation"
+      count:
+        type: integer
+        description: Total matching incorporations before pagination.
+        example: 1

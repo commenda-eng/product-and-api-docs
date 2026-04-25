@@ -1370,7 +1370,7 @@ paths:
   /filings:
     get:
       summary: List filings
-      description: List state and local sales tax filings for a corporation, filtered by query.
+      description: List state and local sales tax filings for a corporation, filtered by query. Pass `v2=true` to use the V2 filings path, which supports additional filters (such as `registration_tax_type_id`, `jurisdiction_ids`, `filing_statuses`, `filing_frequencies`, `from_due_date`, and `to_due_date`) and opt-in expansions via the `extend` query parameter.
       operationId: listFilings
       parameters:
         - name: corporation_id
@@ -1394,6 +1394,61 @@ paths:
             minimum: 1
             maximum: 100
             default: 10
+        - name: v2
+          in: query
+          description: Set to `true` to use the V2 filings path, which returns V2 content metadata (such as `registration_tax_type_id`, `jurisdiction_name`, `jurisdiction_type`, and `filing_content_id`) and enables the additional filters and `extend` parameter documented below. When omitted or `false`, the legacy filings response is returned.
+          required: false
+          schema:
+            type: string
+            enum:
+              - 'true'
+              - 'false'
+        - name: extend
+          in: query
+          description: Opt-in expansion for the V2 path (requires `v2=true`). Comma-separated list of expansion keys. The only supported value today is `filing_contribution`, which inlines the computed tax-return box contributions on each filing via a `contributions` array. When the parameter is omitted, the `contributions` field is not included in the response. Unknown values return a `400`.
+          required: false
+          schema:
+            type: string
+            example: filing_contribution
+        - name: from_due_date
+          in: query
+          description: V2 path only (`v2=true`). ISO 8601 date string. Returns only filings whose due date is on or after this value.
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: to_due_date
+          in: query
+          description: V2 path only (`v2=true`). ISO 8601 date string. Returns only filings whose due date is on or before this value.
+          required: false
+          schema:
+            type: string
+            format: date
+        - name: registration_tax_type_id
+          in: query
+          description: V2 path only (`v2=true`). Filter by V2 registration tax type content identifier (e.g., `REG_STATE_CEN_06_RST`).
+          required: false
+          schema:
+            type: string
+        - name: jurisdiction_ids
+          in: query
+          description: V2 path only (`v2=true`). Comma-separated list of Commenda jurisdiction identifiers to filter by. Maximum 100 values.
+          required: false
+          schema:
+            type: string
+            example: COUNTRY_DE_3018,STATE_CEN_06
+        - name: filing_statuses
+          in: query
+          description: V2 path only (`v2=true`). Comma-separated list of filing statuses to filter by. Maximum 100 values.
+          required: false
+          schema:
+            type: string
+        - name: filing_frequencies
+          in: query
+          description: V2 path only (`v2=true`). Comma-separated list of filing frequencies to filter by. Maximum 100 values.
+          required: false
+          schema:
+            type: string
       responses:
         '200':
           description: Filing info for all states
@@ -1461,7 +1516,7 @@ paths:
   /filings/{id}/contributions:
     get:
       summary: List filing contributions
-      description: Returns the computed VAT-return box contributions for a filing, joined with content metadata for display. Each contribution represents a computed value for a specific box on the tax return. Results are ordered by box order, then by jurisdiction. Returns an empty list if no contributions have been computed yet.
+      description: Retrieve the computed tax box values (contributions) for a specific filing. Each contribution represents a value that maps to a box on a tax return form, such as taxable sales or tax due. Contributions are ordered by box order, then by jurisdiction for multi-jurisdiction filings (e.g., EU OSS/IOSS).
       operationId: listFilingContributions
       parameters:
         - in: path
@@ -1469,10 +1524,11 @@ paths:
           required: true
           schema:
             type: string
-          description: The unique identifier of the filing.
+            format: uuid
+          description: The unique identifier of the filing to retrieve contributions for.
       responses:
         '200':
-          description: Filing contributions fetched successfully
+          description: Filing contributions retrieved successfully
           content:
             application/json:
               schema:
@@ -1959,8 +2015,8 @@ paths:
                 $ref: '#/components/schemas/Error'
   /public/company:
     post:
-      summary: Create a company for an affiliate
-      description: Create a new company for an affiliate integration.
+      summary: Create a company
+      description: Create a new company container for partner and legacy affiliate workflows. Partner Incorporation API callers should save the returned `companyId`.
       operationId: createAffiliateCompany
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -1986,7 +2042,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AffiliatePublicError'
         '401':
-          description: Missing or invalid affiliate API key
+          description: Missing or invalid partner or affiliate API key
           content:
             application/json:
               schema:
@@ -2027,6 +2083,574 @@ paths:
                 $ref: '#/components/schemas/AffiliatePublicError'
         '403':
           description: Company is not accessible to the affiliate
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+  /partner/incorporation/jurisdiction-catalog:
+    get:
+      summary: List supported incorporation jurisdictions
+      description: Retrieve the informational catalog of supported incorporation countries and country-specific options. This endpoint helps clients render valid choices, but the create endpoint remains the source of truth for validation.
+      operationId: getPartnerIncorporationJurisdictionCatalog
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      responses:
+        '200':
+          description: Jurisdiction catalog retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerJurisdictionCatalogResponse'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+  /partner/incorporation/requirements:
+    get:
+      summary: Get incorporation requirements
+      description: Retrieve the current requirements DSL for a selected incorporation jurisdiction and type. This endpoint is informational; intake updates are validated against the current server-side DSL.
+      operationId: getPartnerIncorporationRequirements
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: country
+          in: query
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerIncorporationCountry'
+          description: Incorporation country.
+          example: SG
+        - name: countryOptions
+          in: query
+          required: true
+          style: deepObject
+          explode: true
+          schema:
+            $ref: '#/components/schemas/PartnerIncorporationCountryOptions'
+          description: Country-specific options using deep-object query syntax, for example `countryOptions[corporationType]=PRIVATE_LIMITED_COMPANY`.
+      responses:
+        '200':
+          description: Requirements retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerRequirementsResponse'
+        '400':
+          description: Unsupported or malformed incorporation selection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '404':
+          description: Requirements are not available for the requested selection
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+  /partner/incorporation/companies/{companyId}/incorporations:
+    post:
+      summary: Create an incorporation
+      description: Create an incorporation for a partner-owned company without creating or returning a payment intent. You may include initial partial intake data.
+      operationId: createPartnerIncorporation
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Company that should own the incorporation.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerCreateCompanyScopedIncorporationRequest'
+            examples:
+              singaporePrivateLimited:
+                summary: Singapore private limited company
+                value:
+                  country: SG
+                  countryOptions:
+                    corporationType: PRIVATE_LIMITED_COMPANY
+      responses:
+        '201':
+          description: Incorporation created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerIncorporationResponse'
+        '400':
+          description: Unsupported country or invalid country options
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Company is not accessible to the partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+    get:
+      summary: List incorporations for a company
+      description: List incorporations visible to the authenticated partner for a single company.
+      operationId: listPartnerIncorporations
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Company whose incorporations should be listed.
+        - name: limit
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 100
+          description: Maximum number of incorporations to return.
+        - name: offset
+          in: query
+          required: false
+          schema:
+            type: integer
+            minimum: 0
+          description: Number of matching incorporations to skip.
+      responses:
+        '200':
+          description: Incorporations retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerIncorporationListResponse'
+        '400':
+          description: Invalid pagination parameters
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Company is not accessible to the partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+  /partner/incorporation/companies/{companyId}/incorporations/{incorporationId}:
+    get:
+      summary: Get an incorporation
+      description: Retrieve one incorporation visible to the authenticated partner.
+      operationId: getPartnerIncorporation
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Company that owns the incorporation.
+        - name: incorporationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Incorporation identifier returned by the create or list endpoint.
+      responses:
+        '200':
+          description: Incorporation retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerIncorporationResponse'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Company or incorporation is not accessible to the partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '404':
+          description: Incorporation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+  /partner/incorporation/{incorporationId}:
+    get:
+      summary: Get an incorporation
+      description: Retrieve one incorporation visible to the authenticated partner. Use this direct route for Phase 2 intake state reads.
+      operationId: getPartnerIncorporationById
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: incorporationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Incorporation identifier returned by create or list endpoints.
+      responses:
+        '200':
+          description: Incorporation retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerIncorporationResponse'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Incorporation is not accessible to the partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '404':
+          description: Incorporation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+  /partner/incorporation/{incorporationId}/intake:
+    post:
+      summary: Update incorporation intake
+      description: Update partial or complete requirement data for an incorporation. Each write returns the updated intake state and validation summary.
+      operationId: updatePartnerIncorporationIntake
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: incorporationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Incorporation identifier returned by create or list endpoints.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerUpdateIntakeRequest'
+      responses:
+        '201':
+          description: Intake update accepted and validated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerIncorporationIntakeResponse'
+        '400':
+          description: Malformed intake payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Incorporation is not accessible to the partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '404':
+          description: Incorporation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+  /partner/incorporation/{incorporationId}/submit:
+    post:
+      summary: Submit an incorporation
+      description: Submit a currently complete incorporation for Commenda review. The server refreshes validation before accepting the submit request. `intakeState.validation.isComplete` means eligible to submit; `ready_for_review` is returned only after this endpoint succeeds.
+      operationId: submitPartnerIncorporation
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: incorporationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Incorporation identifier returned by create or list endpoints.
+      responses:
+        '200':
+          description: Incorporation submitted for review
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerIncorporationResponse'
+        '400':
+          description: Incorporation is incomplete or has invalid requirements
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Incorporation is not accessible to the partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '404':
+          description: Incorporation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+  /partner/incorporation/{incorporationId}/files:
+    post:
+      summary: Register an incorporation file
+      description: Register a company-scoped Commenda file to the incorporation context and return a `fileId` that can be linked as a participant document. This endpoint does not upload binary content.
+      operationId: registerPartnerIncorporationFile
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: incorporationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Incorporation identifier returned by create or list endpoints.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerRegisterFileRequest'
+      responses:
+        '201':
+          description: File registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerRegisterFileResponse'
+        '400':
+          description: Malformed file registration payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Incorporation is not accessible to the partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '404':
+          description: Incorporation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+  /partner/incorporation/{incorporationId}/participants:
+    get:
+      summary: List incorporation participants
+      description: List reusable Commenda OS people or business entities registered as participants in this incorporation, including their roles and linked documents.
+      operationId: listPartnerIncorporationParticipants
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: incorporationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Incorporation identifier returned by create or list endpoints.
+      responses:
+        '200':
+          description: Participants retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerIncorporationParticipantsResponse'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Incorporation is not accessible to the partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '404':
+          description: Incorporation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+    post:
+      summary: Register an incorporation participant
+      description: Register a reusable Commenda OS key person or business entity as an incorporation participant with roles such as director or shareholder. This endpoint creates the incorporation-specific role registration; KYC checks, e-signature execution, and document review are future extensions and are not performed by this endpoint.
+      operationId: registerPartnerIncorporationParticipant
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: incorporationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Incorporation identifier returned by create or list endpoints.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerRegisterParticipantRequest'
+      responses:
+        '201':
+          description: Participant registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerIncorporationParticipantResponse'
+        '400':
+          description: Malformed participant registration payload, invalid participant/resource/role combination, or missing shareholder ownership percentage
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Incorporation is not accessible to the partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '404':
+          description: Incorporation or referenced Commenda OS resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+  /partner/incorporation/{incorporationId}/documents:
+    post:
+      summary: Link a participant document
+      description: Link a registered incorporation file to a participant as a typed document required by the current requirements DSL. Calling this endpoint again with the same participantId and documentKind replaces the linked fileId.
+      operationId: linkPartnerIncorporationParticipantDocument
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: incorporationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Incorporation identifier returned by create or list endpoints.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerLinkParticipantDocumentRequest'
+      responses:
+        '201':
+          description: Participant document linked successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerIncorporationParticipantDocumentResponse'
+        '400':
+          description: Malformed document link payload, incompatible file type, or file not registered to this incorporation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Incorporation is not accessible to the partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '404':
+          description: Incorporation, participant, or file not found
           content:
             application/json:
               schema:
@@ -2247,11 +2871,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AffiliatePublicError'
-  /public/companies/{companyId}/business-entities:
+  /partner/commenda-os/companies/{companyId}/business-entities:
     get:
       summary: List business entities for a company
-      description: List the business entities attached to an affiliate-accessible company.
-      operationId: listPublicCommendaOsBusinessEntities
+      description: List the business entities attached to a partner-accessible company.
+      operationId: listPartnerCommendaOsBusinessEntities
       servers:
         - url: https://api.prod.commenda.io/api/v1
       security:
@@ -2262,7 +2886,7 @@ paths:
           required: true
           schema:
             type: integer
-          description: Commenda company identifier accessible to the authenticated affiliate.
+          description: Commenda company identifier accessible to the authenticated partner.
       responses:
         '200':
           description: Business entities retrieved successfully
@@ -2271,22 +2895,22 @@ paths:
               schema:
                 $ref: '#/components/schemas/CommendaOsBusinessEntityListResponse'
         '401':
-          description: Missing or invalid affiliate API key
+          description: Missing or invalid partner API key
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '403':
-          description: Company does not belong to this affiliate firm
+          description: Company does not belong to this partner firm
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
-  /public/companies/{companyId}/business-entities/{businessEntityId}:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+  /partner/commenda-os/companies/{companyId}/business-entities/{businessEntityId}:
     get:
       summary: Get a business entity for a company
-      description: Retrieve a single business entity attached to an affiliate-accessible company.
-      operationId: getPublicCommendaOsBusinessEntity
+      description: Retrieve a single business entity attached to a partner-accessible company.
+      operationId: getPartnerCommendaOsBusinessEntity
       servers:
         - url: https://api.prod.commenda.io/api/v1
       security:
@@ -2297,7 +2921,7 @@ paths:
           required: true
           schema:
             type: integer
-          description: Commenda company identifier accessible to the authenticated affiliate.
+          description: Commenda company identifier accessible to the authenticated partner.
         - name: businessEntityId
           in: path
           required: true
@@ -2312,28 +2936,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/CommendaOsBusinessEntityResponse'
         '401':
-          description: Missing or invalid affiliate API key
+          description: Missing or invalid partner API key
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '403':
-          description: Company does not belong to this affiliate firm
+          description: Company does not belong to this partner firm
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '404':
           description: Business entity not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
-  /public/companies/{companyId}/business-entities/{businessEntityId}/locations:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+  /partner/commenda-os/companies/{companyId}/business-entities/{businessEntityId}/locations:
     get:
       summary: List locations for a business entity
-      description: List locations attached to a business entity within an affiliate-accessible company.
-      operationId: listPublicCommendaOsLocations
+      description: List locations attached to a business entity within a partner-accessible company.
+      operationId: listPartnerCommendaOsLocations
       servers:
         - url: https://api.prod.commenda.io/api/v1
       security:
@@ -2344,7 +2968,7 @@ paths:
           required: true
           schema:
             type: integer
-          description: Commenda company identifier accessible to the authenticated affiliate.
+          description: Commenda company identifier accessible to the authenticated partner.
         - name: businessEntityId
           in: path
           required: true
@@ -2359,28 +2983,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/CommendaOsLocationsResponse'
         '401':
-          description: Missing or invalid affiliate API key
+          description: Missing or invalid partner API key
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '403':
-          description: Company does not belong to this affiliate firm
+          description: Company does not belong to this partner firm
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '404':
           description: Business entity not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
-  /public/companies/{companyId}/business-entities/{businessEntityId}/locations/{locationId}:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+  /partner/commenda-os/companies/{companyId}/business-entities/{businessEntityId}/locations/{locationId}:
     get:
       summary: Get a location
-      description: Retrieve a single location for a business entity within an affiliate-accessible company.
-      operationId: getPublicCommendaOsLocation
+      description: Retrieve a single location for a business entity within a partner-accessible company.
+      operationId: getPartnerCommendaOsLocation
       servers:
         - url: https://api.prod.commenda.io/api/v1
       security:
@@ -2391,7 +3015,7 @@ paths:
           required: true
           schema:
             type: integer
-          description: Commenda company identifier accessible to the authenticated affiliate.
+          description: Commenda company identifier accessible to the authenticated partner.
         - name: businessEntityId
           in: path
           required: true
@@ -2412,28 +3036,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/CommendaOsLocationResponse'
         '401':
-          description: Missing or invalid affiliate API key
+          description: Missing or invalid partner API key
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '403':
-          description: Company does not belong to this affiliate firm
+          description: Company does not belong to this partner firm
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '404':
           description: Business entity not found or location not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
-  /public/companies/{companyId}/business-entities/{businessEntityId}/persons:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+  /partner/commenda-os/companies/{companyId}/business-entities/{businessEntityId}/persons:
     get:
       summary: List persons for a business entity
-      description: List people associated with a business entity within an affiliate-accessible company.
-      operationId: listPublicCommendaOsBusinessEntityPersons
+      description: List people associated with a business entity within a partner-accessible company.
+      operationId: listPartnerCommendaOsBusinessEntityPersons
       servers:
         - url: https://api.prod.commenda.io/api/v1
       security:
@@ -2444,7 +3068,7 @@ paths:
           required: true
           schema:
             type: integer
-          description: Commenda company identifier accessible to the authenticated affiliate.
+          description: Commenda company identifier accessible to the authenticated partner.
         - name: businessEntityId
           in: path
           required: true
@@ -2459,28 +3083,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/CommendaOsBusinessEntityPersonsResponse'
         '401':
-          description: Missing or invalid affiliate API key
+          description: Missing or invalid partner API key
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '403':
-          description: Company does not belong to this affiliate firm
+          description: Company does not belong to this partner firm
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '404':
           description: Business entity not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
-  /public/companies/{companyId}/persons:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+  /partner/commenda-os/companies/{companyId}/persons:
     get:
       summary: List persons for a company
-      description: List people visible for a single affiliate-accessible company across all of its business entities.
-      operationId: listPublicCommendaOsPersons
+      description: List people visible for a single partner-accessible company across all of its business entities.
+      operationId: listPartnerCommendaOsPersons
       servers:
         - url: https://api.prod.commenda.io/api/v1
       security:
@@ -2491,7 +3115,7 @@ paths:
           required: true
           schema:
             type: integer
-          description: Commenda company identifier accessible to the authenticated affiliate.
+          description: Commenda company identifier accessible to the authenticated partner.
       responses:
         '200':
           description: Persons retrieved successfully
@@ -2500,22 +3124,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/CommendaOsPersonsResponse'
         '401':
-          description: Missing or invalid affiliate API key
+          description: Missing or invalid partner API key
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '403':
-          description: Company does not belong to this affiliate firm
+          description: Company does not belong to this partner firm
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
-  /public/companies/{companyId}/business-entities/{businessEntityId}/government-identifiers:
-    get:
-      summary: List government identifiers
-      description: List government identifiers attached to a business entity within an affiliate-accessible company.
-      operationId: listPublicCommendaOsGovernmentIdentifiers
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+    post:
+      summary: Create a person
+      description: Create a reusable Commenda OS key person under a partner-accessible company. Use the returned `id` as a `keyPerson` resource id when registering incorporation participants.
+      operationId: createPartnerCommendaOsPerson
       servers:
         - url: https://api.prod.commenda.io/api/v1
       security:
@@ -2526,7 +3149,123 @@ paths:
           required: true
           schema:
             type: integer
-          description: Commenda company identifier accessible to the authenticated affiliate.
+          description: Commenda company identifier accessible to the authenticated partner.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommendaOsPersonCreateRequest'
+            examples:
+              createPerson:
+                value:
+                  firstName: Jane
+                  lastName: Founder
+                  email: jane@acme.com
+                  dateOfBirth: '1990-04-18'
+                  countryOfCitizenship: SG
+      responses:
+        '201':
+          description: Person created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPersonMutationResponse'
+        '400':
+          description: Malformed person create payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+        '403':
+          description: Company does not belong to this partner firm
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+  /partner/commenda-os/companies/{companyId}/persons/{personId}:
+    patch:
+      summary: Update a person
+      description: Partially update a reusable Commenda OS key person using the same person-update semantics as the internal Commenda OS API. Omitted fields are left unchanged.
+      operationId: updatePartnerCommendaOsPerson
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Commenda company identifier accessible to the authenticated partner.
+        - name: personId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Commenda OS person identifier for the specified company.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommendaOsPersonUpdateRequest'
+            examples:
+              updatePerson:
+                value:
+                  firstName: Jane
+                  lastName: Founder
+                  email: jane@acme.com
+                  dateOfBirth: '1990-04-18'
+                  countryOfCitizenship: SG
+      responses:
+        '200':
+          description: Person updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPersonMutationResponse'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+        '403':
+          description: Company does not belong to this partner firm
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+        '404':
+          description: Person not found for this company
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+  /partner/commenda-os/companies/{companyId}/business-entities/{businessEntityId}/government-identifiers:
+    get:
+      summary: List government identifiers
+      description: List government identifiers attached to a business entity within a partner-accessible company.
+      operationId: listPartnerCommendaOsGovernmentIdentifiers
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Commenda company identifier accessible to the authenticated partner.
         - name: businessEntityId
           in: path
           required: true
@@ -2541,28 +3280,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/CommendaOsGovernmentIdentifiersResponse'
         '401':
-          description: Missing or invalid affiliate API key
+          description: Missing or invalid partner API key
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '403':
-          description: Company does not belong to this affiliate firm
+          description: Company does not belong to this partner firm
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '404':
           description: Business entity not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
-  /public/companies/{companyId}/business-entities/{businessEntityId}/government-identifiers/{governmentIdentifierId}:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+  /partner/commenda-os/companies/{companyId}/business-entities/{businessEntityId}/government-identifiers/{governmentIdentifierId}:
     get:
       summary: Get a government identifier
-      description: Retrieve a single government identifier for a business entity within an affiliate-accessible company.
-      operationId: getPublicCommendaOsGovernmentIdentifier
+      description: Retrieve a single government identifier for a business entity within a partner-accessible company.
+      operationId: getPartnerCommendaOsGovernmentIdentifier
       servers:
         - url: https://api.prod.commenda.io/api/v1
       security:
@@ -2573,7 +3312,7 @@ paths:
           required: true
           schema:
             type: integer
-          description: Commenda company identifier accessible to the authenticated affiliate.
+          description: Commenda company identifier accessible to the authenticated partner.
         - name: businessEntityId
           in: path
           required: true
@@ -2594,28 +3333,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/CommendaOsGovernmentIdentifierResponse'
         '401':
-          description: Missing or invalid affiliate API key
+          description: Missing or invalid partner API key
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '403':
-          description: Company does not belong to this affiliate firm
+          description: Company does not belong to this partner firm
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '404':
           description: Business entity not found or government identifier not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
-  /public/companies/{companyId}/business-entities/{businessEntityId}/documents:
-    get:
-      summary: List documents for a business entity
-      description: List documents for a business entity within an affiliate-accessible company.
-      operationId: listPublicCommendaOsDocuments
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+  /partner/commenda-os/companies/{companyId}/documents/upload-url:
+    post:
+      summary: Create a document upload URL
+      description: Create a signed S3 upload URL so a partner client can upload company document bytes directly to S3 without sending the file body through Commenda's API server.
+      operationId: createPartnerCommendaOsCompanyDocumentUploadUrl
       servers:
         - url: https://api.prod.commenda.io/api/v1
       security:
@@ -2626,7 +3365,113 @@ paths:
           required: true
           schema:
             type: integer
-          description: Commenda company identifier accessible to the authenticated affiliate.
+          description: Commenda company identifier accessible to the authenticated partner.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommendaOsCompanyDocumentUploadUrlRequest'
+      responses:
+        '201':
+          description: Signed upload URL created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsCompanyDocumentUploadUrlResponse'
+        '400':
+          description: Missing or malformed file name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+        '403':
+          description: Company does not belong to this partner firm
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+        '404':
+          description: Company not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+  /partner/commenda-os/companies/{companyId}/documents:
+    post:
+      summary: Create a company document
+      description: Create a company-scoped Commenda document from a hosted URL returned by the document upload URL endpoint. The S3 object must exist before the document can be created. Optionally link the file to one business entity or one key person in the same company.
+      operationId: createPartnerCommendaOsCompanyDocument
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Commenda company identifier accessible to the authenticated partner.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommendaOsCompanyDocumentCreateRequest'
+      responses:
+        '201':
+          description: Company document created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsCompanyDocumentResponse'
+        '400':
+          description: Missing file metadata, upload has not completed, invalid document type, invalid resource id, or both personId and businessEntityId were provided
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+        '403':
+          description: Company or linked resource does not belong to this partner firm
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+        '404':
+          description: Company, business entity, or key person not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+  /partner/commenda-os/companies/{companyId}/business-entities/{businessEntityId}/documents:
+    get:
+      summary: List documents for a business entity
+      description: List documents for a business entity within a partner-accessible company.
+      operationId: listPartnerCommendaOsDocuments
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Commenda company identifier accessible to the authenticated partner.
         - name: businessEntityId
           in: path
           required: true
@@ -2641,28 +3486,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/CommendaOsDocumentsResponse'
         '401':
-          description: Missing or invalid affiliate API key
+          description: Missing or invalid partner API key
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '403':
-          description: Company does not belong to this affiliate firm
+          description: Company does not belong to this partner firm
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '404':
           description: Business entity not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
-  /public/companies/{companyId}/business-entities/{businessEntityId}/documents/supported:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+  /partner/commenda-os/companies/{companyId}/business-entities/{businessEntityId}/documents/supported:
     get:
       summary: List supported document types
-      description: List the document types Commenda OS supports for a business entity within an affiliate-accessible company.
-      operationId: listPublicCommendaOsSupportedDocuments
+      description: List the document types Commenda OS supports for a business entity within a partner-accessible company.
+      operationId: listPartnerCommendaOsSupportedDocuments
       servers:
         - url: https://api.prod.commenda.io/api/v1
       security:
@@ -2673,7 +3518,7 @@ paths:
           required: true
           schema:
             type: integer
-          description: Commenda company identifier accessible to the authenticated affiliate.
+          description: Commenda company identifier accessible to the authenticated partner.
         - name: businessEntityId
           in: path
           required: true
@@ -2688,28 +3533,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/CommendaOsSupportedDocumentsResponse'
         '401':
-          description: Missing or invalid affiliate API key
+          description: Missing or invalid partner API key
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '403':
-          description: Company does not belong to this affiliate firm
+          description: Company does not belong to this partner firm
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '404':
           description: Business entity not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
-  /public/companies/{companyId}/business-entities/{businessEntityId}/registrations:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+  /partner/commenda-os/companies/{companyId}/business-entities/{businessEntityId}/registrations:
     get:
       summary: List registrations for a business entity
-      description: List registrations for a business entity within an affiliate-accessible company.
-      operationId: listPublicCommendaOsRegistrations
+      description: List registrations for a business entity within a partner-accessible company.
+      operationId: listPartnerCommendaOsRegistrations
       servers:
         - url: https://api.prod.commenda.io/api/v1
       security:
@@ -2720,7 +3565,7 @@ paths:
           required: true
           schema:
             type: integer
-          description: Commenda company identifier accessible to the authenticated affiliate.
+          description: Commenda company identifier accessible to the authenticated partner.
         - name: businessEntityId
           in: path
           required: true
@@ -2735,28 +3580,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/CommendaOsRegistrationsResponse'
         '401':
-          description: Missing or invalid affiliate API key
+          description: Missing or invalid partner API key
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '403':
-          description: Company does not belong to this affiliate firm
+          description: Company does not belong to this partner firm
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '404':
           description: Business entity not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
-  /public/companies/{companyId}/business-entities/{businessEntityId}/registrations/{registrationId}:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+  /partner/commenda-os/companies/{companyId}/business-entities/{businessEntityId}/registrations/{registrationId}:
     get:
       summary: Get a registration
-      description: Retrieve a single registration for a business entity within an affiliate-accessible company.
-      operationId: getPublicCommendaOsRegistration
+      description: Retrieve a single registration for a business entity within a partner-accessible company.
+      operationId: getPartnerCommendaOsRegistration
       servers:
         - url: https://api.prod.commenda.io/api/v1
       security:
@@ -2767,7 +3612,7 @@ paths:
           required: true
           schema:
             type: integer
-          description: Commenda company identifier accessible to the authenticated affiliate.
+          description: Commenda company identifier accessible to the authenticated partner.
         - name: businessEntityId
           in: path
           required: true
@@ -2788,28 +3633,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/CommendaOsRegistrationResponse'
         '401':
-          description: Missing or invalid affiliate API key
+          description: Missing or invalid partner API key
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '403':
-          description: Company does not belong to this affiliate firm
+          description: Company does not belong to this partner firm
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '404':
           description: Business entity not found or registration not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
-  /public/companies/{companyId}/business-entities/{businessEntityId}/registrations/supported:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+  /partner/commenda-os/companies/{companyId}/business-entities/{businessEntityId}/registrations/supported:
     get:
       summary: List supported registrations for a business entity
-      description: List the registrations Commenda OS supports for a business entity within an affiliate-accessible company.
-      operationId: listPublicCommendaOsBusinessEntitySupportedRegistrations
+      description: List the registrations Commenda OS supports for a business entity within a partner-accessible company.
+      operationId: listPartnerCommendaOsBusinessEntitySupportedRegistrations
       servers:
         - url: https://api.prod.commenda.io/api/v1
       security:
@@ -2820,7 +3665,7 @@ paths:
           required: true
           schema:
             type: integer
-          description: Commenda company identifier accessible to the authenticated affiliate.
+          description: Commenda company identifier accessible to the authenticated partner.
         - name: businessEntityId
           in: path
           required: true
@@ -2835,28 +3680,28 @@ paths:
               schema:
                 $ref: '#/components/schemas/CommendaOsSupportedRegistrationsResponse'
         '401':
-          description: Missing or invalid affiliate API key
+          description: Missing or invalid partner API key
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '403':
-          description: Company does not belong to this affiliate firm
+          description: Company does not belong to this partner firm
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
         '404':
           description: Business entity not found
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
-  /public/registrations/supported:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+  /partner/commenda-os/registrations/supported:
     get:
       summary: List supported registrations
       description: List the registrations Commenda OS supports globally.
-      operationId: listPublicCommendaOsSupportedRegistrations
+      operationId: listPartnerCommendaOsSupportedRegistrations
       servers:
         - url: https://api.prod.commenda.io/api/v1
       security:
@@ -2869,11 +3714,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/CommendaOsSupportedRegistrationsResponse'
         '401':
-          description: Missing or invalid affiliate API key
+          description: Missing or invalid partner API key
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CommendaOsPublicError'
+                $ref: '#/components/schemas/CommendaOsPartnerError'
 components:
   schemas:
     GetWebhookResponse:
@@ -3679,6 +4524,7 @@ components:
         - AGRICULTURAL
         - EXEMPT_PRODUCT
         - OTHER
+        - EXEMPT_PRODUCT
     SourcePlatform:
       type: string
       description: Platform where this entity originated.
@@ -4632,7 +5478,9 @@ components:
           description: Transaction types automatically excluded from threshold calculations for this rule (e.g., marketplace, B2B, resale).
           items:
             type: string
-          example: ["TRANSACTION.MARKETPLACE", "CUSTOMER.B2B"]
+          example:
+            - TRANSACTION.MARKETPLACE
+            - CUSTOMER.B2B
         establishment_types:
           type: array
           description: Business establishment types that determine which variant of the rule applies (e.g., resident vs. non-resident).
@@ -4800,12 +5648,7 @@ components:
         - TRI_ANNUALLY
         - QUARTERLY_FEB
         - QUARTERLY_MAR
-      description: >-
-        How often the business is required to submit tax returns.
-        V1 registrations typically use MONTHLY, QUARTERLY, SEMI_ANNUALLY, or ANNUAL_CALENDAR_YEAR.
-        V2 registrations may use additional frequencies such as ANNUAL_RECONCILIATION
-        (for jurisdictions requiring a separate annual reconciliation filing alongside
-        periodic returns) or region-specific variants like QUARTERLY_FEB and QUARTERLY_MAR.
+      description: How often the business is required to submit tax returns. V1 registrations typically use MONTHLY, QUARTERLY, SEMI_ANNUALLY, or ANNUAL_CALENDAR_YEAR. V2 registrations may use additional frequencies such as ANNUAL_RECONCILIATION (for jurisdictions requiring a separate annual reconciliation filing alongside periodic returns) or region-specific variants like QUARTERLY_FEB and QUARTERLY_MAR.
     Tax_filing_status:
       type: string
       enum:
@@ -4814,12 +5657,65 @@ components:
         - ACTIVE
         - FILED
         - OVERDUE
-      description: >-
-        Current status of the filing. SCHEDULED means the filing has been created
-        but the tax period has not yet started. ACCRUING means transactions are being
-        collected for this period. ACTIVE means the filing is ready for review and
-        submission. FILED means the return has been submitted. OVERDUE means the
-        due date has passed without filing.
+      description: Current status of the filing. SCHEDULED means the filing has been created but the tax period has not yet started. ACCRUING means transactions are being collected for this period. ACTIVE means the filing is ready for review and submission. FILED means the return has been submitted. OVERDUE means the due date has passed without filing.
+    FilingContribution:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for this contribution.
+          example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+        filing_id:
+          type: string
+          format: uuid
+          description: The filing this contribution belongs to.
+          example: f1e2d3c4-b5a6-7890-abcd-ef1234567890
+        filing_contribution_id:
+          type: string
+          description: Stable content identifier that links this contribution to its tax return box rule definition.
+          example: REG_COUNTRY_DE_3018_VAT_01_01
+        filing_through_jurisdiction:
+          type: string
+          nullable: true
+          description: Commenda jurisdiction identifier for the member state this contribution applies to. Present for multi-jurisdiction filings (e.g., EU OSS/IOSS); null for single-jurisdiction filings.
+          example: COUNTRY_DE_3018
+        value:
+          type: integer
+          format: int64
+          description: The computed monetary amount in minor currency units (e.g., cents). For example, a value of 12345 represents 123.45 in the filing currency.
+          example: 12345
+        value_type:
+          type: string
+          description: The type of the value field. Currently always `INTEGER`.
+          example: INTEGER
+        box_id:
+          type: string
+          description: Identifier for the tax return form box this contribution maps to.
+          example: DE_81
+        box_name:
+          type: string
+          description: Human-readable name of the tax return form box.
+          example: Steuerpflichtige Umsätze
+        box_order:
+          type: integer
+          format: int32
+          description: Display order of the box on the tax return form.
+          example: 1
+        box_type:
+          type: string
+          description: Classification of the box (e.g., input, output, total).
+          example: OUTPUT
+        created_at:
+          type: integer
+          format: int64
+          description: Timestamp when this contribution was created, in Unix microseconds.
+          example: 1713168000000000
+        updated_at:
+          type: integer
+          format: int64
+          description: Timestamp when this contribution was last updated, in Unix microseconds.
+          example: 1713168000000000
     FilingsForGetAll:
       type: object
       properties:
@@ -4847,7 +5743,9 @@ components:
         jurisdiction_name:
           type: string
           nullable: true
-          description: Human-readable jurisdiction name derived from V2 registration content (e.g., "California", "Germany"). Present for V2 filings; null for V1 filings.
+          description: |-
+            Human-readable jurisdiction name derived from V2 registration content
+             (e.g., "California", "Germany"). Present for V2 filings; null for V1 filings.
         jurisdiction_type:
           type: string
           nullable: true
@@ -4871,7 +5769,7 @@ components:
         reporting_period_start_date:
           type: string
           format: date
-          description: Start date of the reporting period, which may differ from the tax period.
+          description: Start date of the reporting period, which may differ from the tax period. For example, a quarterly filing may have a tax period of Jan–Mar but a reporting deadline that references a different window.
         reporting_period_end_date:
           type: string
           format: date
@@ -4917,6 +5815,12 @@ components:
                 reason:
                   type: string
                   description: Specific information why the payment failed.
+        contributions:
+          type: array
+          nullable: true
+          description: Computed tax-return box contributions for this filing. Only populated on the V2 list path (`v2=true`) when called with `extend=filing_contribution`. When the expansion is not requested, this field is omitted from the response. An empty array means the filing has no computed contributions yet.
+          items:
+            $ref: '#/components/schemas/FilingContribution'
     FilingsGet:
       type: object
       properties:
@@ -5034,66 +5938,12 @@ components:
       properties:
         count:
           type: integer
-          description: The number of contribution items returned.
+          description: Total number of contributions returned.
           example: 5
         contributions:
           type: array
           items:
             $ref: '#/components/schemas/FilingContribution'
-    FilingContribution:
-      type: object
-      properties:
-        id:
-          type: string
-          description: The unique identifier for this contribution record.
-          example: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
-        filing_id:
-          type: string
-          description: The unique identifier of the filing this contribution belongs to.
-          example: "f1a2b3c4-d5e6-7890-abcd-ef1234567890"
-        filing_contribution_id:
-          type: string
-          description: A stable content-defined identifier that links this computed value back to its content-side definition. Follows the pattern `<filing_content_id>_<NN>`.
-          example: "DE_VAT_01"
-        filing_through_jurisdiction:
-          type: string
-          nullable: true
-          description: The Commenda jurisdiction identifier for per-jurisdiction contributions (e.g. OSS/IOSS filings). Null for country-level filings.
-          example: "COUNTRY_DE_3018"
-        value:
-          type: integer
-          format: int64
-          description: The computed monetary amount in minor currency units (e.g. cents).
-          example: 150000
-        value_type:
-          type: string
-          description: The type of the value field.
-          default: "INTEGER"
-          example: "INTEGER"
-        box_id:
-          type: string
-          description: The identifier of the tax return box this contribution maps to.
-          example: "81"
-        box_name:
-          type: string
-          description: The display name of the tax return box.
-          example: "Supplies and other services"
-        box_order:
-          type: integer
-          description: The display order of the box on the tax return form.
-          example: 1
-        box_type:
-          type: string
-          description: The classification of the box (e.g. tax base, tax amount).
-          example: "TAX_BASE"
-        created_at:
-          type: integer
-          format: int64
-          description: Unix timestamp in microseconds when the contribution was created.
-        updated_at:
-          type: integer
-          format: int64
-          description: Unix timestamp in microseconds when the contribution was last updated.
     CustomerInfo:
       type: object
       properties:
@@ -5231,6 +6081,7 @@ components:
         - MANUFACTURER
         - AGRICULTURAL
         - OTHER
+        - EXEMPT_PRODUCT
       description: Enum representing the reason for the exemption.
     IsExemptionActive:
       type: boolean
@@ -5425,7 +6276,7 @@ components:
           example: Forbidden
     AffiliateServiceCatalog:
       type: string
-      description: Incorporation service types currently supported by the affiliate public API.
+      description: Incorporation service types currently supported by the legacy affiliate API.
       enum:
         - US_CCORP_INCORPORATION
         - US_LLC_INCORPORATION
@@ -5457,6 +6308,524 @@ components:
           type: string
           description: Identifier for the newly created payment intent that anchors the current public flow.
           example: pi_123
+    PartnerIncorporationCountry:
+      type: string
+      description: ISO 3166-1 alpha-2 country code for the incorporation jurisdiction.
+      example: SG
+      enum:
+        - AE
+        - CA
+        - GB
+        - IE
+        - IN
+        - KY
+        - NZ
+        - SG
+        - US
+    PartnerJurisdictionCatalogField:
+      type: object
+      required:
+        - key
+        - type
+        - required
+      properties:
+        key:
+          type: string
+          description: Key to send inside `countryOptions`.
+          example: corporationType
+        type:
+          type: string
+          enum:
+            - select
+          example: select
+        required:
+          type: boolean
+          example: true
+        options:
+          type: array
+          description: Accepted values for this field.
+          items:
+            type: string
+          example:
+            - CORPORATION
+            - LLC
+    PartnerJurisdictionCatalogCountry:
+      type: object
+      required:
+        - country
+        - fields
+      properties:
+        country:
+          $ref: '#/components/schemas/PartnerIncorporationCountry'
+        fields:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartnerJurisdictionCatalogField'
+    PartnerJurisdictionCatalogResponse:
+      type: object
+      required:
+        - countries
+      properties:
+        countries:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartnerJurisdictionCatalogCountry'
+    PartnerIncorporationCountryOptions:
+      type: object
+      description: Country-specific incorporation options. Use the jurisdiction catalog for the currently supported fields and values.
+      additionalProperties: true
+      example:
+        corporationType: PRIVATE_LIMITED_COMPANY
+    PartnerIncorporationRequirements:
+      type: object
+      description: Requirements DSL for the selected incorporation. Clients can use this to render their own intake UI, but intake updates are always validated against the current server-side DSL.
+      additionalProperties: true
+      example:
+        schemaVersion: '2026-04-22'
+        dslVersion: mvp-2026-04-22
+        key: sg.private_limited_company
+        country: SG
+        countryOptions:
+          corporationType: PRIVATE_LIMITED_COMPANY
+        name: Singapore Private Limited Company Incorporation Requirements
+        blocks:
+          - key: companyNames
+            name: Company name options
+        participantRequirements:
+          - key: directors
+            name: Directors
+            role: director
+            allowedParticipantTypes:
+              - individual
+            allowedResourceTypes:
+              - keyPerson
+            documentRequirements:
+              - documentKind: passport_scan
+                name: Passport scan
+              - documentKind: utility_bill
+                name: Utility bill
+    PartnerRequirementsResponse:
+      type: object
+      required:
+        - requirements
+      properties:
+        requirements:
+          $ref: '#/components/schemas/PartnerIncorporationRequirements'
+    PartnerIncorporationStatus:
+      type: string
+      description: Current lifecycle status for the incorporation. `ready_for_review` is returned only after the partner submits a currently complete incorporation.
+      enum:
+        - collecting_information
+        - ready_for_review
+        - in_progress
+        - completed
+    PartnerIncorporation:
+      type: object
+      required:
+        - id
+        - serviceRequestId
+        - companyId
+        - country
+        - countryOptions
+        - incorporationStatus
+        - createdAt
+        - updatedAt
+        - corporationId
+      properties:
+        id:
+          type: string
+          description: Incorporation identifier.
+          example: 0f9a8f5e-7f7c-4c1b-a60a-b1022f9d8c91
+        serviceRequestId:
+          type: string
+          description: Temporary bridge/debugging field. Use `id` as the primary incorporation identifier.
+          example: sr_123
+        companyId:
+          type: integer
+          description: Company that owns the incorporation.
+          example: 77
+        country:
+          $ref: '#/components/schemas/PartnerIncorporationCountry'
+        countryOptions:
+          $ref: '#/components/schemas/PartnerIncorporationCountryOptions'
+        incorporationStatus:
+          $ref: '#/components/schemas/PartnerIncorporationStatus'
+        createdAt:
+          type: string
+          format: date-time
+          example: '2026-04-21T17:10:00.000Z'
+        updatedAt:
+          type: string
+          format: date-time
+          example: '2026-04-21T17:10:00.000Z'
+        corporationId:
+          type: integer
+          nullable: true
+          description: Commenda corporation/entity id once one is attached.
+          example: 44
+    PartnerIncorporationListResponse:
+      type: object
+      required:
+        - incorporations
+        - count
+      properties:
+        incorporations:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartnerIncorporation'
+        count:
+          type: integer
+          description: Total matching incorporations before pagination.
+          example: 1
+    PartnerIncorporationRequirementValues:
+      type: object
+      description: Partner-submitted requirement values keyed by DSL field keys.
+      additionalProperties: true
+      example:
+        companyNameOptions:
+          - name: Acme SG Pte Ltd
+          - name: Acme Asia Pte Ltd
+          - name: Acme Global Pte Ltd
+        registeredAddressMode: standardAddress
+    PartnerCreateCompanyScopedIncorporationRequest:
+      type: object
+      required:
+        - country
+        - countryOptions
+      properties:
+        country:
+          $ref: '#/components/schemas/PartnerIncorporationCountry'
+        countryOptions:
+          $ref: '#/components/schemas/PartnerIncorporationCountryOptions'
+        intake:
+          type: object
+          description: Optional initial partial intake data.
+          properties:
+            requirements:
+              $ref: '#/components/schemas/PartnerIncorporationRequirementValues'
+    PartnerIncorporationValidationIssue:
+      type: object
+      required:
+        - path
+        - message
+      properties:
+        path:
+          type: string
+          description: Dot/bracket path for the missing or invalid requirement.
+          example: participants.participant_123.documents.passport_scan
+        message:
+          type: string
+          example: Participant participant_123 requires a passport_scan document
+    PartnerIncorporationValidationSummary:
+      type: object
+      required:
+        - isComplete
+        - missingRequirements
+        - invalidRequirements
+      properties:
+        isComplete:
+          type: boolean
+          description: True when the current intake state satisfies the current requirements DSL and is eligible to submit for review.
+          example: false
+        missingRequirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartnerIncorporationValidationIssue'
+        invalidRequirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartnerIncorporationValidationIssue'
+    PartnerIncorporationIntakeState:
+      type: object
+      required:
+        - id
+        - incorporationId
+        - currentState
+        - validation
+        - createdAt
+        - updatedAt
+      properties:
+        id:
+          type: string
+          example: state_123
+        incorporationId:
+          type: string
+          example: 0f9a8f5e-7f7c-4c1b-a60a-b1022f9d8c91
+        currentState:
+          $ref: '#/components/schemas/PartnerIncorporationRequirementValues'
+        validation:
+          $ref: '#/components/schemas/PartnerIncorporationValidationSummary'
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+    PartnerIncorporationParticipantType:
+      type: string
+      description: Type of reusable Commenda OS resource registered to the incorporation.
+      enum:
+        - individual
+        - corporate
+    PartnerIncorporationParticipantResourceType:
+      type: string
+      description: Commenda OS resource type represented by this participant.
+      enum:
+        - keyPerson
+        - businessEntity
+    PartnerIncorporationParticipantResource:
+      type: object
+      required:
+        - resourceType
+        - resourceId
+      properties:
+        resourceType:
+          $ref: '#/components/schemas/PartnerIncorporationParticipantResourceType'
+        resourceId:
+          type: string
+          pattern: ^[0-9]+$
+          description: Numeric Commenda OS identifier encoded as a string. For `keyPerson`, use the person id returned by Commenda OS. For `businessEntity`, use the business entity id.
+          example: '12'
+    PartnerIncorporationParticipantRoleName:
+      type: string
+      description: Role the participant holds in this incorporation.
+      enum:
+        - director
+        - shareholder
+    PartnerIncorporationParticipantRole:
+      type: object
+      required:
+        - role
+      properties:
+        role:
+          $ref: '#/components/schemas/PartnerIncorporationParticipantRoleName'
+        ownershipPercentage:
+          type: number
+          description: Required when the participant has a shareholder role and ownership is represented by percentage.
+          minimum: 0
+          maximum: 100
+          example: 100
+    PartnerIncorporationDocumentKind:
+      type: string
+      description: Type of document linked to an incorporation participant.
+      enum:
+        - passport_scan
+        - utility_bill
+    PartnerIncorporationParticipantDocumentStatus:
+      type: string
+      description: Current status of the participant document link.
+      enum:
+        - submitted
+    PartnerIncorporationParticipantDocument:
+      type: object
+      required:
+        - documentId
+        - participantId
+        - documentKind
+        - fileId
+        - status
+      properties:
+        documentId:
+          type: string
+          description: Identifier for this participant document link.
+          example: document_123
+        participantId:
+          type: string
+          description: Participant this document belongs to.
+          example: participant_123
+        documentKind:
+          $ref: '#/components/schemas/PartnerIncorporationDocumentKind'
+        fileId:
+          type: integer
+          description: Registered Commenda file satisfying this document requirement.
+          example: 456
+        status:
+          $ref: '#/components/schemas/PartnerIncorporationParticipantDocumentStatus'
+    PartnerIncorporationParticipant:
+      type: object
+      required:
+        - participantId
+        - participantType
+        - resource
+        - roles
+        - documents
+      properties:
+        participantId:
+          type: string
+          description: Incorporation-specific participant identifier.
+          example: participant_123
+        participantType:
+          $ref: '#/components/schemas/PartnerIncorporationParticipantType'
+        resource:
+          $ref: '#/components/schemas/PartnerIncorporationParticipantResource'
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartnerIncorporationParticipantRole'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartnerIncorporationParticipantDocument'
+      example:
+        participantId: participant_123
+        participantType: individual
+        resource:
+          resourceType: keyPerson
+          resourceId: '12'
+        roles:
+          - role: director
+          - role: shareholder
+            ownershipPercentage: 100
+        documents:
+          - documentId: document_123
+            participantId: participant_123
+            documentKind: passport_scan
+            fileId: 456
+            status: submitted
+          - documentId: document_124
+            participantId: participant_123
+            documentKind: utility_bill
+            fileId: 789
+            status: submitted
+    PartnerIncorporationResponse:
+      type: object
+      required:
+        - incorporation
+      properties:
+        incorporation:
+          $ref: '#/components/schemas/PartnerIncorporation'
+        requirements:
+          $ref: '#/components/schemas/PartnerIncorporationRequirements'
+        intakeState:
+          $ref: '#/components/schemas/PartnerIncorporationIntakeState'
+        participants:
+          type: array
+          description: Participants registered to this incorporation, when requested or available.
+          items:
+            $ref: '#/components/schemas/PartnerIncorporationParticipant'
+    PartnerUpdateIntakeRequest:
+      type: object
+      required:
+        - requirements
+      properties:
+        requirements:
+          $ref: '#/components/schemas/PartnerIncorporationRequirementValues'
+    PartnerIncorporationIntakeResponse:
+      type: object
+      required:
+        - intakeState
+        - requirements
+      properties:
+        intakeState:
+          $ref: '#/components/schemas/PartnerIncorporationIntakeState'
+        requirements:
+          $ref: '#/components/schemas/PartnerIncorporationRequirements'
+    PartnerRegisterFileRequest:
+      type: object
+      required:
+        - fileId
+      properties:
+        fileId:
+          type: integer
+          description: Existing Commenda file id to register to this incorporation.
+          example: 456
+    PartnerRegisterFileResponse:
+      type: object
+      required:
+        - file
+      properties:
+        file:
+          type: object
+          required:
+            - fileId
+            - fileName
+          properties:
+            fileId:
+              type: integer
+              example: 456
+            fileName:
+              type: string
+              example: passport.pdf
+            mimeType:
+              type: string
+              example: application/pdf
+            fileSize:
+              type: integer
+              example: 123456
+    PartnerIncorporationParticipantsResponse:
+      type: object
+      required:
+        - participants
+        - count
+      properties:
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartnerIncorporationParticipant'
+        count:
+          type: integer
+          description: Number of participants returned.
+          example: 1
+    PartnerRegisterParticipantRequest:
+      type: object
+      required:
+        - participantType
+        - resource
+        - roles
+      properties:
+        participantType:
+          $ref: '#/components/schemas/PartnerIncorporationParticipantType'
+        resource:
+          $ref: '#/components/schemas/PartnerIncorporationParticipantResource'
+        roles:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PartnerIncorporationParticipantRole'
+      example:
+        participantType: individual
+        resource:
+          resourceType: keyPerson
+          resourceId: '12'
+        roles:
+          - role: director
+          - role: shareholder
+            ownershipPercentage: 100
+    PartnerIncorporationParticipantResponse:
+      type: object
+      required:
+        - participant
+      properties:
+        participant:
+          $ref: '#/components/schemas/PartnerIncorporationParticipant'
+    PartnerLinkParticipantDocumentRequest:
+      type: object
+      required:
+        - participantId
+        - documentKind
+        - fileId
+      properties:
+        participantId:
+          type: string
+          description: Participant this document belongs to.
+          example: participant_123
+        documentKind:
+          $ref: '#/components/schemas/PartnerIncorporationDocumentKind'
+        fileId:
+          type: integer
+          description: File id previously registered to this incorporation.
+          example: 456
+      example:
+        participantId: participant_123
+        documentKind: passport_scan
+        fileId: 456
+    PartnerIncorporationParticipantDocumentResponse:
+      type: object
+      required:
+        - document
+      properties:
+        document:
+          $ref: '#/components/schemas/PartnerIncorporationParticipantDocument'
     AffiliatePaymentIntentStatus:
       type: string
       enum:
@@ -6039,7 +7408,7 @@ components:
         count:
           type: integer
           example: 2
-    CommendaOsPublicError:
+    CommendaOsPartnerError:
       type: object
       required:
         - statusCode
@@ -6189,8 +7558,8 @@ components:
           type: string
           example: '+14155550123'
         employmentStartDate:
-           type: string
-           nullable: true
+          type: string
+          nullable: true
         directorIdentificationNumber:
           type: string
           nullable: true
@@ -6213,7 +7582,7 @@ components:
         isResidentDirector:
           type: boolean
           nullable: true
-          description: Whether this director is a resident director of the business entity.
+          description: Whether this director is a resident director of the business entity. Applicable to jurisdictions that require at least one locally resident director (e.g. India).
     CommendaOsBusinessEntityPersonsResponse:
       type: object
       required:
@@ -6324,7 +7693,7 @@ components:
               isResidentDirector:
                 type: boolean
                 nullable: true
-                description: Whether this director is a resident director of the business entity.
+                description: Whether this director is a resident director of the business entity. Applicable to jurisdictions that require at least one locally resident director (e.g. India).
     CommendaOsPersonsResponse:
       type: object
       required:
@@ -6338,6 +7707,127 @@ components:
         count:
           type: integer
           example: 2
+    CommendaOsPersonCreateRequest:
+      type: object
+      description: Create a reusable Commenda OS key person under a partner-accessible company. This uses the same person-create semantics as the internal Commenda OS API, with `companyId` taken from the URL path.
+      required:
+        - firstName
+      properties:
+        firstName:
+          type: string
+          example: Jane
+        lastName:
+          type: string
+          example: Founder
+        email:
+          type: string
+          format: email
+          example: jane@acme.com
+        phoneNumber:
+          type: string
+          example: '+14155550123'
+        locations:
+          type: array
+          description: Person addresses using the same shape as the internal Commenda OS person create API.
+          items:
+            type: object
+            properties:
+              locationTypes:
+                type: array
+                items:
+                  type: string
+                example:
+                  - CONTACT_ADDRESS
+              address:
+                $ref: '#/components/schemas/CommendaOsLocationAddress'
+        employmentStartDate:
+          type: string
+          format: date
+          example: '2025-01-01'
+        dateOfBirth:
+          type: string
+          format: date
+          example: '1990-04-18'
+        countryOfCitizenship:
+          type: string
+          example: SG
+        ssn:
+          type: string
+          description: SSN or ITIN, when applicable.
+          example: 123-45-6789
+        hasNoSSN:
+          type: boolean
+          example: false
+        directorIdentificationNumber:
+          type: string
+          description: Director Identification Number (DIN) assigned to Indian directors.
+          example: '00012345'
+    CommendaOsPersonMutationResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          description: Updated Commenda OS person identifier.
+          example: 12
+    CommendaOsPersonUpdateRequest:
+      type: object
+      description: Partial update payload for a reusable Commenda OS key person. Omitted fields are left unchanged.
+      properties:
+        firstName:
+          type: string
+          example: Jane
+        lastName:
+          type: string
+          example: Founder
+        email:
+          type: string
+          format: email
+          example: jane@acme.com
+        phoneNumber:
+          type: string
+          example: '+14155550123'
+        locations:
+          type: array
+          description: Person addresses using the same shape as the internal Commenda OS person update API.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                nullable: true
+                description: Existing address identifier, when updating an existing address.
+              locationTypes:
+                type: array
+                items:
+                  type: string
+                example:
+                  - CONTACT_ADDRESS
+              address:
+                $ref: '#/components/schemas/CommendaOsLocationAddress'
+        employmentStartDate:
+          type: string
+          format: date
+          example: '2025-01-01'
+        dateOfBirth:
+          type: string
+          format: date
+          example: '1990-04-18'
+        countryOfCitizenship:
+          type: string
+          example: SG
+        ssn:
+          type: string
+          description: SSN or ITIN, when applicable.
+          example: 123-45-6789
+        hasNoSSN:
+          type: boolean
+          example: false
+        directorIdentificationNumber:
+          type: string
+          description: Director Identification Number (DIN) assigned to Indian directors.
+          example: '00012345'
     CommendaOsGovernmentIdentifiersResponse:
       type: object
       required:
@@ -6358,6 +7848,129 @@ components:
       properties:
         governmentIdentifier:
           $ref: '#/components/schemas/CommendaOsGovernmentIdentifier'
+    CommendaOsCompanyDocumentUploadUrlRequest:
+      type: object
+      required:
+        - fileName
+      properties:
+        fileName:
+          type: string
+          description: File name to use in the S3 object key.
+          example: passport.pdf
+    CommendaOsCompanyDocumentUpload:
+      type: object
+      required:
+        - signedUrl
+        - hostedUrl
+        - signedGetUrl
+      properties:
+        signedUrl:
+          type: string
+          format: uri
+          description: Signed S3 URL where the client should upload file bytes with HTTP PUT.
+          example: https://commenda-bucket.s3.amazonaws.com/77/uuid/passport.pdf?X-Amz-Signature=...
+        hostedUrl:
+          type: string
+          format: uri
+          description: Stable S3 file URL to pass to the company document creation endpoint after upload succeeds.
+          example: https://commenda-bucket.s3.amazonaws.com/77/uuid/passport.pdf
+        signedGetUrl:
+          type: string
+          format: uri
+          description: Short-lived signed read URL, useful for immediate preview/debugging after upload. Do not store this as the durable document reference.
+          example: https://commenda-bucket.s3.amazonaws.com/77/uuid/passport.pdf?X-Amz-Signature=...
+    CommendaOsCompanyDocumentUploadUrlResponse:
+      type: object
+      required:
+        - upload
+      properties:
+        upload:
+          $ref: '#/components/schemas/CommendaOsCompanyDocumentUpload'
+    CommendaOsCompanyDocumentCreateRequest:
+      type: object
+      required:
+        - fileName
+        - fileUrl
+        - mimeType
+      properties:
+        fileName:
+          type: string
+          example: passport.pdf
+        fileUrl:
+          type: string
+          format: uri
+          description: Hosted URL returned by the signed upload URL endpoint after the client uploads bytes directly to S3. The object must exist before the document can be created.
+          example: https://commenda-bucket.s3.amazonaws.com/77/uuid/passport.pdf
+        mimeType:
+          type: string
+          description: MIME type of the uploaded file. Incorporation document requirements validate against this value.
+          example: application/pdf
+        fileSize:
+          type: integer
+          description: Optional file size in bytes.
+          example: 382144
+        documentSubType:
+          type: string
+          description: Optional Commenda document subtype. Defaults to `Other` when omitted.
+          example: Other
+        documentName:
+          type: string
+          description: Human-readable document name. Used as the explicit document type when `documentSubType` is `Other`.
+          example: Passport scan
+        businessEntityId:
+          type: integer
+          description: Optional business entity to link this uploaded file to. Do not provide together with `personId`.
+          example: 44
+        personId:
+          type: integer
+          description: Optional key person to link this uploaded file to. Do not provide together with `businessEntityId`.
+          example: 12
+    CommendaOsCompanyDocument:
+      type: object
+      required:
+        - fileId
+        - fileName
+        - mimeType
+        - fileSize
+        - documentSubType
+        - companyId
+      properties:
+        fileId:
+          type: integer
+          description: Commenda file id. Use this value when registering a file to an incorporation.
+          example: 456
+        fileName:
+          type: string
+          example: passport.pdf
+        mimeType:
+          type: string
+          example: application/pdf
+        fileSize:
+          type: integer
+          nullable: true
+          example: 382144
+        documentSubType:
+          type: string
+          example: Other
+        documentName:
+          type: string
+          example: Passport scan
+        companyId:
+          type: integer
+          example: 77
+        businessEntityId:
+          type: integer
+          example: 44
+        personId:
+          type: integer
+          example: 12
+    CommendaOsCompanyDocumentResponse:
+      type: object
+      required:
+        - file
+      properties:
+        file:
+          $ref: '#/components/schemas/CommendaOsCompanyDocument'
     CommendaOsDocument:
       type: object
       required:

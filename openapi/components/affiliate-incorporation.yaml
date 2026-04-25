@@ -352,6 +352,19 @@ schemas:
       blocks:
         - key: companyNames
           name: Company name options
+      participantRequirements:
+        - key: directors
+          name: Directors
+          role: director
+          allowedParticipantTypes:
+            - individual
+          allowedResourceTypes:
+            - keyPerson
+          documentRequirements:
+            - documentKind: passport_scan
+              name: Passport scan
+            - documentKind: utility_bill
+              name: Utility bill
   PartnerIncorporationValidationIssue:
     type: object
     required:
@@ -498,7 +511,7 @@ schemas:
       resourceId:
         type: string
         description: Identifier for the reusable Commenda OS key person or business entity.
-        example: key_person_001
+        example: "12"
   PartnerIncorporationParticipantRole:
     type: object
     required:
@@ -532,7 +545,7 @@ schemas:
       participantType: individual
       resource:
         resourceType: keyPerson
-        resourceId: key_person_001
+        resourceId: "12"
       roles:
         - role: director
         - role: shareholder
@@ -624,7 +637,7 @@ schemas:
       participantType: individual
       resource:
         resourceType: keyPerson
-        resourceId: key_person_001
+        resourceId: "12"
       roles:
         - role: director
         - role: shareholder
@@ -651,11 +664,16 @@ schemas:
     type: object
     required:
       - participants
+      - count
     properties:
       participants:
         type: array
         items:
           $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipant"
+      count:
+        type: integer
+        description: Number of participants returned.
+        example: 1
   PartnerIncorporationParticipantDocumentResponse:
     type: object
     required:

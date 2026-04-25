@@ -3095,6 +3095,60 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CommendaOsPartnerError'
+    post:
+      summary: Create a person
+      description: Create a reusable Commenda OS key person under a partner-accessible company. Use the returned `id` as a `keyPerson` resource id when registering incorporation participants.
+      operationId: createPartnerCommendaOsPerson
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Commenda company identifier accessible to the authenticated partner.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommendaOsPersonCreateRequest'
+            examples:
+              createPerson:
+                value:
+                  firstName: Jane
+                  lastName: Founder
+                  email: jane@acme.com
+                  dateOfBirth: '1990-04-18'
+                  countryOfCitizenship: SG
+      responses:
+        '201':
+          description: Person created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPersonMutationResponse'
+        '400':
+          description: Malformed person create payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+        '403':
+          description: Company does not belong to this partner firm
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
   /partner/commenda-os/companies/{companyId}/persons/{personId}:
     patch:
       summary: Update a person
@@ -6191,6 +6245,19 @@ components:
         blocks:
           - key: companyNames
             name: Company name options
+        participantRequirements:
+          - key: directors
+            name: Directors
+            role: director
+            allowedParticipantTypes:
+              - individual
+            allowedResourceTypes:
+              - keyPerson
+            documentRequirements:
+              - documentKind: passport_scan
+                name: Passport scan
+              - documentKind: utility_bill
+                name: Utility bill
     PartnerRequirementsResponse:
       type: object
       required:
@@ -6371,7 +6438,7 @@ components:
         resourceId:
           type: string
           description: Identifier for the reusable Commenda OS key person or business entity.
-          example: key_person_001
+          example: '12'
     PartnerIncorporationParticipantRoleName:
       type: string
       description: Role the participant holds in this incorporation.
@@ -6457,7 +6524,7 @@ components:
         participantType: individual
         resource:
           resourceType: keyPerson
-          resourceId: key_person_001
+          resourceId: '12'
         roles:
           - role: director
           - role: shareholder
@@ -6542,11 +6609,16 @@ components:
       type: object
       required:
         - participants
+        - count
       properties:
         participants:
           type: array
           items:
             $ref: '#/components/schemas/PartnerIncorporationParticipant'
+        count:
+          type: integer
+          description: Number of participants returned.
+          example: 1
     PartnerRegisterParticipantRequest:
       type: object
       required:
@@ -6567,7 +6639,7 @@ components:
         participantType: individual
         resource:
           resourceType: keyPerson
-          resourceId: key_person_001
+          resourceId: '12'
         roles:
           - role: director
           - role: shareholder
@@ -7488,6 +7560,70 @@ components:
         count:
           type: integer
           example: 2
+    CommendaOsPersonCreateRequest:
+      type: object
+      description: Create a reusable Commenda OS key person under a partner-accessible company. This uses the same person-create semantics as the internal Commenda OS API, with `companyId` taken from the URL path.
+      required:
+        - firstName
+      properties:
+        firstName:
+          type: string
+          example: Jane
+        lastName:
+          type: string
+          example: Founder
+        email:
+          type: string
+          format: email
+          example: jane@acme.com
+        phoneNumber:
+          type: string
+          example: '+14155550123'
+        locations:
+          type: array
+          description: Person addresses using the same shape as the internal Commenda OS person create API.
+          items:
+            type: object
+            properties:
+              locationTypes:
+                type: array
+                items:
+                  type: string
+                example:
+                  - CONTACT_ADDRESS
+              address:
+                $ref: '#/components/schemas/CommendaOsLocationAddress'
+        employmentStartDate:
+          type: string
+          format: date
+          example: '2025-01-01'
+        dateOfBirth:
+          type: string
+          format: date
+          example: '1990-04-18'
+        countryOfCitizenship:
+          type: string
+          example: SG
+        ssn:
+          type: string
+          description: SSN or ITIN, when applicable.
+          example: 123-45-6789
+        hasNoSSN:
+          type: boolean
+          example: false
+        directorIdentificationNumber:
+          type: string
+          description: Director Identification Number (DIN) assigned to Indian directors.
+          example: '00012345'
+    CommendaOsPersonMutationResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          description: Updated Commenda OS person identifier.
+          example: 12
     CommendaOsPersonUpdateRequest:
       type: object
       description: Partial update payload for a reusable Commenda OS key person. Omitted fields are left unchanged.
@@ -7545,15 +7681,6 @@ components:
           type: string
           description: Director Identification Number (DIN) assigned to Indian directors.
           example: '00012345'
-    CommendaOsPersonMutationResponse:
-      type: object
-      required:
-        - id
-      properties:
-        id:
-          type: integer
-          description: Updated Commenda OS person identifier.
-          example: 12
     CommendaOsGovernmentIdentifiersResponse:
       type: object
       required:

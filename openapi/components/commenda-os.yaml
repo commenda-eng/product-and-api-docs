@@ -970,6 +970,61 @@ schemas:
       count:
         type: integer
         example: 2
+  CommendaOsPersonCreateRequest:
+    type: object
+    description: Create a reusable Commenda OS key person under a partner-accessible company. This uses the same person-create semantics as the internal Commenda OS API, with `companyId` taken from the URL path.
+    required:
+      - firstName
+    properties:
+      firstName:
+        type: string
+        example: Jane
+      lastName:
+        type: string
+        example: Founder
+      email:
+        type: string
+        format: email
+        example: jane@acme.com
+      phoneNumber:
+        type: string
+        example: "+14155550123"
+      locations:
+        type: array
+        description: Person addresses using the same shape as the internal Commenda OS person create API.
+        items:
+          type: object
+          properties:
+            locationTypes:
+              type: array
+              items:
+                type: string
+              example:
+                - CONTACT_ADDRESS
+            address:
+              $ref: "./commenda-os.yaml#/schemas/CommendaOsLocationAddress"
+      employmentStartDate:
+        type: string
+        format: date
+        example: "2025-01-01"
+      dateOfBirth:
+        type: string
+        format: date
+        example: "1990-04-18"
+      countryOfCitizenship:
+        type: string
+        example: SG
+      ssn:
+        type: string
+        description: SSN or ITIN, when applicable.
+        example: "123-45-6789"
+      hasNoSSN:
+        type: boolean
+        example: false
+      directorIdentificationNumber:
+        type: string
+        description: Director Identification Number (DIN) assigned to Indian directors.
+        example: "00012345"
   CommendaOsPersonUpdateRequest:
     type: object
     description: Partial update payload for a reusable Commenda OS key person. Omitted fields are left unchanged.

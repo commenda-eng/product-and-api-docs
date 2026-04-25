@@ -39,9 +39,7 @@
               "product/entities/bank-accounts",
               {
                 "group": "Jurisdictions",
-                "pages": [
-                  "product/entities/philippines"
-                ]
+                "pages": ["product/entities/philippines"]
               }
             ]
           },
@@ -96,16 +94,11 @@
           },
           {
             "group": "Tools",
-            "pages": [
-              "product/tools/esign",
-              "product/tools/general-thread"
-            ]
+            "pages": ["product/tools/esign", "product/tools/general-thread"]
           },
           {
             "group": "Settings",
-            "pages": [
-              "product/settings/overview"
-            ]
+            "pages": ["product/settings/overview"]
           },
           {
             "group": "Integrations",
@@ -165,9 +158,7 @@
         "groups": [
           {
             "group": "Company setup",
-            "pages": [
-              "engine/incorporation/company-POST"
-            ]
+            "pages": ["engine/incorporation/company-POST"]
           },
           {
             "group": "Partner Incorporation API",
@@ -233,6 +224,7 @@
                 "pages": [
                   "engine/commendaos/partner-api/commenda-os-business-entities-id-persons-GET",
                   "engine/commendaos/partner-api/commenda-os-persons-GET",
+                  "engine/commendaos/partner-api/commenda-os-persons-POST",
                   "engine/commendaos/partner-api/commenda-os-persons-id-PATCH"
                 ]
               },
@@ -387,9 +379,7 @@
           },
           {
             "group": "Registration Thresholds",
-            "pages": [
-              "engine/indirect-tax/nexus/nexus-GET"
-            ]
+            "pages": ["engine/indirect-tax/nexus/nexus-GET"]
           },
           {
             "group": "Products",
@@ -437,9 +427,7 @@
           },
           {
             "group": "Exemptions",
-            "pages": [
-              "engine/indirect-tax/exemptions/exemptions-GET"
-            ]
+            "pages": ["engine/indirect-tax/exemptions/exemptions-GET"]
           },
           {
             "group": "Files",
@@ -505,21 +493,15 @@
         "groups": [
           {
             "group": "Getting started",
-            "pages": [
-              "engine/incorporation/introduction"
-            ]
+            "pages": ["engine/incorporation/introduction"]
           },
           {
             "group": "Companies",
-            "pages": [
-              "engine/incorporation/company-POST"
-            ]
+            "pages": ["engine/incorporation/company-POST"]
           },
           {
             "group": "Services",
-            "pages": [
-              "engine/incorporation/services-POST"
-            ]
+            "pages": ["engine/incorporation/services-POST"]
           },
           {
             "group": "Payment Intents",

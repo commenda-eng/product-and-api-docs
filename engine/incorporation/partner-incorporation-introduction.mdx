@@ -24,7 +24,7 @@ curl --request GET \
 ## Flow
 
 1. Create a company with the existing `POST /public/company` endpoint.
-2. Create or reference reusable people, business entities, and addresses through the Commenda OS Partner API.
+2. Create or reference reusable people, business entities, and addresses through the Commenda OS Partner API. If an individual director or shareholder does not exist yet, create one with `POST /partner/commenda-os/companies/{companyId}/persons`.
 3. Review the informational jurisdiction catalog with `GET /partner/incorporation/jurisdiction-catalog`.
 4. Fetch the current requirements DSL with `GET /partner/incorporation/requirements?country=SG&countryOptions[corporationType]=PRIVATE_LIMITED_COMPANY`.
 5. Start an incorporation with `POST /partner/incorporation/companies/{companyId}/incorporations`.
@@ -74,7 +74,7 @@ curl --request POST \
     "participantType": "individual",
     "resource": {
       "resourceType": "keyPerson",
-      "resourceId": "key_person_001"
+      "resourceId": "12"
     },
     "roles": [
       { "role": "director" },

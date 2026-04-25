@@ -803,7 +803,7 @@ schemas:
       signedGetUrl:
         type: string
         format: uri
-        description: Short-lived signed read URL, useful for immediate preview/debugging.
+        description: Short-lived signed read URL, useful for immediate preview/debugging after upload. Do not store this as the durable document reference.
         example: https://commenda-bucket.s3.amazonaws.com/77/uuid/passport.pdf?X-Amz-Signature=...
   CommendaOsCompanyDocumentUploadUrlResponse:
     type: object
@@ -825,7 +825,7 @@ schemas:
       fileUrl:
         type: string
         format: uri
-        description: Hosted URL returned by the signed upload URL endpoint after the client uploads bytes directly to S3.
+        description: Hosted URL returned by the signed upload URL endpoint after the client uploads bytes directly to S3. The object must exist before the document can be created.
         example: https://commenda-bucket.s3.amazonaws.com/77/uuid/passport.pdf
       mimeType:
         type: string

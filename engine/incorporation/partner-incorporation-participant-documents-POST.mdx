@@ -11,6 +11,8 @@ The `fileId` must first be registered to this incorporation with `POST /partner/
 
 If you are starting from a passport scan, utility bill, or other local file, first follow [Upload documents for incorporation](/engine/incorporation/partner-incorporation-document-upload-flow) to get a registered incorporation `fileId`.
 
+Linking is replacement-based per participant and document kind. If you call this endpoint again with the same `participantId` and `documentKind`, Commenda updates that participant document to point at the new `fileId`.
+
 ```json
 {
   "participantId": "participant_123",

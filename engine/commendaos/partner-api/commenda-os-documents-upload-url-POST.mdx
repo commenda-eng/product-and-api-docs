@@ -14,6 +14,8 @@ Use this endpoint before creating a company document when your integration needs
 3. Save `upload.hostedUrl`.
 4. Call [Create a company document](/engine/commendaos/partner-api/commenda-os-documents-POST) with `fileName`, `fileUrl: upload.hostedUrl`, `mimeType`, and any optional `personId` or `businessEntityId`.
 
+Use `upload.signedUrl` only for the direct S3 upload. Use `upload.hostedUrl` as the file URL when creating the company document. `upload.signedGetUrl` is short-lived and is only useful for immediate preview/debugging after upload; do not store it as the durable document reference.
+
 ## Example
 
 ```bash
@@ -42,4 +44,4 @@ curl --request PUT \
   '<signed_upload_url>'
 ```
 
-After the upload succeeds, pass `upload.hostedUrl`, not `upload.signedUrl`, as `fileUrl` when creating the company document.
+After the upload succeeds, pass `upload.hostedUrl`, not `upload.signedUrl` or `upload.signedGetUrl`, as `fileUrl` when creating the company document.

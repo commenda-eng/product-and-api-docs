@@ -2622,7 +2622,7 @@
 "/partner/incorporation/{incorporationId}/documents":
   post:
     summary: Link a participant document
-    description: Link a registered incorporation file to a participant as a typed document required by the current requirements DSL.
+    description: Link a registered incorporation file to a participant as a typed document required by the current requirements DSL. Calling this endpoint again with the same participantId and documentKind replaces the linked fileId.
     operationId: linkPartnerIncorporationParticipantDocument
     servers:
       - url: https://api.prod.commenda.io/api/v1
@@ -3423,7 +3423,7 @@
 "/partner/commenda-os/companies/{companyId}/documents":
   post:
     summary: Create a company document
-    description: Create a company-scoped Commenda document from a hosted URL returned by the document upload URL endpoint. Optionally link the file to one business entity or one key person in the same company.
+    description: Create a company-scoped Commenda document from a hosted URL returned by the document upload URL endpoint. The S3 object must exist before the document can be created. Optionally link the file to one business entity or one key person in the same company.
     operationId: createPartnerCommendaOsCompanyDocument
     servers:
       - url: https://api.prod.commenda.io/api/v1
@@ -3450,7 +3450,7 @@
             schema:
               "$ref": "../components/components.yaml#/components/schemas/CommendaOsCompanyDocumentResponse"
       "400":
-        description: Missing file metadata, invalid document type, invalid resource id, or both personId and businessEntityId were provided
+        description: Missing file metadata, upload has not completed, invalid document type, invalid resource id, or both personId and businessEntityId were provided
         content:
           application/json:
             schema:

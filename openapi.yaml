@@ -3095,6 +3095,67 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/CommendaOsPartnerError'
+  /partner/commenda-os/companies/{companyId}/persons/{personId}:
+    patch:
+      summary: Update a person
+      description: Partially update a reusable Commenda OS key person using the same person-update semantics as the internal Commenda OS API. Omitted fields are left unchanged.
+      operationId: updatePartnerCommendaOsPerson
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: companyId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Commenda company identifier accessible to the authenticated partner.
+        - name: personId
+          in: path
+          required: true
+          schema:
+            type: integer
+          description: Commenda OS person identifier for the specified company.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CommendaOsPersonUpdateRequest'
+            examples:
+              updatePerson:
+                value:
+                  firstName: Jane
+                  lastName: Founder
+                  email: jane@acme.com
+                  dateOfBirth: '1990-04-18'
+                  countryOfCitizenship: SG
+      responses:
+        '200':
+          description: Person updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPersonMutationResponse'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+        '403':
+          description: Company does not belong to this partner firm
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
+        '404':
+          description: Person not found for this company
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommendaOsPartnerError'
   /partner/commenda-os/companies/{companyId}/business-entities/{businessEntityId}/government-identifiers:
     get:
       summary: List government identifiers
@@ -7427,6 +7488,72 @@ components:
         count:
           type: integer
           example: 2
+    CommendaOsPersonUpdateRequest:
+      type: object
+      description: Partial update payload for a reusable Commenda OS key person. Omitted fields are left unchanged.
+      properties:
+        firstName:
+          type: string
+          example: Jane
+        lastName:
+          type: string
+          example: Founder
+        email:
+          type: string
+          format: email
+          example: jane@acme.com
+        phoneNumber:
+          type: string
+          example: '+14155550123'
+        locations:
+          type: array
+          description: Person addresses using the same shape as the internal Commenda OS person update API.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                nullable: true
+                description: Existing address identifier, when updating an existing address.
+              locationTypes:
+                type: array
+                items:
+                  type: string
+                example:
+                  - CONTACT_ADDRESS
+              address:
+                $ref: '#/components/schemas/CommendaOsLocationAddress'
+        employmentStartDate:
+          type: string
+          format: date
+          example: '2025-01-01'
+        dateOfBirth:
+          type: string
+          format: date
+          example: '1990-04-18'
+        countryOfCitizenship:
+          type: string
+          example: SG
+        ssn:
+          type: string
+          description: SSN or ITIN, when applicable.
+          example: 123-45-6789
+        hasNoSSN:
+          type: boolean
+          example: false
+        directorIdentificationNumber:
+          type: string
+          description: Director Identification Number (DIN) assigned to Indian directors.
+          example: '00012345'
+    CommendaOsPersonMutationResponse:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: integer
+          description: Updated Commenda OS person identifier.
+          example: 12
     CommendaOsGovernmentIdentifiersResponse:
       type: object
       required:

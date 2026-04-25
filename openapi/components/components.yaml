@@ -324,6 +324,10 @@ components:
       $ref: "./commenda-os.yaml#/schemas/CommendaOsBusinessEntityPersonsResponse"
     CommendaOsPersonsResponse:
       $ref: "./commenda-os.yaml#/schemas/CommendaOsPersonsResponse"
+    CommendaOsPersonUpdateRequest:
+      $ref: "./commenda-os.yaml#/schemas/CommendaOsPersonUpdateRequest"
+    CommendaOsPersonMutationResponse:
+      $ref: "./commenda-os.yaml#/schemas/CommendaOsPersonMutationResponse"
     CommendaOsGovernmentIdentifierResponse:
       $ref: "./commenda-os.yaml#/schemas/CommendaOsGovernmentIdentifierResponse"
     CommendaOsGovernmentIdentifiersResponse:

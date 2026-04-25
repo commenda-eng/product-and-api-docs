@@ -3141,6 +3141,67 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/CommendaOsPartnerError"
+"/partner/commenda-os/companies/{companyId}/persons/{personId}":
+  patch:
+    summary: Update a person
+    description: Partially update a reusable Commenda OS key person using the same person-update semantics as the internal Commenda OS API. Omitted fields are left unchanged.
+    operationId: updatePartnerCommendaOsPerson
+    servers:
+      - url: https://api.prod.commenda.io/api/v1
+    security:
+      - xApiKeyAuth: []
+    parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Commenda company identifier accessible to the authenticated partner.
+      - name: personId
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Commenda OS person identifier for the specified company.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            "$ref": "../components/components.yaml#/components/schemas/CommendaOsPersonUpdateRequest"
+          examples:
+            updatePerson:
+              value:
+                firstName: Jane
+                lastName: Founder
+                email: jane@acme.com
+                dateOfBirth: "1990-04-18"
+                countryOfCitizenship: SG
+    responses:
+      '200':
+        description: Person updated successfully
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPersonMutationResponse"
+      '401':
+        description: Missing or invalid partner API key
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPartnerError"
+      '403':
+        description: Company does not belong to this partner firm
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPartnerError"
+      '404':
+        description: Person not found for this company
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPartnerError"
 "/partner/commenda-os/companies/{companyId}/business-entities/{businessEntityId}/government-identifiers":
   get:
     summary: List government identifiers

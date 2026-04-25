@@ -232,7 +232,8 @@
                 "group": "Persons",
                 "pages": [
                   "engine/commendaos/partner-api/commenda-os-business-entities-id-persons-GET",
-                  "engine/commendaos/partner-api/commenda-os-persons-GET"
+                  "engine/commendaos/partner-api/commenda-os-persons-GET",
+                  "engine/commendaos/partner-api/commenda-os-persons-id-PATCH"
                 ]
               },
               {

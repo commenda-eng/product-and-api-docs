@@ -171,6 +171,8 @@ The requirements endpoint returns a DSL with field names, descriptions, validati
 
 Intake updates may be partial. Each update is merged into the current intake state and returns `intakeState.validation.isComplete: false` plus `missingRequirements` and `invalidRequirements` until the state is complete. Once the current intake state satisfies the DSL, the incorporation moves to `ready_for_review`.
 
+For Singapore private limited companies, shareholder `ownershipPercentage` values must total 100. If `registeredAddressMode` is `providedAddress`, include `providedRegisteredAddress`; if it is `standardAddress`, no registered address resource is required.
+
 ## Evidence files
 
 For files such as passport scans and utility bills, upload the file through Commenda OS first, then link that existing `fileId` through the incorporation file endpoint. The same `fileId` can be referenced from evidence fields:

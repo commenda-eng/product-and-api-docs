@@ -343,7 +343,6 @@ schemas:
     additionalProperties: true
     example:
       schemaVersion: "2026-04-22"
-      requirementsVersion: sg-private-limited-company-2026-04-22
       dslVersion: mvp-2026-04-22
       key: sg.private_limited_company
       country: SG

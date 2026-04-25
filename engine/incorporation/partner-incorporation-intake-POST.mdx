@@ -55,6 +55,12 @@ Resource fields can use existing Commenda OS resources or inline data. When an e
 }
 ```
 
+## Singapore validation notes
+
+For Singapore private limited companies, shareholder `ownershipPercentage` values must total 100.
+
+If `registeredAddressMode` is `providedAddress`, include `providedRegisteredAddress`. If `registeredAddressMode` is `standardAddress`, no registered address resource is required.
+
 ## Evidence linking
 
 Upload files through Commenda OS first, link the existing `fileId` with `POST /partner/incorporation/{incorporationId}/files`, then reference that `fileId`:

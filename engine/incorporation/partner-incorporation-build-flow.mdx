@@ -19,7 +19,7 @@ The Partner Incorporation API does not create or return payment intents. Billing
 | Incorporation | How do I start the case? | Create the incorporation and save `incorporation.id`. |
 | Resource prep | What reusable records must exist? | Create or reuse Commenda OS people, business entities, and locations. |
 | Participants | Who is involved? | Register reusable people/entities as directors and shareholders. |
-| Documents | How do I attach files? | Upload or reuse company documents to obtain `fileId`, register each file to the incorporation, then link it as a typed participant document. |
+| Documents | How do I attach files? | Upload files directly to S3, create company documents to obtain `fileId`, register each file to the incorporation, then link it as a typed participant document. |
 | Intake | What non-participant fields are needed? | Submit partial or complete intake updates. |
 | Completion | How do I know it is ready? | Read the incorporation and check `intakeState.validation.isComplete` and `incorporationStatus`. |
 
@@ -33,7 +33,7 @@ The Partner Incorporation API does not create or return payment intents. Billing
 | `corporationId` | Incorporation response | Commenda OS business-entity endpoints after available | May be `null` while intake is still being collected. |
 | Person `id` | `POST /partner/commenda-os/companies/{companyId}/persons` | Participant `resource.resourceId` | Encode as a string, for example `"12"`. |
 | `participantId` | Register participant | Link participant documents | Incorporation-scoped participant id. |
-| `fileId` | `POST /partner/commenda-os/companies/{companyId}/documents` or existing Commenda file lookup | Register file; link participant document | Company-scoped file id. The incorporation API registers and links it; upload happens in Commenda OS. |
+| `fileId` | `POST /partner/commenda-os/companies/{companyId}/documents` or existing Commenda file lookup | Register file; link participant document | Company-scoped file id. Upload bytes directly to S3 first, then create the company document. |
 | `documentId` | Link participant document | Read/list participant state | Incorporation-scoped typed document link. |
 
 ## Happy path: Singapore private limited company
@@ -146,22 +146,48 @@ For Singapore private limited companies, registered shareholder participant `own
 
 ### 6. Register and link documents
 
-Upload each source document through Commenda OS, or reuse an existing company-visible file, before registering it to the incorporation. If you upload a new file, save the returned `file.fileId`.
+Upload each source document directly to S3, then create a company document, before registering it to the incorporation. If the file already exists and is visible to the company, you can skip the signed URL step and reuse its `fileId`.
+
+```bash
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/partner/commenda-os/companies/77/documents/upload-url' \
+  --header 'content-type: application/json' \
+  --header 'x-api-key: <partner_api_key>' \
+  --data '{ "fileName": "passport.pdf" }'
+
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/partner/commenda-os/companies/77/documents/upload-url' \
+  --header 'content-type: application/json' \
+  --header 'x-api-key: <partner_api_key>' \
+  --data '{ "fileName": "utility-bill.pdf" }'
+```
+
+Upload each file to the returned `upload.signedUrl` with HTTP `PUT`, then create the company documents from the returned `upload.hostedUrl` values:
 
 ```bash
 curl --request POST \
   --url 'https://api.prod.commenda.io/api/v1/partner/commenda-os/companies/77/documents' \
+  --header 'content-type: application/json' \
   --header 'x-api-key: <partner_api_key>' \
-  --form 'file=@passport.pdf;type=application/pdf' \
-  --form 'personId=12' \
-  --form 'documentName=Passport scan'
+  --data '{
+    "fileName": "passport.pdf",
+    "fileUrl": "https://commenda-bucket.s3.amazonaws.com/77/uuid/passport.pdf",
+    "mimeType": "application/pdf",
+    "personId": 12,
+    "documentName": "Passport scan"
+  }'
 
 curl --request POST \
   --url 'https://api.prod.commenda.io/api/v1/partner/commenda-os/companies/77/documents' \
+  --header 'content-type: application/json' \
   --header 'x-api-key: <partner_api_key>' \
-  --form 'file=@utility-bill.pdf;type=application/pdf' \
-  --form 'personId=12' \
-  --form 'documentName=Utility bill'
+  --data '{
+    "fileName": "utility-bill.pdf",
+    "fileUrl": "https://commenda-bucket.s3.amazonaws.com/77/uuid/utility-bill.pdf",
+    "mimeType": "application/pdf",
+    "personId": 12,
+    "documentName": "Utility bill"
+  }'
 ```
 
 Register each file to the incorporation:

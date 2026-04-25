@@ -3367,11 +3367,11 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/CommendaOsPartnerError"
-"/partner/commenda-os/companies/{companyId}/documents":
+"/partner/commenda-os/companies/{companyId}/documents/upload-url":
   post:
-    summary: Upload a company document
-    description: Upload binary content as a company-scoped Commenda document. Optionally link the uploaded file to one business entity or one key person in the same company.
-    operationId: uploadPartnerCommendaOsCompanyDocument
+    summary: Create a document upload URL
+    description: Create a signed S3 upload URL so a partner client can upload company document bytes directly to S3 without sending the file body through Commenda's API server.
+    operationId: createPartnerCommendaOsCompanyDocumentUploadUrl
     servers:
       - url: https://api.prod.commenda.io/api/v1
     security:
@@ -3386,18 +3386,71 @@
     requestBody:
       required: true
       content:
-        multipart/form-data:
+        application/json:
           schema:
-            "$ref": "../components/components.yaml#/components/schemas/CommendaOsCompanyDocumentUploadRequest"
+            "$ref": "../components/components.yaml#/components/schemas/CommendaOsCompanyDocumentUploadUrlRequest"
     responses:
       "201":
-        description: Company document uploaded successfully
+        description: Signed upload URL created successfully
         content:
           application/json:
             schema:
-              "$ref": "../components/components.yaml#/components/schemas/CommendaOsCompanyDocumentUploadResponse"
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsCompanyDocumentUploadUrlResponse"
       "400":
-        description: Missing file, invalid document type, invalid resource id, or both personId and businessEntityId were provided
+        description: Missing or malformed file name
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPartnerError"
+      "401":
+        description: Missing or invalid partner API key
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPartnerError"
+      "403":
+        description: Company does not belong to this partner firm
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPartnerError"
+      "404":
+        description: Company not found
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsPartnerError"
+"/partner/commenda-os/companies/{companyId}/documents":
+  post:
+    summary: Create a company document
+    description: Create a company-scoped Commenda document from a hosted URL returned by the document upload URL endpoint. Optionally link the file to one business entity or one key person in the same company.
+    operationId: createPartnerCommendaOsCompanyDocument
+    servers:
+      - url: https://api.prod.commenda.io/api/v1
+    security:
+      - xApiKeyAuth: []
+    parameters:
+      - name: companyId
+        in: path
+        required: true
+        schema:
+          type: integer
+        description: Commenda company identifier accessible to the authenticated partner.
+    requestBody:
+      required: true
+      content:
+        application/json:
+          schema:
+            "$ref": "../components/components.yaml#/components/schemas/CommendaOsCompanyDocumentCreateRequest"
+    responses:
+      "201":
+        description: Company document created successfully
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/CommendaOsCompanyDocumentResponse"
+      "400":
+        description: Missing file metadata, invalid document type, invalid resource id, or both personId and businessEntityId were provided
         content:
           application/json:
             schema:

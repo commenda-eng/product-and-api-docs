@@ -33,7 +33,7 @@ curl --request GET \
 4. Start an incorporation with `POST /partner/incorporation/companies/{companyId}/incorporations`.
 5. Create or reference reusable people, business entities, and addresses through the Commenda OS Partner API. If an individual director or shareholder does not exist yet, create one with `POST /partner/commenda-os/companies/{companyId}/persons`.
 6. Register people or business entities as incorporation participants with `POST /partner/incorporation/{incorporationId}/participants`.
-7. Upload or reuse company documents through Commenda OS to obtain `fileId`.
+7. Upload files directly to S3, then create or reuse company documents through Commenda OS to obtain `fileId`.
 8. Register company files with `POST /partner/incorporation/{incorporationId}/files`.
 9. Link registered files as participant documents with `POST /partner/incorporation/{incorporationId}/documents`.
 10. Update partial or complete non-participant intake data with `POST /partner/incorporation/{incorporationId}/intake`.
@@ -93,22 +93,48 @@ curl --request POST \
 
 Use the returned `participant.participantId` when linking documents.
 
-Upload the participant's passport scan and utility bill through Commenda OS. Save each returned `file.fileId`.
+Create signed upload URLs for the participant's passport scan and utility bill, then upload the file bytes directly to the returned `upload.signedUrl` values.
+
+```bash
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/partner/commenda-os/companies/<company_id>/documents/upload-url' \
+  --header 'content-type: application/json' \
+  --header 'x-api-key: <partner_api_key>' \
+  --data '{ "fileName": "passport.pdf" }'
+
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/partner/commenda-os/companies/<company_id>/documents/upload-url' \
+  --header 'content-type: application/json' \
+  --header 'x-api-key: <partner_api_key>' \
+  --data '{ "fileName": "utility-bill.pdf" }'
+```
+
+Create company document records from the returned `upload.hostedUrl` values. Save each returned `file.fileId`.
 
 ```bash
 curl --request POST \
   --url 'https://api.prod.commenda.io/api/v1/partner/commenda-os/companies/<company_id>/documents' \
+  --header 'content-type: application/json' \
   --header 'x-api-key: <partner_api_key>' \
-  --form 'file=@passport.pdf;type=application/pdf' \
-  --form 'personId=12' \
-  --form 'documentName=Passport scan'
+  --data '{
+    "fileName": "passport.pdf",
+    "fileUrl": "<passport_hosted_url>",
+    "mimeType": "application/pdf",
+    "personId": 12,
+    "documentName": "Passport scan"
+  }'
 
 curl --request POST \
   --url 'https://api.prod.commenda.io/api/v1/partner/commenda-os/companies/<company_id>/documents' \
+  --header 'content-type: application/json' \
   --header 'x-api-key: <partner_api_key>' \
-  --form 'file=@utility-bill.pdf;type=application/pdf' \
-  --form 'personId=12' \
-  --form 'documentName=Utility bill'
+  --data '{
+    "fileName": "utility-bill.pdf",
+    "fileUrl": "<utility_bill_hosted_url>",
+    "mimeType": "application/pdf",
+    "personId": 12,
+    "documentName": "Utility bill"
+  }'
 ```
 
 Register those company files to the incorporation:

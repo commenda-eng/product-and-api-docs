@@ -276,6 +276,34 @@ components:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerRegisterFileRequest"
     PartnerRegisterFileResponse:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerRegisterFileResponse"
+    PartnerIncorporationParticipantType:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantType"
+    PartnerIncorporationParticipantResourceType:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantResourceType"
+    PartnerIncorporationParticipantRoleName:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantRoleName"
+    PartnerIncorporationParticipantResource:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantResource"
+    PartnerIncorporationParticipantRole:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantRole"
+    PartnerRegisterParticipantRequest:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerRegisterParticipantRequest"
+    PartnerIncorporationDocumentKind:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationDocumentKind"
+    PartnerIncorporationParticipantDocumentStatus:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantDocumentStatus"
+    PartnerIncorporationParticipantDocument:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantDocument"
+    PartnerLinkParticipantDocumentRequest:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerLinkParticipantDocumentRequest"
+    PartnerIncorporationParticipant:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipant"
+    PartnerIncorporationParticipantResponse:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantResponse"
+    PartnerIncorporationParticipantsResponse:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantsResponse"
+    PartnerIncorporationParticipantDocumentResponse:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantDocumentResponse"
     PartnerIncorporation:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporation"
     PartnerIncorporationResponse:

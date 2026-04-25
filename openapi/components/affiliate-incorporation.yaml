@@ -361,10 +361,10 @@ schemas:
       path:
         type: string
         description: Dot/bracket path for the missing or invalid requirement.
-        example: documents.passportScans
+        example: participants.participant_123.documents.passport_scan
       message:
         type: string
-        example: Passport scans is required
+        example: Participant participant_123 requires a passport_scan document
   PartnerIncorporationValidationSummary:
     type: object
     required:
@@ -394,10 +394,6 @@ schemas:
         - name: Acme Asia Pte Ltd
         - name: Acme Global Pte Ltd
       registeredAddressMode: standardAddress
-      passportScans:
-        - fileId: 456
-      utilityBills:
-        - fileId: 789
   PartnerUpdateIntakeRequest:
     type: object
     required:
@@ -448,7 +444,7 @@ schemas:
     properties:
       fileId:
         type: integer
-        description: Existing Commenda file id to link to this incorporation.
+        description: Existing Commenda file id to register to this incorporation.
         example: 456
   PartnerRegisterFileResponse:
     type: object
@@ -473,6 +469,200 @@ schemas:
           fileSize:
             type: integer
             example: 123456
+  PartnerIncorporationParticipantType:
+    type: string
+    description: Type of reusable Commenda OS resource registered to the incorporation.
+    enum:
+      - individual
+      - corporate
+  PartnerIncorporationParticipantResourceType:
+    type: string
+    description: Commenda OS resource type represented by this participant.
+    enum:
+      - keyPerson
+      - businessEntity
+  PartnerIncorporationParticipantRoleName:
+    type: string
+    description: Role the participant holds in this incorporation.
+    enum:
+      - director
+      - shareholder
+  PartnerIncorporationParticipantResource:
+    type: object
+    required:
+      - resourceType
+      - resourceId
+    properties:
+      resourceType:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantResourceType"
+      resourceId:
+        type: string
+        description: Identifier for the reusable Commenda OS key person or business entity.
+        example: key_person_001
+  PartnerIncorporationParticipantRole:
+    type: object
+    required:
+      - role
+    properties:
+      role:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantRoleName"
+      ownershipPercentage:
+        type: number
+        description: Required when the participant has a shareholder role and ownership is represented by percentage.
+        minimum: 0
+        maximum: 100
+        example: 100
+  PartnerRegisterParticipantRequest:
+    type: object
+    required:
+      - participantType
+      - resource
+      - roles
+    properties:
+      participantType:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantType"
+      resource:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantResource"
+      roles:
+        type: array
+        minItems: 1
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantRole"
+    example:
+      participantType: individual
+      resource:
+        resourceType: keyPerson
+        resourceId: key_person_001
+      roles:
+        - role: director
+        - role: shareholder
+          ownershipPercentage: 100
+  PartnerIncorporationDocumentKind:
+    type: string
+    description: Type of document linked to an incorporation participant.
+    enum:
+      - passport_scan
+      - utility_bill
+  PartnerIncorporationParticipantDocumentStatus:
+    type: string
+    description: Current status of the participant document link.
+    enum:
+      - submitted
+  PartnerIncorporationParticipantDocument:
+    type: object
+    required:
+      - documentId
+      - participantId
+      - documentKind
+      - fileId
+      - status
+    properties:
+      documentId:
+        type: string
+        description: Identifier for this participant document link.
+        example: document_123
+      participantId:
+        type: string
+        description: Participant this document belongs to.
+        example: participant_123
+      documentKind:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationDocumentKind"
+      fileId:
+        type: integer
+        description: Registered Commenda file satisfying this document requirement.
+        example: 456
+      status:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantDocumentStatus"
+  PartnerLinkParticipantDocumentRequest:
+    type: object
+    required:
+      - participantId
+      - documentKind
+      - fileId
+    properties:
+      participantId:
+        type: string
+        description: Participant this document belongs to.
+        example: participant_123
+      documentKind:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationDocumentKind"
+      fileId:
+        type: integer
+        description: File id previously registered to this incorporation.
+        example: 456
+    example:
+      participantId: participant_123
+      documentKind: passport_scan
+      fileId: 456
+  PartnerIncorporationParticipant:
+    type: object
+    required:
+      - participantId
+      - participantType
+      - resource
+      - roles
+      - documents
+    properties:
+      participantId:
+        type: string
+        description: Incorporation-specific participant identifier.
+        example: participant_123
+      participantType:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantType"
+      resource:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantResource"
+      roles:
+        type: array
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantRole"
+      documents:
+        type: array
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantDocument"
+    example:
+      participantId: participant_123
+      participantType: individual
+      resource:
+        resourceType: keyPerson
+        resourceId: key_person_001
+      roles:
+        - role: director
+        - role: shareholder
+          ownershipPercentage: 100
+      documents:
+        - documentId: document_123
+          participantId: participant_123
+          documentKind: passport_scan
+          fileId: 456
+          status: submitted
+        - documentId: document_124
+          participantId: participant_123
+          documentKind: utility_bill
+          fileId: 789
+          status: submitted
+  PartnerIncorporationParticipantResponse:
+    type: object
+    required:
+      - participant
+    properties:
+      participant:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipant"
+  PartnerIncorporationParticipantsResponse:
+    type: object
+    required:
+      - participants
+    properties:
+      participants:
+        type: array
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipant"
+  PartnerIncorporationParticipantDocumentResponse:
+    type: object
+    required:
+      - document
+    properties:
+      document:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantDocument"
   PartnerIncorporation:
     type: object
     required:
@@ -528,6 +718,11 @@ schemas:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirements"
       intakeState:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationIntakeState"
+      participants:
+        type: array
+        description: Participants registered to this incorporation, when requested or available.
+        items:
+          $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipant"
   PartnerIncorporationListResponse:
     type: object
     required:

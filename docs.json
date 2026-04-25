@@ -189,9 +189,17 @@
                 ]
               },
               {
-                "group": "Evidence files",
+                "group": "Participants",
                 "pages": [
-                  "engine/incorporation/partner-incorporation-files-POST"
+                  "engine/incorporation/partner-incorporation-participants-POST",
+                  "engine/incorporation/partner-incorporation-participants-GET"
+                ]
+              },
+              {
+                "group": "Documents",
+                "pages": [
+                  "engine/incorporation/partner-incorporation-files-POST",
+                  "engine/incorporation/partner-incorporation-participant-documents-POST"
                 ]
               },
               {

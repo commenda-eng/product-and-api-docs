@@ -1,0 +1,31 @@
+---
+title: "Register an incorporation participant"
+openapi: "POST /partner/incorporation/{incorporationId}/participants"
+---
+
+Registers a reusable Commenda OS key person or business entity as a participant in an incorporation.
+
+Participants are the incorporation-specific layer that assigns roles such as `director` and `shareholder`. The underlying person or business entity remains reusable across Commenda OS and can be used by future KYC, e-signature, and document-review workflows.
+
+KYC checks, e-signature execution, and document review are not performed by this endpoint in the MVP.
+
+```json
+{
+  "participantType": "individual",
+  "resource": {
+    "resourceType": "keyPerson",
+    "resourceId": "key_person_001"
+  },
+  "roles": [
+    {
+      "role": "director"
+    },
+    {
+      "role": "shareholder",
+      "ownershipPercentage": 100
+    }
+  ]
+}
+```
+
+For Singapore private limited companies, individual participants with a `director` or `shareholder` role require participant documents such as `passport_scan` and `utility_bill`.

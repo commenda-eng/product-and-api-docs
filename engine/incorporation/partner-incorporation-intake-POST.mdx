@@ -3,54 +3,41 @@ title: "Update incorporation intake"
 openapi: "POST /partner/incorporation/{incorporationId}/intake"
 ---
 
-Updates partial or complete requirement data for an incorporation.
+Updates partial or complete non-participant requirement data for an incorporation.
 
 Each update is merged into the current intake state and validated against the current requirements DSL. Incomplete updates are accepted and return a structured validation summary.
 
 The Partner API does not expose a submission history endpoint. To read progress after an update, call `GET /partner/incorporation/{incorporationId}` and inspect `intakeState`.
 
-## Resource fields
+Participant roles and participant documents are managed through the participant and document endpoints, not by sending array indexes or document files inside this intake payload.
 
-Resource fields can use existing Commenda OS resources or inline data. When an existing resource is missing incorporation-specific details, include supplemental `data` on the same `existingResource` reference. Supplemental data is used for intake validation and does not mutate the Commenda OS resource during Phase 2.
+## Intake fields
+
+Use this endpoint for incorporation-level requirements such as company name options and registered address selection.
 
 ```json
 {
   "requirements": {
-    "directors": [
-      {
-        "mode": "existingResource",
-        "resourceId": "key_person_001"
-      },
-      {
-        "mode": "inlineData",
-        "data": {
-          "firstName": "Asha",
-          "lastName": "Raman",
-          "email": "asha@example.com",
-          "nationality": "SG",
-          "passportNumber": "E1234567N",
-          "dateOfBirth": "1988-02-14",
-          "residentialAddress": {
-            "mode": "existingResource",
-            "resourceId": "location_001"
-          }
-        }
-      },
-      {
-        "mode": "existingResource",
-        "resourceId": "key_person_003",
-        "data": {
-          "passportNumber": "K9876543M",
-          "residentialAddress": {
-            "mode": "existingResource",
-            "resourceId": "location_003",
-            "data": {
-              "postalCode": "079903"
-            }
-          }
-        }
-      }
-    ]
+    "companyNameOptions": [
+      { "name": "Acme SG Pte. Ltd." },
+      { "name": "Acme Asia Pte. Ltd." },
+      { "name": "Acme Global Pte. Ltd." }
+    ],
+    "registeredAddressMode": "standardAddress"
+  }
+}
+```
+
+If `registeredAddressMode` is `providedAddress`, include `providedRegisteredAddress` as a Commenda OS location reference.
+
+```json
+{
+  "requirements": {
+    "registeredAddressMode": "providedAddress",
+    "providedRegisteredAddress": {
+      "mode": "existingResource",
+      "resourceId": "location_001"
+    }
   }
 }
 ```
@@ -61,25 +48,9 @@ For Singapore private limited companies, shareholder `ownershipPercentage` value
 
 If `registeredAddressMode` is `providedAddress`, include `providedRegisteredAddress`. If `registeredAddressMode` is `standardAddress`, no registered address resource is required.
 
-## Evidence linking
+For participant-specific requirements, register participants with roles and link documents to each participant:
 
-Upload files through Commenda OS first, link the existing `fileId` with `POST /partner/incorporation/{incorporationId}/files`, then reference that `fileId`:
+- Use `POST /partner/incorporation/{incorporationId}/participants` for director/shareholder roles.
+- Use `POST /partner/incorporation/{incorporationId}/documents` for documents such as `passport_scan` and `utility_bill`.
 
-```json
-{
-  "requirements": {
-    "passportScans": [
-      {
-        "fileId": 456
-      }
-    ],
-    "utilityBills": [
-      {
-        "fileId": 789
-      }
-    ]
-  }
-}
-```
-
-For Singapore private limited companies, both `passportScans` and `utilityBills` are required evidence requirements.
+For Singapore private limited companies, each individual director and individual shareholder needs both `passport_scan` and `utility_bill` documents.

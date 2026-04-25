@@ -13,6 +13,6 @@ curl --request GET \
   --header 'x-api-key: <partner_api_key>'
 ```
 
-Use the returned DSL to render your intake UI and to understand required fields, resource fields, evidence requirements, and validation constraints.
+Use the returned DSL to render your intake UI and to understand required fields, participant roles, document requirements, and validation constraints.
 
 The requirements response is informational. Intake updates are always validated against the current server-side DSL, so clients should handle `missingRequirements` and `invalidRequirements` from intake responses.

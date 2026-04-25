@@ -24,18 +24,23 @@ curl --request GET \
 ## Flow
 
 1. Create a company with the existing `POST /public/company` endpoint.
-2. Review the informational jurisdiction catalog with `GET /partner/incorporation/jurisdiction-catalog`.
-3. Fetch the current requirements DSL with `GET /partner/incorporation/requirements?country=SG&countryOptions[corporationType]=PRIVATE_LIMITED_COMPANY`.
-4. Start an incorporation with `POST /partner/incorporation/companies/{companyId}/incorporations`.
-5. Link already-uploaded files with `POST /partner/incorporation/{incorporationId}/files`.
-6. Update partial or complete intake data with `POST /partner/incorporation/{incorporationId}/intake`.
-7. Read the incorporation to track `intakeState`, missing requirements, and status.
+2. Create or reference reusable people, business entities, and addresses through the Commenda OS Partner API.
+3. Review the informational jurisdiction catalog with `GET /partner/incorporation/jurisdiction-catalog`.
+4. Fetch the current requirements DSL with `GET /partner/incorporation/requirements?country=SG&countryOptions[corporationType]=PRIVATE_LIMITED_COMPANY`.
+5. Start an incorporation with `POST /partner/incorporation/companies/{companyId}/incorporations`.
+6. Register people or business entities as incorporation participants with `POST /partner/incorporation/{incorporationId}/participants`.
+7. Register already-uploaded files with `POST /partner/incorporation/{incorporationId}/files`.
+8. Link registered files as participant documents with `POST /partner/incorporation/{incorporationId}/documents`.
+9. Update partial or complete non-participant intake data with `POST /partner/incorporation/{incorporationId}/intake`.
+10. Read the incorporation to track `intakeState`, participants, missing requirements, and status.
 
 This API does not create or return payment intents. Partners using this surface should treat billing as separate from the incorporation resource lifecycle.
 
+KYC, e-signature execution, and document-review workflows are not part of the MVP. The participant/document model is designed so those workflows can be added later without changing how incorporations identify people, entities, and required documents.
+
 ## End-to-end Singapore example
 
-This example assumes you already created a company and have a `companyId`. It starts a Singapore private limited company incorporation, links already-uploaded files, submits mixed intake data, and reads back progress.
+This example assumes you already created a company and have a `companyId`. It starts a Singapore private limited company incorporation, registers one individual as both director and shareholder, links already-uploaded files as documents for that participant, submits the remaining intake data, and reads back progress.
 
 ```bash
 curl --request GET \
@@ -58,6 +63,31 @@ curl --request POST \
 
 Use the returned `incorporation.id` in later calls.
 
+Register the individual as a reusable incorporation participant. The `resourceId` should reference a Commenda OS key person visible to this company.
+
+```bash
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/<incorporation_id>/participants' \
+  --header 'content-type: application/json' \
+  --header 'x-api-key: <partner_api_key>' \
+  --data '{
+    "participantType": "individual",
+    "resource": {
+      "resourceType": "keyPerson",
+      "resourceId": "key_person_001"
+    },
+    "roles": [
+      { "role": "director" },
+      {
+        "role": "shareholder",
+        "ownershipPercentage": 100
+      }
+    ]
+  }'
+```
+
+Use the returned `participant.participantId` when linking documents.
+
 ```bash
 curl --request POST \
   --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/<incorporation_id>/files' \
@@ -72,6 +102,30 @@ curl --request POST \
   --data '{ "fileId": 789 }'
 ```
 
+Link those files as participant documents:
+
+```bash
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/<incorporation_id>/documents' \
+  --header 'content-type: application/json' \
+  --header 'x-api-key: <partner_api_key>' \
+  --data '{
+    "participantId": "<participant_id>",
+    "documentKind": "passport_scan",
+    "fileId": 456
+  }'
+
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/<incorporation_id>/documents' \
+  --header 'content-type: application/json' \
+  --header 'x-api-key: <partner_api_key>' \
+  --data '{
+    "participantId": "<participant_id>",
+    "documentKind": "utility_bill",
+    "fileId": 789
+  }'
+```
+
 ```bash
 curl --request POST \
   --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/<incorporation_id>/intake' \
@@ -84,59 +138,7 @@ curl --request POST \
         { "name": "Acme Asia Pte. Ltd." },
         { "name": "Acme Global Pte. Ltd." }
       ],
-      "directors": [
-        {
-          "mode": "existingResource",
-          "resourceId": "key_person_001"
-        },
-        {
-          "mode": "inlineData",
-          "data": {
-            "firstName": "Asha",
-            "lastName": "Raman",
-            "email": "asha@example.com",
-            "nationality": "SG",
-            "passportNumber": "E1234567N",
-            "dateOfBirth": "1988-02-14",
-            "residentialAddress": {
-              "mode": "inlineData",
-              "data": {
-                "addressLine1": "1 Raffles Place",
-                "city": "Singapore",
-                "postalCode": "048616",
-                "country": "SG"
-              }
-            }
-          }
-        },
-        {
-          "mode": "existingResource",
-          "resourceId": "key_person_003",
-          "data": {
-            "passportNumber": "K9876543M",
-            "residentialAddress": {
-              "mode": "existingResource",
-              "resourceId": "location_003",
-              "data": {
-                "postalCode": "079903"
-              }
-            }
-          }
-        }
-      ],
-      "shareholders": [
-        {
-          "shareholderType": "individual",
-          "individualShareholder": {
-            "mode": "existingResource",
-            "resourceId": "key_person_001"
-          },
-          "ownershipPercentage": 100
-        }
-      ],
-      "registeredAddressMode": "standardAddress",
-      "passportScans": [{ "fileId": 456 }],
-      "utilityBills": [{ "fileId": 789 }]
+      "registeredAddressMode": "standardAddress"
     }
   }'
 ```
@@ -165,22 +167,18 @@ Create requests use a `country` plus country-specific `countryOptions` instead o
 
 See [List jurisdiction catalog](/engine/incorporation/partner-incorporation-jurisdiction-catalog-GET) for available country options and [Create an incorporation](/engine/incorporation/partner-incorporation-incorporations-POST) for request examples.
 
+## Participants and documents
+
+Participants are incorporation-specific registrations of reusable Commenda OS people or business entities. Assign roles such as `director` and `shareholder` on the participant so the same person can be both a director and shareholder without being duplicated.
+
+Documents are typed files attached to participants. Files remain the low-level storage object; documents are the incorporation requirement being satisfied, such as `passport_scan` or `utility_bill`.
+
+For Singapore private limited companies, every individual director and individual shareholder currently needs both a `passport_scan` and a `utility_bill` document. One document kind does not satisfy the other.
+
 ## Two-stage intake
 
-The requirements endpoint returns a DSL with field names, descriptions, validation rules, resource fields, and evidence requirements. Use it to power your own UI, but treat it as informational: Commenda validates every intake update against the current server-side requirements.
+The requirements endpoint returns a DSL with field names, descriptions, validation rules, participant rules, document rules, and other incorporation requirements. Use it to power your own UI, but treat it as informational: Commenda validates every intake update against the current server-side requirements.
 
-Intake updates may be partial. Each update is merged into the current intake state and returns `intakeState.validation.isComplete: false` plus `missingRequirements` and `invalidRequirements` until the state is complete. Once the current intake state satisfies the DSL, the incorporation moves to `ready_for_review`.
+Intake updates may be partial. Each update is merged into the current intake state and returns `intakeState.validation.isComplete: false` plus `missingRequirements` and `invalidRequirements` until the state is complete. Participant and document requirements are evaluated from registered participants and linked documents. Once the current incorporation state satisfies the DSL, the incorporation moves to `ready_for_review`.
 
 For Singapore private limited companies, shareholder `ownershipPercentage` values must total 100. If `registeredAddressMode` is `providedAddress`, include `providedRegisteredAddress`; if it is `standardAddress`, no registered address resource is required.
-
-## Evidence files
-
-For files such as passport scans and utility bills, upload the file through Commenda OS first, then link that existing `fileId` through the incorporation file endpoint. The same `fileId` can be referenced from evidence fields:
-
-```json
-{
-  "fileId": 456
-}
-```
-
-Singapore private limited company intake currently requires both `passportScans` and `utilityBills`; one does not satisfy the other.

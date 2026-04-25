@@ -2419,7 +2419,7 @@ paths:
   /partner/incorporation/{incorporationId}/files:
     post:
       summary: Register an incorporation file
-      description: Link an existing Commenda file to the incorporation context and return a `fileId` that can be referenced by evidence requirements.
+      description: Register an existing Commenda file to the incorporation context and return a `fileId` that can be linked as a participant document.
       operationId: registerPartnerIncorporationFile
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -2465,6 +2465,152 @@ paths:
                 $ref: '#/components/schemas/AffiliatePublicError'
         '404':
           description: Incorporation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+  /partner/incorporation/{incorporationId}/participants:
+    get:
+      summary: List incorporation participants
+      description: List reusable Commenda OS people or business entities registered as participants in this incorporation, including their roles and linked documents.
+      operationId: listPartnerIncorporationParticipants
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: incorporationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Incorporation identifier returned by create or list endpoints.
+      responses:
+        '200':
+          description: Participants retrieved successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerIncorporationParticipantsResponse'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Incorporation is not accessible to the partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '404':
+          description: Incorporation not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+    post:
+      summary: Register an incorporation participant
+      description: Register a reusable Commenda OS key person or business entity as an incorporation participant with roles such as director or shareholder. This endpoint creates the incorporation-specific role registration; KYC checks, e-signature execution, and document review are future extensions and are not performed by this endpoint.
+      operationId: registerPartnerIncorporationParticipant
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: incorporationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Incorporation identifier returned by create or list endpoints.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerRegisterParticipantRequest'
+      responses:
+        '201':
+          description: Participant registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerIncorporationParticipantResponse'
+        '400':
+          description: Malformed participant registration payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Incorporation is not accessible to the partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '404':
+          description: Incorporation or referenced Commenda OS resource not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+  /partner/incorporation/{incorporationId}/documents:
+    post:
+      summary: Link a participant document
+      description: Link a registered incorporation file to a participant as a typed document, such as passport_scan or utility_bill.
+      operationId: linkPartnerIncorporationParticipantDocument
+      servers:
+        - url: https://api.prod.commenda.io/api/v1
+      security:
+        - xApiKeyAuth: []
+      parameters:
+        - name: incorporationId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Incorporation identifier returned by create or list endpoints.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PartnerLinkParticipantDocumentRequest'
+      responses:
+        '201':
+          description: Participant document linked successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PartnerIncorporationParticipantDocumentResponse'
+        '400':
+          description: Malformed document link payload or incompatible file type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '401':
+          description: Missing or invalid partner API key
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '403':
+          description: Incorporation is not accessible to the partner
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AffiliatePublicError'
+        '404':
+          description: Incorporation, participant, or file not found
           content:
             application/json:
               schema:
@@ -6067,10 +6213,6 @@ components:
           - name: Acme Asia Pte Ltd
           - name: Acme Global Pte Ltd
         registeredAddressMode: standardAddress
-        passportScans:
-          - fileId: 456
-        utilityBills:
-          - fileId: 789
     PartnerCreateCompanyScopedIncorporationRequest:
       type: object
       required:
@@ -6096,10 +6238,10 @@ components:
         path:
           type: string
           description: Dot/bracket path for the missing or invalid requirement.
-          example: documents.passportScans
+          example: participants.participant_123.documents.passport_scan
         message:
           type: string
-          example: Passport scans is required
+          example: Participant participant_123 requires a passport_scan document
     PartnerIncorporationValidationSummary:
       type: object
       required:
@@ -6145,6 +6287,131 @@ components:
         updatedAt:
           type: string
           format: date-time
+    PartnerIncorporationParticipantType:
+      type: string
+      description: Type of reusable Commenda OS resource registered to the incorporation.
+      enum:
+        - individual
+        - corporate
+    PartnerIncorporationParticipantResourceType:
+      type: string
+      description: Commenda OS resource type represented by this participant.
+      enum:
+        - keyPerson
+        - businessEntity
+    PartnerIncorporationParticipantResource:
+      type: object
+      required:
+        - resourceType
+        - resourceId
+      properties:
+        resourceType:
+          $ref: '#/components/schemas/PartnerIncorporationParticipantResourceType'
+        resourceId:
+          type: string
+          description: Identifier for the reusable Commenda OS key person or business entity.
+          example: key_person_001
+    PartnerIncorporationParticipantRoleName:
+      type: string
+      description: Role the participant holds in this incorporation.
+      enum:
+        - director
+        - shareholder
+    PartnerIncorporationParticipantRole:
+      type: object
+      required:
+        - role
+      properties:
+        role:
+          $ref: '#/components/schemas/PartnerIncorporationParticipantRoleName'
+        ownershipPercentage:
+          type: number
+          description: Required when the participant has a shareholder role and ownership is represented by percentage.
+          minimum: 0
+          maximum: 100
+          example: 100
+    PartnerIncorporationDocumentKind:
+      type: string
+      description: Type of document linked to an incorporation participant.
+      enum:
+        - passport_scan
+        - utility_bill
+    PartnerIncorporationParticipantDocumentStatus:
+      type: string
+      description: Current status of the participant document link.
+      enum:
+        - submitted
+    PartnerIncorporationParticipantDocument:
+      type: object
+      required:
+        - documentId
+        - participantId
+        - documentKind
+        - fileId
+        - status
+      properties:
+        documentId:
+          type: string
+          description: Identifier for this participant document link.
+          example: document_123
+        participantId:
+          type: string
+          description: Participant this document belongs to.
+          example: participant_123
+        documentKind:
+          $ref: '#/components/schemas/PartnerIncorporationDocumentKind'
+        fileId:
+          type: integer
+          description: Registered Commenda file satisfying this document requirement.
+          example: 456
+        status:
+          $ref: '#/components/schemas/PartnerIncorporationParticipantDocumentStatus'
+    PartnerIncorporationParticipant:
+      type: object
+      required:
+        - participantId
+        - participantType
+        - resource
+        - roles
+        - documents
+      properties:
+        participantId:
+          type: string
+          description: Incorporation-specific participant identifier.
+          example: participant_123
+        participantType:
+          $ref: '#/components/schemas/PartnerIncorporationParticipantType'
+        resource:
+          $ref: '#/components/schemas/PartnerIncorporationParticipantResource'
+        roles:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartnerIncorporationParticipantRole'
+        documents:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartnerIncorporationParticipantDocument'
+      example:
+        participantId: participant_123
+        participantType: individual
+        resource:
+          resourceType: keyPerson
+          resourceId: key_person_001
+        roles:
+          - role: director
+          - role: shareholder
+            ownershipPercentage: 100
+        documents:
+          - documentId: document_123
+            participantId: participant_123
+            documentKind: passport_scan
+            fileId: 456
+            status: submitted
+          - documentId: document_124
+            participantId: participant_123
+            documentKind: utility_bill
+            fileId: 789
+            status: submitted
     PartnerIncorporationResponse:
       type: object
       required:
@@ -6156,6 +6423,11 @@ components:
           $ref: '#/components/schemas/PartnerIncorporationRequirements'
         intakeState:
           $ref: '#/components/schemas/PartnerIncorporationIntakeState'
+        participants:
+          type: array
+          description: Participants registered to this incorporation, when requested or available.
+          items:
+            $ref: '#/components/schemas/PartnerIncorporationParticipant'
     PartnerUpdateIntakeRequest:
       type: object
       required:
@@ -6180,7 +6452,7 @@ components:
       properties:
         fileId:
           type: integer
-          description: Existing Commenda file id to link to this incorporation.
+          description: Existing Commenda file id to register to this incorporation.
           example: 456
     PartnerRegisterFileResponse:
       type: object
@@ -6205,6 +6477,75 @@ components:
             fileSize:
               type: integer
               example: 123456
+    PartnerIncorporationParticipantsResponse:
+      type: object
+      required:
+        - participants
+      properties:
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/PartnerIncorporationParticipant'
+    PartnerRegisterParticipantRequest:
+      type: object
+      required:
+        - participantType
+        - resource
+        - roles
+      properties:
+        participantType:
+          $ref: '#/components/schemas/PartnerIncorporationParticipantType'
+        resource:
+          $ref: '#/components/schemas/PartnerIncorporationParticipantResource'
+        roles:
+          type: array
+          minItems: 1
+          items:
+            $ref: '#/components/schemas/PartnerIncorporationParticipantRole'
+      example:
+        participantType: individual
+        resource:
+          resourceType: keyPerson
+          resourceId: key_person_001
+        roles:
+          - role: director
+          - role: shareholder
+            ownershipPercentage: 100
+    PartnerIncorporationParticipantResponse:
+      type: object
+      required:
+        - participant
+      properties:
+        participant:
+          $ref: '#/components/schemas/PartnerIncorporationParticipant'
+    PartnerLinkParticipantDocumentRequest:
+      type: object
+      required:
+        - participantId
+        - documentKind
+        - fileId
+      properties:
+        participantId:
+          type: string
+          description: Participant this document belongs to.
+          example: participant_123
+        documentKind:
+          $ref: '#/components/schemas/PartnerIncorporationDocumentKind'
+        fileId:
+          type: integer
+          description: File id previously registered to this incorporation.
+          example: 456
+      example:
+        participantId: participant_123
+        documentKind: passport_scan
+        fileId: 456
+    PartnerIncorporationParticipantDocumentResponse:
+      type: object
+      required:
+        - document
+      properties:
+        document:
+          $ref: '#/components/schemas/PartnerIncorporationParticipantDocument'
     AffiliatePaymentIntentStatus:
       type: string
       enum:

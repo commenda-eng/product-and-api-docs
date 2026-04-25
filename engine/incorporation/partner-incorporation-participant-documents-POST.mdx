@@ -1,0 +1,18 @@
+---
+title: "Link a participant document"
+openapi: "POST /partner/incorporation/{incorporationId}/documents"
+---
+
+Links a registered incorporation file to a participant as a typed document.
+
+Files are the low-level storage object. Documents are the incorporation requirement being satisfied, such as `passport_scan` or `utility_bill`.
+
+```json
+{
+  "participantId": "participant_123",
+  "documentKind": "passport_scan",
+  "fileId": 456
+}
+```
+
+For Singapore private limited companies, each individual director and individual shareholder needs both `passport_scan` and `utility_bill` documents. One document kind does not satisfy the other.

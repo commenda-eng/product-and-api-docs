@@ -3,9 +3,9 @@ title: "Register an incorporation file"
 openapi: "POST /partner/incorporation/{incorporationId}/files"
 ---
 
-Links an already-uploaded Commenda file to the incorporation context and returns that `fileId`.
+Registers an already-uploaded Commenda file to the incorporation context and returns that `fileId`.
 
-Use this endpoint before linking files to evidence requirements such as `passportScans` or `utilityBills`.
+Use this endpoint before linking files as participant documents such as `passport_scan` or `utility_bill`.
 
 ```json
 {
@@ -13,4 +13,4 @@ Use this endpoint before linking files to evidence requirements such as `passpor
 }
 ```
 
-MIME compatibility is checked when the file is referenced by an intake update, not only when it is registered.
+MIME compatibility is checked when the file is linked as a typed participant document, not only when it is registered.

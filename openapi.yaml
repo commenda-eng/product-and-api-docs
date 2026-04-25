@@ -2412,7 +2412,7 @@ paths:
   /partner/incorporation/{incorporationId}/files:
     post:
       summary: Register an incorporation file
-      description: Register an existing Commenda file to the incorporation context and return a `fileId` that can be linked as a participant document. This endpoint does not upload binary content.
+      description: Register a company-scoped Commenda file to the incorporation context and return a `fileId` that can be linked as a participant document. This endpoint does not upload binary content.
       operationId: registerPartnerIncorporationFile
       servers:
         - url: https://api.prod.commenda.io/api/v1

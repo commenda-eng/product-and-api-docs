@@ -3,12 +3,12 @@ title: "Register an incorporation file"
 openapi: "POST /partner/incorporation/{incorporationId}/files"
 ---
 
-Registers an already-uploaded Commenda file to the incorporation context and returns that `fileId`.
+Registers a company-scoped Commenda file to the incorporation context and returns that `fileId`.
 
 Use this endpoint before linking files as participant documents such as `passport_scan` or `utility_bill`.
 
 <Info>
-This endpoint does not upload binary content. Before calling it, obtain a Commenda `fileId` from an existing file visible to the company, or create a company document with [Create a company document](/engine/commendaos/partner-api/commenda-os-documents-POST) after using [Create a document upload URL](/engine/commendaos/partner-api/commenda-os-documents-upload-url-POST).
+This endpoint does not upload binary content. For new partner-collected files, first create a company document with [Create a company document](/engine/commendaos/partner-api/commenda-os-documents-POST) after using [Create a document upload URL](/engine/commendaos/partner-api/commenda-os-documents-upload-url-POST), then pass the returned `file.fileId` here.
 </Info>
 
 ```json

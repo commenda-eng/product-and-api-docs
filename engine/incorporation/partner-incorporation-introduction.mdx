@@ -109,7 +109,7 @@ curl --request POST \
   --data '{ "fileName": "utility-bill.pdf" }'
 ```
 
-Create company document records from the returned `upload.hostedUrl` values. Save each returned `file.fileId`.
+Upload each file with HTTP `PUT` to its temporary `upload.signedUrl`. Then create company document records from the returned `upload.hostedUrl` values. Save each returned `file.fileId`.
 
 ```bash
 curl --request POST \
@@ -232,4 +232,4 @@ The requirements endpoint returns a DSL with field names, descriptions, validati
 
 Intake updates may be partial. Each update is merged into the current intake state and returns `intakeState.validation.isComplete: false` plus `missingRequirements` and `invalidRequirements` until the state is complete. Participant and document requirements are evaluated from registered participants and linked documents. Once the current incorporation state satisfies the DSL, the incorporation moves to `ready_for_review`.
 
-For Singapore private limited companies, registered shareholder participant `ownershipPercentage` values must total 100. If `registeredAddressMode` is `providedAddress`, include `providedRegisteredAddress`; if it is `standardAddress`, no registered address resource is required.
+For Singapore private limited companies, registered shareholder participant `ownershipPercentage` values must total 100. If `registeredAddressMode` is `providedAddress`, include `providedRegisteredAddress`; if it is `standardAddress`, Commenda uses its standard registered address service and no registered address resource is required.

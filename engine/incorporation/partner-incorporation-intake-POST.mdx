@@ -13,7 +13,7 @@ Participant roles and participant documents are managed through the participant 
 
 ## Intake fields
 
-Use this endpoint for incorporation-level requirements such as company name options and registered address selection.
+Use this endpoint for incorporation-level requirements such as company name options and registered address data.
 
 ```json
 {
@@ -27,6 +27,11 @@ Use this endpoint for incorporation-level requirements such as company name opti
   }
 }
 ```
+
+`registeredAddressMode` is a data choice, not UI rendering instruction:
+
+- `standardAddress` means Commenda should use its standard registered address service for this incorporation.
+- `providedAddress` means the partner is providing a reusable Commenda OS location.
 
 If `registeredAddressMode` is `providedAddress`, include `providedRegisteredAddress` as a Commenda OS location reference.
 
@@ -46,7 +51,7 @@ If `registeredAddressMode` is `providedAddress`, include `providedRegisteredAddr
 
 For Singapore private limited companies, registered shareholder participant `ownershipPercentage` values must total 100.
 
-If `registeredAddressMode` is `providedAddress`, include `providedRegisteredAddress`. If `registeredAddressMode` is `standardAddress`, no registered address resource is required.
+If `registeredAddressMode` is `providedAddress`, include `providedRegisteredAddress`. If `registeredAddressMode` is `standardAddress`, Commenda uses its standard registered address service and no registered address resource is required.
 
 For participant-specific requirements, register participants with roles and link documents to each participant:
 

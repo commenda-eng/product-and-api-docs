@@ -33,3 +33,13 @@ curl --request POST \
   }
 }
 ```
+
+Use the returned signed URL only for the direct upload:
+
+```bash
+curl --request PUT \
+  --upload-file ./passport.pdf \
+  '<signed_upload_url>'
+```
+
+After the upload succeeds, pass `upload.hostedUrl`, not `upload.signedUrl`, as `fileUrl` when creating the company document.

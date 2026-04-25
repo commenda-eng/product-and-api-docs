@@ -63,7 +63,7 @@ curl --request POST \
 
 Use the returned `incorporation.id` in later calls.
 
-Register the individual as a reusable incorporation participant. The `resourceId` should reference a Commenda OS key person visible to this company.
+Register the individual as a reusable incorporation participant. The `resourceId` should be the numeric Commenda OS key person id encoded as a string, and the person must be visible to this company.
 
 ```bash
 curl --request POST \
@@ -181,4 +181,4 @@ The requirements endpoint returns a DSL with field names, descriptions, validati
 
 Intake updates may be partial. Each update is merged into the current intake state and returns `intakeState.validation.isComplete: false` plus `missingRequirements` and `invalidRequirements` until the state is complete. Participant and document requirements are evaluated from registered participants and linked documents. Once the current incorporation state satisfies the DSL, the incorporation moves to `ready_for_review`.
 
-For Singapore private limited companies, shareholder `ownershipPercentage` values must total 100. If `registeredAddressMode` is `providedAddress`, include `providedRegisteredAddress`; if it is `standardAddress`, no registered address resource is required.
+For Singapore private limited companies, registered shareholder participant `ownershipPercentage` values must total 100. If `registeredAddressMode` is `providedAddress`, include `providedRegisteredAddress`; if it is `standardAddress`, no registered address resource is required.

@@ -7,6 +7,8 @@ Links a registered incorporation file to a participant as a typed document.
 
 Files are the low-level storage object. Documents are the incorporation requirement being satisfied, such as `passport_scan` or `utility_bill`.
 
+The `fileId` must first be registered to this incorporation with `POST /partner/incorporation/{incorporationId}/files`.
+
 ```json
 {
   "participantId": "participant_123",

@@ -2539,7 +2539,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PartnerIncorporationParticipantResponse'
         '400':
-          description: Malformed participant registration payload
+          description: Malformed participant registration payload, invalid participant/resource/role combination, or missing shareholder ownership percentage
           content:
             application/json:
               schema:
@@ -2592,7 +2592,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PartnerIncorporationParticipantDocumentResponse'
         '400':
-          description: Malformed document link payload or incompatible file type
+          description: Malformed document link payload, incompatible file type, or file not registered to this incorporation
           content:
             application/json:
               schema:
@@ -6437,7 +6437,8 @@ components:
           $ref: '#/components/schemas/PartnerIncorporationParticipantResourceType'
         resourceId:
           type: string
-          description: Identifier for the reusable Commenda OS key person or business entity.
+          pattern: ^[0-9]+$
+          description: Numeric Commenda OS identifier encoded as a string. For `keyPerson`, use the person id returned by Commenda OS. For `businessEntity`, use the business entity id.
           example: '12'
     PartnerIncorporationParticipantRoleName:
       type: string

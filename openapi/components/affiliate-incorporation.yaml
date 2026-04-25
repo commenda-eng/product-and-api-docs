@@ -510,7 +510,8 @@ schemas:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantResourceType"
       resourceId:
         type: string
-        description: Identifier for the reusable Commenda OS key person or business entity.
+        pattern: "^[0-9]+$"
+        description: Numeric Commenda OS identifier encoded as a string. For `keyPerson`, use the person id returned by Commenda OS. For `businessEntity`, use the business entity id.
         example: "12"
   PartnerIncorporationParticipantRole:
     type: object

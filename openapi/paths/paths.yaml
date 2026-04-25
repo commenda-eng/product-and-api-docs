@@ -2603,7 +2603,7 @@
             schema:
               "$ref": "../components/components.yaml#/components/schemas/PartnerIncorporationParticipantResponse"
       "400":
-        description: Malformed participant registration payload
+        description: Malformed participant registration payload, invalid participant/resource/role combination, or missing shareholder ownership percentage
         content:
           application/json:
             schema:
@@ -2656,7 +2656,7 @@
             schema:
               "$ref": "../components/components.yaml#/components/schemas/PartnerIncorporationParticipantDocumentResponse"
       "400":
-        description: Malformed document link payload or incompatible file type
+        description: Malformed document link payload, incompatible file type, or file not registered to this incorporation
         content:
           application/json:
             schema:

@@ -2558,7 +2558,7 @@ paths:
   /partner/incorporation/{incorporationId}/documents:
     post:
       summary: Link a participant document
-      description: Link a registered incorporation file to a participant as a typed document, such as passport_scan or utility_bill.
+      description: Link a registered incorporation file to a participant as a typed document required by the current requirements DSL.
       operationId: linkPartnerIncorporationParticipantDocument
       servers:
         - url: https://api.prod.commenda.io/api/v1

@@ -29,7 +29,7 @@ curl --request GET \
 
 1. Create a company with the existing `POST /public/company` endpoint.
 2. Review the informational jurisdiction catalog with `GET /partner/incorporation/jurisdiction-catalog`.
-3. Fetch the current requirements DSL with `GET /partner/incorporation/requirements?country=SG&countryOptions[corporationType]=PRIVATE_LIMITED_COMPANY`.
+3. Fetch the current requirements DSL with `GET /partner/incorporation/requirements` for the selected `country` and `countryOptions`.
 4. Start an incorporation with `POST /partner/incorporation/companies/{companyId}/incorporations`.
 5. Create or reference reusable people, business entities, and addresses through the Commenda OS Partner API. If an individual director or shareholder does not exist yet, create one with `POST /partner/commenda-os/companies/{companyId}/persons`.
 6. Register people or business entities as incorporation participants with `POST /partner/incorporation/{incorporationId}/participants`.
@@ -226,9 +226,7 @@ See [List jurisdiction catalog](/engine/incorporation/partner-incorporation-juri
 
 Participants are incorporation-specific registrations of reusable Commenda OS people or business entities. Assign roles such as `director` and `shareholder` on the participant so the same person can be both a director and shareholder without being duplicated.
 
-Documents are typed files attached to participants. Files remain the low-level storage object; documents are the incorporation requirement being satisfied, such as `passport_scan` or `utility_bill`.
-
-For Singapore private limited companies, every individual director and individual shareholder currently needs both a `passport_scan` and a `utility_bill` document. One document kind does not satisfy the other.
+Documents are typed files attached to participants. Files remain the low-level storage object; documents are the incorporation requirement being satisfied. The current requirements DSL determines which document kinds are required for each participant role and resource type.
 
 ## Two-stage intake
 
@@ -236,4 +234,4 @@ The requirements endpoint returns a DSL with field names, descriptions, validati
 
 Intake updates may be partial. Each update is merged into the current intake state and returns `intakeState.validation.isComplete: false` plus `missingRequirements` and `invalidRequirements` until the state is complete. Participant and document requirements are evaluated from registered participants and linked documents. Once the current incorporation state satisfies the DSL, the incorporation moves to `ready_for_review`.
 
-For Singapore private limited companies, registered shareholder participant `ownershipPercentage` values must total 100. If `registeredAddressMode` is `providedAddress`, include `providedRegisteredAddress`; if it is `standardAddress`, Commenda uses its standard registered address service and no registered address resource is required.
+Country-specific validation rules, such as ownership totals, address requirements, and required participant documents, are determined by the current requirements DSL for the selected incorporation.

@@ -5,7 +5,7 @@ openapi: "POST /partner/incorporation/{incorporationId}/documents"
 
 Links a registered incorporation file to a participant as a typed document.
 
-Files are the low-level storage object. Documents are the incorporation requirement being satisfied, such as `passport_scan` or `utility_bill`.
+Files are the low-level storage object. Documents are the typed incorporation requirement being satisfied for a participant.
 
 The `fileId` must first be registered to this incorporation with `POST /partner/incorporation/{incorporationId}/files`.
 
@@ -19,6 +19,4 @@ If you are starting from a passport scan, utility bill, or other local file, fir
 }
 ```
 
-For Singapore private limited companies, each individual director and individual shareholder needs both `passport_scan` and `utility_bill` documents. One document kind does not satisfy the other.
-
-For Singapore, `passport_scan` and `utility_bill` documents currently accept PDF, JPEG, and PNG files. If a registered file has an unsupported MIME type, this endpoint returns a validation error.
+The current requirements DSL determines which `documentKind` values are required for each participant and which MIME types are accepted. If a registered file has an unsupported MIME type or the document kind is not valid for the participant, this endpoint returns a validation error.

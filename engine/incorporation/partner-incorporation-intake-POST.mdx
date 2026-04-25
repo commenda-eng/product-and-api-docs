@@ -19,9 +19,9 @@ Use this endpoint for incorporation-level requirements such as company name opti
 {
   "requirements": {
     "companyNameOptions": [
-      { "name": "Acme SG Pte. Ltd." },
-      { "name": "Acme Asia Pte. Ltd." },
-      { "name": "Acme Global Pte. Ltd." }
+      { "name": "Acme Holdings" },
+      { "name": "Acme Global" },
+      { "name": "Acme Ventures" }
     ],
     "registeredAddressMode": "standardAddress"
   }
@@ -47,15 +47,13 @@ If `registeredAddressMode` is `providedAddress`, include `providedRegisteredAddr
 }
 ```
 
-## Singapore validation notes
+## Validation notes
 
-For Singapore private limited companies, registered shareholder participant `ownershipPercentage` values must total 100.
+Country-specific validation rules are determined by the current requirements DSL.
 
-If `registeredAddressMode` is `providedAddress`, include `providedRegisteredAddress`. If `registeredAddressMode` is `standardAddress`, Commenda uses its standard registered address service and no registered address resource is required.
+If a selected incorporation requires shareholder ownership totals, address details, or participant documents, the response returns `missingRequirements` and `invalidRequirements` until the current incorporation state satisfies those rules.
 
 For participant-specific requirements, register participants with roles and link documents to each participant:
 
 - Use `POST /partner/incorporation/{incorporationId}/participants` for director/shareholder roles.
-- Use `POST /partner/incorporation/{incorporationId}/documents` for documents such as `passport_scan` and `utility_bill`.
-
-For Singapore private limited companies, each individual director and individual shareholder needs both `passport_scan` and `utility_bill` documents.
+- Use `POST /partner/incorporation/{incorporationId}/documents` for participant document requirements.

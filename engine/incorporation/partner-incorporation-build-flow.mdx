@@ -19,7 +19,7 @@ The Partner Incorporation API does not create or return payment intents. Billing
 | Incorporation | How do I start the case? | Create the incorporation and save `incorporation.id`. |
 | Resource prep | What reusable records must exist? | Create or reuse Commenda OS people, business entities, and locations. |
 | Participants | Who is involved? | Register reusable people/entities as directors and shareholders. |
-| Documents | How do I attach files? | Upload files directly to S3, create company documents to obtain `fileId`, register each file to the incorporation, then link it as a typed participant document. |
+| Documents | How do I attach files? | Follow [Upload documents for incorporation](/engine/incorporation/partner-incorporation-document-upload-flow): upload files directly to S3, create company documents to obtain `fileId`, register each file to the incorporation, then link it as a typed participant document. |
 | Intake | What non-participant fields are needed? | Submit partial or complete intake updates. |
 | Completion | How do I know it is ready? | Read the incorporation and check `intakeState.validation.isComplete` and `incorporationStatus`. |
 
@@ -149,6 +149,10 @@ For Singapore private limited companies, registered shareholder participant `own
 ### 6. Register and link documents
 
 Upload each source document directly to S3, then create a company document, before registering it to the incorporation.
+
+<Info>
+The upload URL and company-document creation endpoints live in the Commenda OS Partner API because files are reusable company resources. For a shorter document-only walkthrough, see [Upload documents for incorporation](/engine/incorporation/partner-incorporation-document-upload-flow).
+</Info>
 
 ```bash
 curl --request POST \

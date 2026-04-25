@@ -33,7 +33,7 @@ curl --request GET \
 4. Start an incorporation with `POST /partner/incorporation/companies/{companyId}/incorporations`.
 5. Create or reference reusable people, business entities, and addresses through the Commenda OS Partner API. If an individual director or shareholder does not exist yet, create one with `POST /partner/commenda-os/companies/{companyId}/persons`.
 6. Register people or business entities as incorporation participants with `POST /partner/incorporation/{incorporationId}/participants`.
-7. Upload files directly to S3, then create or reuse company documents through Commenda OS to obtain `fileId`.
+7. Follow [Upload documents for incorporation](/engine/incorporation/partner-incorporation-document-upload-flow): upload files directly to S3, then create company documents through Commenda OS to obtain `fileId`.
 8. Register company files with `POST /partner/incorporation/{incorporationId}/files`.
 9. Link registered files as participant documents with `POST /partner/incorporation/{incorporationId}/documents`.
 10. Update partial or complete non-participant intake data with `POST /partner/incorporation/{incorporationId}/intake`.
@@ -94,6 +94,10 @@ curl --request POST \
 Use the returned `participant.participantId` when linking documents.
 
 Create signed upload URLs for the participant's passport scan and utility bill, then upload the file bytes directly to the returned `upload.signedUrl` values.
+
+<Info>
+The upload URL and company-document endpoints are documented under Commenda OS Partner API because they create reusable company files. The incorporation-specific flow is summarized in [Upload documents for incorporation](/engine/incorporation/partner-incorporation-document-upload-flow).
+</Info>
 
 ```bash
 curl --request POST \

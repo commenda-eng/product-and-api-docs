@@ -190,6 +190,7 @@
               {
                 "group": "Documents",
                 "pages": [
+                  "engine/incorporation/partner-incorporation-document-upload-flow",
                   "engine/incorporation/partner-incorporation-files-POST",
                   "engine/incorporation/partner-incorporation-participant-documents-POST"
                 ]

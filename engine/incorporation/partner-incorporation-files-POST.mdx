@@ -11,6 +11,8 @@ Use this endpoint before linking files as participant documents such as `passpor
 This endpoint does not upload binary content. For new partner-collected files, first create a company document with [Create a company document](/engine/commendaos/partner-api/commenda-os-documents-POST) after using [Create a document upload URL](/engine/commendaos/partner-api/commenda-os-documents-upload-url-POST), then pass the returned `file.fileId` here.
 </Info>
 
+For the full file handoff from S3 upload URL to participant document, see [Upload documents for incorporation](/engine/incorporation/partner-incorporation-document-upload-flow).
+
 ```json
 {
   "fileId": 456

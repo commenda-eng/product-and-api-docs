@@ -2893,11 +2893,11 @@
             "$ref": "../components/components.yaml#/components/schemas/PartnerRegisterParticipantRequest"
     responses:
       "201":
-        description: Participant registered successfully
+        description: Participant registered successfully. The response includes the latest `incorporationValidation` summary so partners can render readiness state without an extra round trip.
         content:
           application/json:
             schema:
-              "$ref": "../components/components.yaml#/components/schemas/PartnerIncorporationParticipantResponse"
+              "$ref": "../components/components.yaml#/components/schemas/PartnerIncorporationParticipantMutationResponse"
       "400":
         description: Malformed participant registration payload, invalid participant/resource/role combination, missing shareholder ownership percentage, or shareholder ownership exceeding the selected requirements total
         content:
@@ -2952,11 +2952,11 @@
             "$ref": "../components/components.yaml#/components/schemas/PartnerPatchParticipantRequest"
     responses:
       "200":
-        description: Participant updated successfully
+        description: Participant updated successfully. The response includes the latest `incorporationValidation` summary so partners can render readiness state without an extra round trip.
         content:
           application/json:
             schema:
-              "$ref": "../components/components.yaml#/components/schemas/PartnerIncorporationParticipantResponse"
+              "$ref": "../components/components.yaml#/components/schemas/PartnerIncorporationParticipantMutationResponse"
       "400":
         description: Malformed participant update payload, invalid role combination, missing shareholder ownership percentage, or shareholder ownership exceeding the selected requirements total
         content:
@@ -3003,8 +3003,12 @@
           type: string
         description: Incorporation-specific participant identifier returned by register, list, or read endpoints.
     responses:
-      "204":
-        description: Participant removed successfully
+      "200":
+        description: Participant removed successfully. The response includes the latest `incorporationValidation` summary so partners can react to requirements that the removal re-introduced.
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/PartnerIncorporationParticipantRemovalResponse"
       "401":
         description: Missing or invalid partner API key
         content:
@@ -3047,11 +3051,11 @@
             "$ref": "../components/components.yaml#/components/schemas/PartnerLinkParticipantDocumentRequest"
     responses:
       "201":
-        description: Participant document linked successfully
+        description: Participant document linked successfully. The response includes the latest `incorporationValidation` summary so partners can confirm whether all required documents are now satisfied.
         content:
           application/json:
             schema:
-              "$ref": "../components/components.yaml#/components/schemas/PartnerIncorporationParticipantDocumentResponse"
+              "$ref": "../components/components.yaml#/components/schemas/PartnerIncorporationParticipantDocumentMutationResponse"
       "400":
         description: Malformed document link payload, incompatible file type, or file not registered to this incorporation
         content:

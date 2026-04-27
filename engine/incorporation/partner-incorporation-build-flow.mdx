@@ -12,7 +12,7 @@ This guide shows the recommended implementation sequence for a customer incorpor
 3. Create the incorporation and save `incorporation.id`.
 4. Create or reuse required Commenda OS records, such as people, business entities, locations, and documents.
 5. Register participants and link required participant documents.
-6. Submit incorporation-level intake fields, then read validation until `intakeState.validation.isComplete` is `true`.
+6. Submit incorporation-level intake fields, then read validation until `incorporationValidation.isComplete` is `true`. Participant and document mutations also return the latest `incorporationValidation`, so you can react without an extra read.
 7. Submit for review, then track status and active issues.
 
 ## Detailed implementation sequence
@@ -27,7 +27,7 @@ This guide shows the recommended implementation sequence for a customer incorpor
 | Participants | Who is involved? | Register reusable people/entities as directors and shareholders. |
 | Documents | How do I attach files? | Follow [Upload documents for incorporation](/engine/incorporation/partner-incorporation-document-upload-flow): upload files directly to S3, create customer documents to obtain `fileId`, register each file to the incorporation, then link it as a typed participant document. |
 | Intake | What non-participant fields are needed? | Submit partial or complete intake updates. |
-| Submit for review | How do I hand it to Commenda? | Read validation, call the submit endpoint when `intakeState.validation.isComplete` is `true`, then track `GET /partner/incorporation/{incorporationId}/status`. |
+| Submit for review | How do I hand it to Commenda? | Read validation, call the submit endpoint when `incorporationValidation.isComplete` is `true`, then track `GET /partner/incorporation/{incorporationId}/status`. |
 | Issues | What if Commenda needs corrections? | Read active/resolved issues, update the underlying intake/participants/documents, and optionally receive issue webhooks. Active issues set top-level status to `blocked`. |
 
 ## IDs you'll save
@@ -361,7 +361,7 @@ curl --request GET \
   --header 'x-api-key: <partner_api_key>'
 ```
 
-Check `intakeState.validation.isComplete`. When it is `true`, the incorporation is eligible to submit for Commenda review.
+Check `incorporationValidation.isComplete`. When it is `true`, the incorporation is eligible to submit for Commenda review. Reads return `incorporationValidation` alongside `intakeState`, and write endpoints (intake, participants, documents) return the same summary so a separate read is not required.
 
 ### 9. Submit for review
 
@@ -409,7 +409,7 @@ Fetch requirements after the user chooses a jurisdiction and corporation type. R
 
 ## Completion semantics
 
-`intakeState.validation.isComplete` means the current data satisfies the incorporation requirements and is eligible to submit. It does not by itself hand the incorporation to Commenda.
+`incorporationValidation.isComplete` means the current data satisfies the incorporation requirements and is eligible to submit. It does not by itself hand the incorporation to Commenda.
 
 ```text
 awaiting_customer_input

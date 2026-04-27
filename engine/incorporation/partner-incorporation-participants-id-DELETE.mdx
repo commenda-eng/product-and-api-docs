@@ -7,4 +7,20 @@ Removes a participant registration from an incorporation.
 
 This removes the incorporation-specific participant record and its linked participant documents. It does not delete the underlying Commenda OS person or business entity referenced by the participant, so that reusable resource can still be used elsewhere.
 
-After removing a participant, reread the incorporation or list participants to inspect the updated validation state and remaining participant requirements.
+The response returns `200` with the removed `participantId` and the latest `incorporationValidation` summary so you can react to participant or ownership requirements that the removal re-introduced without an extra read.
+
+```json
+{
+  "participantId": "participant_123",
+  "incorporationValidation": {
+    "isComplete": false,
+    "missingRequirements": [
+      {
+        "path": "participants.directors",
+        "message": "At least one director is required"
+      }
+    ],
+    "invalidRequirements": []
+  }
+}
+```

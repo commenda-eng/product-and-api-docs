@@ -35,8 +35,9 @@ Some endpoints return the incorporation object inside a response wrapper with re
 
 | Field | Description |
 | --- | --- |
+| `incorporationValidation` | Current validation summary for the incorporation. Returned by reads (Get an incorporation) and by intake, participant, and document write endpoints so partners can render readiness state without an extra round trip. |
 | `requirements` | Current incorporation requirements for the selected jurisdiction and options. |
-| `intakeState` | Current submitted intake values and validation state. |
+| `intakeState` | Current submitted intake values. |
 | `participants` | Participants registered to this incorporation, when requested or available. |
 
 ## Endpoints

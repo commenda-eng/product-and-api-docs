@@ -28,7 +28,7 @@ The `resource.resourceId` value is the numeric Commenda OS person or business en
 }
 ```
 
-The response determines which participant roles are required and which document requirements apply to those participants.
+The response includes the registered `participant` plus the latest `incorporationValidation` summary so you can decide what to collect next without an extra read. Use `incorporationValidation.missingRequirements` and `incorporationValidation.invalidRequirements` to drive UI for participant roles, ownership totals, and required participant documents.
 
 Registering a participant does not by itself make the underlying Commenda OS resource complete. The incorporation validation also checks required fields on the referenced person or business entity, such as legal names, email, nationality, date of birth, address, and corporate registration data when those fields are required by the selected jurisdiction.
 

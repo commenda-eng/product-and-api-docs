@@ -23,7 +23,7 @@ Send the full desired `roles` array. Omitted roles are removed.
 }
 ```
 
-The response shape matches participant registration and list responses.
+The response shape matches participant registration. It contains the updated `participant` and the latest `incorporationValidation` summary so you can react to ownership totals or new participant document requirements without an extra read.
 
 ```json
 {
@@ -44,6 +44,16 @@ The response shape matches participant registration and list responses.
       }
     ],
     "documents": []
+  },
+  "incorporationValidation": {
+    "isComplete": false,
+    "missingRequirements": [
+      {
+        "path": "participants.shareholders.ownershipTotal",
+        "message": "Shareholder ownership must total 100"
+      }
+    ],
+    "invalidRequirements": []
   }
 }
 ```

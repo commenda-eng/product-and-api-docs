@@ -273,8 +273,8 @@ components:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationStatusWorkflowStage"
     PartnerIncorporationStatusWorkflow:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationStatusWorkflow"
-    PartnerIncorporationStatusWorkflowResponse:
-      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationStatusWorkflowResponse"
+    PartnerIncorporationWorkflowStagesResponse:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationWorkflowStagesResponse"
     PartnerIncorporationStatusWorkflowSummary:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationStatusWorkflowSummary"
     PartnerIncorporationCaseStage:

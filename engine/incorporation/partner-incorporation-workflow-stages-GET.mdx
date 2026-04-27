@@ -1,9 +1,9 @@
 ---
-title: "Get status workflow"
-openapi: "GET /partner/incorporation/status-workflow"
+title: "Get workflow stages"
+openapi: "GET /partner/incorporation/workflow-stages"
 ---
 
-Retrieves the public status workflow for a selected incorporation jurisdiction and type.
+Retrieves the public workflow stages for a selected incorporation jurisdiction and type.
 
 Use this endpoint after the customer chooses `country` and `countryOptions` if you want to render a progress UI before the incorporation is created. The response is derived from Commenda's active workflow template for that selection, with a synthetic `intake` stage added first.
 
@@ -15,7 +15,7 @@ Use the same deep-object query syntax as the requirements endpoint.
 
 ```bash
 curl --request GET \
-  --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/status-workflow?country=SG&countryOptions[corporationType]=PRIVATE_LIMITED_COMPANY' \
+  --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/workflow-stages?country=SG&countryOptions[corporationType]=PRIVATE_LIMITED_COMPANY' \
   --header 'x-api-key: <partner_api_key>'
 ```
 
@@ -23,7 +23,7 @@ curl --request GET \
 
 ```json
 {
-  "statusWorkflow": {
+  "workflowStages": {
     "schemaVersion": "2026-04-26",
     "definitionVersion": "1.0.0",
     "key": "singapore-incorporation-partner-api",
@@ -61,4 +61,4 @@ curl --request GET \
 | `customer` | The end customer must provide input. |
 | `commenda` | Commenda owns the stage. |
 
-If the status workflow is not active for the selected incorporation type, the endpoint returns `404`.
+If the workflow is not active for the selected incorporation type, the endpoint returns `404`.

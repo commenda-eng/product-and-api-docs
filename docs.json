@@ -170,7 +170,7 @@
                 "pages": [
                   "engine/incorporation/partner-incorporation-jurisdiction-catalog-GET",
                   "engine/incorporation/partner-incorporation-requirements-GET",
-                  "engine/incorporation/partner-incorporation-status-workflow-GET"
+                  "engine/incorporation/partner-incorporation-workflow-stages-GET"
                 ]
               },
               {

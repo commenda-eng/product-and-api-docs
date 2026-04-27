@@ -29,7 +29,7 @@ curl --request GET \
 
 1. Create a company with the existing `POST /public/company` endpoint.
 2. Review the informational jurisdiction catalog with `GET /partner/incorporation/jurisdiction-catalog`.
-3. Fetch the current requirements DSL with `GET /partner/incorporation/requirements` and the progress stages with `GET /partner/incorporation/status-workflow` for the selected `country` and `countryOptions`.
+3. Fetch the current requirements DSL with `GET /partner/incorporation/requirements` and the progress stages with `GET /partner/incorporation/workflow-stages` for the selected `country` and `countryOptions`.
 4. Start an incorporation with `POST /partner/incorporation/companies/{companyId}/incorporations`.
 5. Create or reference reusable people, business entities, and addresses through the Commenda OS Partner API. If an individual director or shareholder does not exist yet, create one with `POST /partner/commenda-os/companies/{companyId}/persons`.
 6. Register people or business entities as incorporation participants with `POST /partner/incorporation/{incorporationId}/participants`.

@@ -1,0 +1,265 @@
+---
+title: "Partner API conventions"
+description: "Naming, ID, casing, response, and error conventions for Partner API endpoints."
+---
+
+This page defines the conventions Commenda uses for new and updated Partner API endpoints.
+
+Some older endpoints may still differ while the API is being migrated. When a reference page conflicts with this page, the endpoint reference describes the current deployed behavior. Treat this page as the standard we are converging on.
+
+## Resource names
+
+Use the public Partner API vocabulary consistently.
+
+| Use | Avoid | Meaning |
+| --- | --- | --- |
+| `customer` | `company`, `customer container` | The partner-owned customer record that scopes all Partner API calls. |
+| `businessEntity` | `corporation` | A reusable Commenda OS legal-entity record. |
+| `person` | `keyPerson` for the resource itself | A reusable Commenda OS person record. |
+| `participant` | `person` or `businessEntity` when describing the incorporation role record | An incorporation-specific registration of a reusable resource with roles such as director or shareholder. |
+| `incorporation` | `case`, `serviceRequest` | The incorporation workflow exposed through the Partner Incorporation API. |
+| `file` | `document` when only bytes are being stored | A reusable uploaded file. A document is a typed use of a file. |
+
+Commenda may still use different internal names. Public Partner API paths, schemas, docs, and examples should use only the public names above.
+
+## ID types
+
+Use stable ID types by resource family.
+
+| Resource | Public field | JSON type | Notes |
+| --- | --- | --- | --- |
+| Customer | `customerId` | integer | Numeric id for the customer that owns the work. |
+| Business entity | `businessEntityId` or `businessEntity.id` | integer | Numeric Commenda OS business-entity id. |
+| Person | `personId` or `person.id` | integer | Numeric Commenda OS person id. |
+| File | `fileId` | integer | Numeric reusable file id. |
+| Incorporation | `incorporationId` or `incorporation.id` | string | Opaque id for one incorporation workflow. |
+| Participant | `participantId` or `participant.id` | string | Opaque id for one participant registration in an incorporation. |
+| Participant document | `documentId` or `document.id` | string | Opaque id for a typed participant-document link. |
+| Issue | `issueId` or `issue.id` | string | Opaque id for a partner-visible issue. |
+
+Do not stringify numeric IDs. If a person id is returned as `12`, requests that reference that person should also send `12`, not `"12"`.
+
+Do not expose internal implementation ids such as `serviceRequestId`, `corporationId`, or internal `companyId` in Partner API contracts. Rename them at the API boundary.
+
+## ID field names
+
+Use `id` as the primary identifier inside a resource object.
+
+```json
+{
+  "person": {
+    "id": 12,
+    "firstName": "Ada"
+  }
+}
+```
+
+Use `{resourceName}Id` when an object references a different resource or when the id appears outside its resource object.
+
+```json
+{
+  "customerId": 77,
+  "businessEntityId": 44,
+  "fileId": 456
+}
+```
+
+Avoid returning duplicate names for the same value in the same object. For example, do not return both `id` and `incorporationId` on the incorporation object when they are identical. The object should use `id`; paths and foreign references should use `incorporationId`.
+
+## Polymorphic references
+
+Avoid generic polymorphic references when the possible resources are known.
+
+Prefer this:
+
+```json
+{
+  "participantType": "individual",
+  "personId": 12
+}
+```
+
+or this:
+
+```json
+{
+  "participantType": "corporate",
+  "businessEntityId": 44
+}
+```
+
+Avoid this for new endpoints:
+
+```json
+{
+  "resource": {
+    "resourceType": "keyPerson",
+    "resourceId": "12"
+  }
+}
+```
+
+If a generic reference is unavoidable, the id must preserve its native JSON type and the schema must describe each allowed shape with `oneOf`.
+
+## Paths and path parameters
+
+Path segments use kebab-case for multi-word collection names.
+
+```text
+/partner/commenda-os/customers/{customerId}/business-entities/{businessEntityId}
+```
+
+Path parameters use camelCase and end in `Id`.
+
+Use nested paths only when the parent is needed for authorization, scoping, or disambiguation. The path should reflect the ownership model partners need to understand:
+
+```text
+/partner/commenda-os/customers/{customerId}/persons/{personId}
+/partner/incorporation/{incorporationId}/participants/{participantId}
+```
+
+## JSON field casing
+
+JSON property names use camelCase.
+
+```json
+{
+  "registeredOfficeAddressSource": "commendaService",
+  "incorporationValidation": {
+    "isComplete": true
+  }
+}
+```
+
+Do not use snake_case JSON property names in Partner API request or response bodies.
+
+## Enum and machine value casing
+
+Commenda-defined enum values use lowerCamelCase.
+
+```json
+{
+  "incorporationStatus": "awaitingCustomerInput",
+  "documentKind": "passportScan",
+  "registeredOfficeAddressSource": "partnerProvidedLocation"
+}
+```
+
+Exceptions are allowed only for values that are externally standardized or legally meaningful codes, such as ISO country codes, jurisdiction codes, and third-party registration identifiers.
+
+```json
+{
+  "country": "SG",
+  "jurisdiction": "JUR_SG__GENERAL"
+}
+```
+
+## Response wrappers
+
+Responses are wrapped by resource name.
+
+Single-resource responses:
+
+```json
+{
+  "person": {
+    "id": 12
+  }
+}
+```
+
+List responses:
+
+```json
+{
+  "persons": [],
+  "count": 0
+}
+```
+
+Mutation responses that also return derived state should keep the primary resource first, then derived objects.
+
+```json
+{
+  "participant": {
+    "id": "ptc_123"
+  },
+  "incorporationValidation": {
+    "isComplete": false,
+    "missingRequirements": [],
+    "invalidRequirements": []
+  }
+}
+```
+
+Avoid bare primitive responses such as `{ "id": 12 }` or `{ "customerId": 77 }`. Wrap them as `{ "person": { "id": 12 } }` or `{ "customer": { "id": 77 } }`.
+
+Create endpoints may return adjacent data needed for the next step, but the page must say what is included and whether clients need another GET before continuing.
+
+## Validation naming
+
+Use `incorporationValidation` for validation that evaluates the full incorporation state.
+
+Do not put full-incorporation validation under `intakeState.validation`; intake is only one part of the incorporation.
+
+Validation issues should include:
+
+| Field | Purpose |
+| --- | --- |
+| `path` | Stable machine path to the missing or invalid value. |
+| `message` | Human-readable explanation. |
+| `code` | Stable machine-readable issue code. |
+| `participantId` | Included when the issue belongs to a participant. |
+| `displayName` | Included when available so UIs can render useful messages without joining across response objects. |
+
+Validation should dedupe issues by the field a partner must fix. If one missing file satisfies both a director and shareholder role, return one actionable issue rather than one issue per role.
+
+## Files and documents
+
+A file stores bytes and returns a reusable `fileId`.
+
+A document is a typed attachment or requirement-specific use of a file.
+
+Uploading a file should not require document metadata, person metadata, or business-entity metadata. Attach endpoints should layer that meaning onto the file.
+
+```text
+POST /partner/commenda-os/customers/{customerId}/files
+PUT /partner/incorporation/{incorporationId}/participants/{participantId}/documents/{documentKind}
+```
+
+## Error shape
+
+Partner API errors use one consistent shape.
+
+```json
+{
+  "statusCode": 400,
+  "error": "Bad Request",
+  "message": "roles must contain at least 1 element"
+}
+```
+
+Use HTTP status codes consistently:
+
+| Status | Meaning |
+| --- | --- |
+| `400` | Request shape is syntactically valid JSON but semantically invalid. |
+| `401` | Missing or invalid API key. |
+| `403` | The API key is valid but not allowed to access the requested customer boundary. |
+| `404` | The requested resource does not exist within the authorized boundary. |
+| `409` | The request conflicts with current resource state. |
+| `413` | Uploaded file exceeds the documented size limit. |
+| `415` | Uploaded file type is not supported. |
+| `422` | The request is well-formed but cannot be applied because domain validation failed. |
+
+When an endpoint returns validation details, include the same `incorporationValidation` shape used by successful write responses.
+
+## Backward-compatible rollout checklist
+
+When updating an existing Partner API endpoint to match these conventions:
+
+1. Update the OpenAPI schema first so generated clients show the intended contract.
+2. Update docs prose and examples at the same time.
+3. Update backend serializers at the Partner API boundary. Do not rename keys inside opaque customer-provided payloads.
+4. Add tests that assert public field names, ID types, wrappers, enum values, and error statuses.
+5. If partners already depend on the old shape, provide an explicit migration plan before removing the old fields.

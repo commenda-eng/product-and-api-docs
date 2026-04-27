@@ -166,7 +166,8 @@
           {
             "group": "Overview",
             "pages": [
-              "engine/partner-api/introduction"
+              "engine/partner-api/introduction",
+              "engine/partner-api/conventions"
             ]
           },
           {

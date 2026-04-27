@@ -7,8 +7,6 @@ Retrieves an incorporation for one of your customers.
 
 Use this endpoint to refresh the latest `intakeState`, participants, and top-level `incorporationStatus` for an ongoing incorporation.
 
-The response always includes `intakeState`. Before the first intake save, `intakeState.currentState` is `{}`.
-
 `incorporationValidation.isComplete` tells you whether the current state is eligible to submit. `submitted` or `in_progress` is returned only after `POST /partner/incorporation/{incorporationId}/submit` succeeds for a currently complete incorporation.
 
 Use [Get incorporation status](/engine/incorporation/partner-incorporation-status-GET) for stage-level progress and blocking issue ids. Use [List incorporation issues](/engine/incorporation/partner-incorporation-issues-GET) to track active or resolved correction requests.

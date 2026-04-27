@@ -1324,6 +1324,7 @@ schemas:
     required:
       - incorporation
       - incorporationValidation
+      - intakeState
     properties:
       incorporation:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporation"

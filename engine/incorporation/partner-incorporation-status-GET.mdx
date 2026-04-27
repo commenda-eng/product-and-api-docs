@@ -7,8 +7,6 @@ Retrieves the current public status projection for an incorporation.
 
 Use this endpoint for progress views after an incorporation is created. It returns the top-level `incorporationStatus`, the workflow version used for the incorporation, ordered stages, and any active issues blocking the incorporation.
 
-Status stages use the same field names as the status workflow: `id`, `label`, `description`, `owner`, and `position`. The `stageId` field appears only inside issue scopes, where it references a stage's `id`.
-
 ## Stage fields
 
 Each item in `stages` has these fields:

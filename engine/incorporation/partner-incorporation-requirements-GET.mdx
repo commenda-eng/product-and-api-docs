@@ -17,16 +17,7 @@ Use the returned requirements to render your intake UI and to understand require
 
 Rule of thumb: render from the requirements response, but validate from write/read responses. Intake updates are always validated against the current server-side requirements, so clients should handle `missingRequirements` and `invalidRequirements` from intake responses.
 
-## How to use the requirements response
-
-| Field | What it means | How to satisfy it |
-| --- | --- | --- |
-| `blocks` | UI-friendly groupings of incorporation-level fields | Render these groups in your intake UI if useful. |
-| `fields` | Data submitted through `PATCH /partner/incorporation/{incorporationId}/intake` | Send values under `requirements` using each field key. |
-| `required.when` / `appliesWhen` | Rules that make fields required or applicable only when another value is selected | Recompute visible/required fields when users change controlling values. Fields whose `appliesWhen` rule is not satisfied are ignored by validation. |
-| `participantRequirements` | Required participant roles such as director or shareholder | Register reusable Commenda OS resources with `POST /partner/incorporation/{incorporationId}/participants`. |
-| `documentRequirements` | Required typed documents for participant roles/types | Upsert a customer `fileId` into each participant document slot with `PUT /partner/incorporation/{incorporationId}/participants/{participantId}/documents/{documentKind}`. |
-| Version fields, such as `schemaVersion` and `dslVersion` | Requirements version metadata | Store these in logs for debugging. Do not send them back to Commenda. |
+For a customer-facing explanation of how to route requirements to endpoints, see [Requirements guide](/engine/incorporation/partner-incorporation-requirements-guide).
 
 ## Participant role/resource combinations
 
@@ -41,6 +32,70 @@ The requirements response describes participant requirements in terms of role, p
 
 When `documentRequirements` are returned, match them by `role`, `participantType`, and `resourceType`. Individual Singapore directors and shareholders require `passport_scan` and `utility_bill`; corporate shareholder documents, if required by the selected incorporation type, are surfaced by the same `documentRequirements` array.
 
-Validation paths in `missingRequirements` and `invalidRequirements` correspond to requirements fields or participant/document requirements. Field validation paths include the requirements block key, such as `companyNames.companyNameOptions`, even though the intake payload key remains `requirements.companyNameOptions`. Participant document paths look like `participants.participant_123.documents.passport_scan`.
+Some participant requirements also include `resourceFieldsByParticipantType`. These are fields on the Commenda OS resource you registered as the participant. For example, Singapore individual directors require the key person to have `residentialAddress`. Satisfy that field by creating or updating the person with `residentialAddress`; it is not a reusable Commenda OS Location and should not be sent as `registeredOfficeAddressLocation`.
+
+Requirements snippet:
+
+```json
+{
+  "participantRequirements": [
+    {
+      "key": "directors",
+      "role": "director",
+      "allowedParticipantTypes": ["individual"],
+      "allowedResourceTypes": ["keyPerson"],
+      "resourceFieldsByParticipantType": {
+        "individual": [
+          {
+            "kind": "resource",
+            "key": "residentialAddress",
+            "required": true,
+            "commendaOs": {
+              "entity": "keyPerson",
+              "field": "residentialAddress"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
+```
+
+If validation later returns:
+
+```json
+{
+  "path": "participants.participant_123.resource.residentialAddress",
+  "message": "Residential address is required"
+}
+```
+
+Find `participant_123` in the incorporation response:
+
+```json
+{
+  "participantId": "participant_123",
+  "resource": {
+    "resourceType": "keyPerson",
+    "resourceId": "12"
+  }
+}
+```
+
+Then update person `12`:
+
+```json
+{
+  "residentialAddress": {
+    "addressLine1": "1 Raffles Place",
+    "city": "Singapore",
+    "postalCode": "048616",
+    "country": "SG"
+  }
+}
+```
+
+Validation paths in `missingRequirements` and `invalidRequirements` correspond to requirements fields or participant/document requirements. Field validation paths include the requirements block key, such as `companyNames.companyNameOptions`, even though the intake payload key remains `requirements.companyNameOptions`. Participant resource paths look like `participants.participant_123.resource.residentialAddress`. Participant document paths look like `participants.participant_123.documents.passport_scan`.
 
 You may cache the requirements response by `country` plus `countryOptions`, but do not send a requirements version back to Commenda. If validation returns new missing or invalid requirements, update your UI from the latest response.

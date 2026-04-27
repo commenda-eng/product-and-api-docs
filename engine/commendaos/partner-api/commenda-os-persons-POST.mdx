@@ -19,3 +19,25 @@ Use this endpoint when an incorporation participant does not already exist in Co
 ```
 
 Use incorporation participant and document endpoints for incorporation-specific roles and documents. This endpoint only creates the reusable person record.
+
+## Person addresses
+
+Some incorporation requirements validate fields on the referenced person resource. For Singapore individual directors and shareholders, `participants.{participantId}.resource.residentialAddress` is satisfied by setting `residentialAddress` on the person:
+
+```json
+{
+  "firstName": "Jane",
+  "lastName": "Tan",
+  "email": "jane@example.com",
+  "dateOfBirth": "1990-04-18",
+  "countryOfCitizenship": "SG",
+  "residentialAddress": {
+    "addressLine1": "1 Raffles Place",
+    "city": "Singapore",
+    "postalCode": "048616",
+    "country": "SG"
+  }
+}
+```
+
+This updates the person. It does not create a Commenda OS Location; Location resources are business-entity addresses, such as a partner-provided registered office address.

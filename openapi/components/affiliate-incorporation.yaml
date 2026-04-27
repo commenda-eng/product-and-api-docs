@@ -642,6 +642,39 @@ schemas:
             - individual
           allowedResourceTypes:
             - keyPerson
+          resourceFieldsByParticipantType:
+            individual:
+              - kind: resource
+                key: residentialAddress
+                name: Residential address
+                description: The key person's current residential address. Store this on the Commenda OS person as residentialAddress.
+                required: true
+                resourceKind: address
+                commendaOs:
+                  entity: keyPerson
+                  field: residentialAddress
+                fields:
+                  - kind: scalar
+                    key: addressLine1
+                    name: Address line 1
+                    required: true
+                    commendaOs:
+                      entity: keyPerson
+                      field: residentialAddress.addressLine1
+                  - kind: scalar
+                    key: city
+                    name: City
+                    required: true
+                    commendaOs:
+                      entity: keyPerson
+                      field: residentialAddress.city
+                  - kind: scalar
+                    key: country
+                    name: Country
+                    required: true
+                    commendaOs:
+                      entity: keyPerson
+                      field: residentialAddress.country
           documentRequirements:
             - documentKind: passport_scan
               name: Passport scan

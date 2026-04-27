@@ -186,6 +186,7 @@
                 "group": "Discovery",
                 "pages": [
                   "engine/incorporation/partner-incorporation-jurisdiction-catalog-GET",
+                  "engine/incorporation/partner-incorporation-requirements-guide",
                   "engine/incorporation/partner-incorporation-requirements-GET",
                   "engine/incorporation/partner-incorporation-status-workflow-GET"
                 ]

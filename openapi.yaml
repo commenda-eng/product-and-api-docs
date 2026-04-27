@@ -3721,7 +3721,7 @@ paths:
                 $ref: '#/components/schemas/CommendaOsPartnerError'
     post:
       summary: Create a person
-      description: Create a reusable Commenda OS key person for one of your customers. Use the returned `id` as a `keyPerson` resource id when registering incorporation participants.
+      description: Create a reusable Commenda OS key person for one of your customers. Use the returned `id` as a `keyPerson` resource id when registering incorporation participants. For Singapore residential address requirements, include `residentialAddress`.
       operationId: createPartnerCommendaOsPerson
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -3748,6 +3748,11 @@ paths:
                   email: jane@acme.com
                   dateOfBirth: '1990-04-18'
                   countryOfCitizenship: SG
+                  residentialAddress:
+                    addressLine1: 1 Raffles Place
+                    city: Singapore
+                    postalCode: '048616'
+                    country: SG
       responses:
         '201':
           description: Person created successfully
@@ -3776,7 +3781,7 @@ paths:
   /partner/commenda-os/customers/{customerId}/persons/{personId}:
     patch:
       summary: Update a person
-      description: Partially update a reusable Commenda OS key person. Omitted fields are left unchanged.
+      description: Partially update a reusable Commenda OS key person. Omitted fields are left unchanged. For Singapore residential address requirements, include `residentialAddress`.
       operationId: updatePartnerCommendaOsPerson
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -3809,6 +3814,11 @@ paths:
                   email: jane@acme.com
                   dateOfBirth: '1990-04-18'
                   countryOfCitizenship: SG
+                  residentialAddress:
+                    addressLine1: 1 Raffles Place
+                    city: Singapore
+                    postalCode: '048616'
+                    country: SG
       responses:
         '200':
           description: Person updated successfully
@@ -7396,6 +7406,39 @@ components:
               - individual
             allowedResourceTypes:
               - keyPerson
+            resourceFieldsByParticipantType:
+              individual:
+                - kind: resource
+                  key: residentialAddress
+                  name: Residential address
+                  description: The key person's current residential address. Store this on the Commenda OS person as residentialAddress.
+                  required: true
+                  resourceKind: address
+                  commendaOs:
+                    entity: keyPerson
+                    field: residentialAddress
+                  fields:
+                    - kind: scalar
+                      key: addressLine1
+                      name: Address line 1
+                      required: true
+                      commendaOs:
+                        entity: keyPerson
+                        field: residentialAddress.addressLine1
+                    - kind: scalar
+                      key: city
+                      name: City
+                      required: true
+                      commendaOs:
+                        entity: keyPerson
+                        field: residentialAddress.city
+                    - kind: scalar
+                      key: country
+                      name: Country
+                      required: true
+                      commendaOs:
+                        entity: keyPerson
+                        field: residentialAddress.country
             documentRequirements:
               - documentKind: passport_scan
                 name: Passport scan
@@ -8866,7 +8909,7 @@ components:
           items:
             type: string
           example:
-            - RESIDENTIAL
+            - MAILING
     CommendaOsBusinessEntityPerson:
       type: object
       required:
@@ -9073,6 +9116,37 @@ components:
         count:
           type: integer
           example: 2
+    CommendaOsPersonAddress:
+      type: object
+      description: Address fields stored directly on a Commenda OS person.
+      required:
+        - addressLine1
+        - city
+        - country
+      properties:
+        addressLine1:
+          type: string
+          example: 1 Raffles Place
+        addressLine2:
+          type: string
+          nullable: true
+          example: Suite 21045
+        addressLine3:
+          type: string
+          nullable: true
+        city:
+          type: string
+          example: Singapore
+        postalCode:
+          type: string
+          nullable: true
+          example: '048616'
+        state:
+          type: string
+          nullable: true
+        country:
+          type: string
+          example: SG
     CommendaOsPersonCreateRequest:
       type: object
       description: Create a reusable Commenda OS key person for one of your customers. The `customerId` is taken from the URL path.
@@ -9092,9 +9166,12 @@ components:
         phoneNumber:
           type: string
           example: '+14155550123'
+        residentialAddress:
+          $ref: '#/components/schemas/CommendaOsPersonAddress'
+          description: Person residential address. Use this for participant resource requirements such as `participants.{participantId}.resource.residentialAddress`.
         locations:
           type: array
-          description: Person addresses using the same shape as the internal Commenda OS person create API.
+          description: Other person addresses. Use top-level `residentialAddress` for incorporation residential address requirements. Business-entity Location resources are managed separately.
           items:
             type: object
             properties:
@@ -9154,9 +9231,12 @@ components:
         phoneNumber:
           type: string
           example: '+14155550123'
+        residentialAddress:
+          $ref: '#/components/schemas/CommendaOsPersonAddress'
+          description: Person residential address. Use this for participant resource requirements such as `participants.{participantId}.resource.residentialAddress`.
         locations:
           type: array
-          description: Person addresses using the same shape as the internal Commenda OS person update API.
+          description: Other person addresses. Use top-level `residentialAddress` for incorporation residential address requirements. Business-entity Location resources are managed separately.
           items:
             type: object
             properties:

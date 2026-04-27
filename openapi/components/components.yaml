@@ -321,10 +321,6 @@ components:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationIntakeState"
     PartnerIncorporationIntakeResponse:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationIntakeResponse"
-    PartnerRegisterFileRequest:
-      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerRegisterFileRequest"
-    PartnerRegisterFileResponse:
-      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerRegisterFileResponse"
     PartnerIncorporationParticipantType:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantType"
     PartnerIncorporationParticipantResourceType:
@@ -345,8 +341,8 @@ components:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantDocumentStatus"
     PartnerIncorporationParticipantDocument:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantDocument"
-    PartnerLinkParticipantDocumentRequest:
-      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerLinkParticipantDocumentRequest"
+    PartnerUpsertParticipantDocumentRequest:
+      $ref: "./affiliate-incorporation.yaml#/schemas/PartnerUpsertParticipantDocumentRequest"
     PartnerIncorporationParticipant:
       $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipant"
     PartnerIncorporationParticipantResponse:

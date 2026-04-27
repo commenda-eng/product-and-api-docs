@@ -2776,59 +2776,6 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
-"/partner/incorporation/{incorporationId}/files":
-  post:
-    summary: Register an incorporation file
-    description: Register a customer-scoped Commenda file to the incorporation context and return a `fileId` that can be linked as a participant document. This endpoint does not upload binary content.
-    operationId: registerPartnerIncorporationFile
-    servers:
-      - url: https://api.prod.commenda.io/api/v1
-    security:
-      - xApiKeyAuth: []
-    parameters:
-      - name: incorporationId
-        in: path
-        required: true
-        schema:
-          type: string
-        description: Incorporation identifier returned by create or list endpoints.
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            "$ref": "../components/components.yaml#/components/schemas/PartnerRegisterFileRequest"
-    responses:
-      "201":
-        description: File registered successfully
-        content:
-          application/json:
-            schema:
-              "$ref": "../components/components.yaml#/components/schemas/PartnerRegisterFileResponse"
-      "400":
-        description: Malformed file registration payload
-        content:
-          application/json:
-            schema:
-              "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
-      "401":
-        description: Missing or invalid partner API key
-        content:
-          application/json:
-            schema:
-              "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
-      "403":
-        description: Incorporation is not accessible to the partner
-        content:
-          application/json:
-            schema:
-              "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
-      "404":
-        description: Incorporation not found
-        content:
-          application/json:
-            schema:
-              "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
 "/partner/incorporation/{incorporationId}/participants":
   get:
     summary: List incorporation participants
@@ -3023,11 +2970,11 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
-"/partner/incorporation/{incorporationId}/documents":
-  post:
-    summary: Link a participant document
-    description: Link a registered incorporation file to a participant as a typed document required by the current incorporation requirements. Calling this endpoint again with the same participantId and documentKind replaces the linked fileId.
-    operationId: linkPartnerIncorporationParticipantDocument
+"/partner/incorporation/{incorporationId}/participants/{participantId}/documents/{documentKind}":
+  put:
+    summary: Upsert a participant document
+    description: Assign a customer-scoped Commenda file to one participant document slot. This request scopes the file to the incorporation and creates or replaces the typed participant document in one transaction. Repeating the request with the same fileId is safe.
+    operationId: upsertPartnerIncorporationParticipantDocument
     servers:
       - url: https://api.prod.commenda.io/api/v1
     security:
@@ -3039,21 +2986,33 @@
         schema:
           type: string
         description: Incorporation identifier returned by create or list endpoints.
+      - name: participantId
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Incorporation-specific participant identifier returned by register, list, or read endpoints.
+      - name: documentKind
+        in: path
+        required: true
+        schema:
+          "$ref": "../components/components.yaml#/components/schemas/PartnerIncorporationDocumentKind"
+        description: Typed document requirement to satisfy for this participant.
     requestBody:
       required: true
       content:
         application/json:
           schema:
-            "$ref": "../components/components.yaml#/components/schemas/PartnerLinkParticipantDocumentRequest"
+            "$ref": "../components/components.yaml#/components/schemas/PartnerUpsertParticipantDocumentRequest"
     responses:
-      "201":
-        description: Participant document linked successfully
+      "200":
+        description: Participant document upserted successfully
         content:
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/PartnerIncorporationParticipantDocumentResponse"
       "400":
-        description: Malformed document link payload, incompatible file type, or file not registered to this incorporation
+        description: Malformed participant document payload, incompatible file type, or document kind not required for this participant
         content:
           application/json:
             schema:

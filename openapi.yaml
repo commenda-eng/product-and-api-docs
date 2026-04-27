@@ -2694,59 +2694,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AffiliatePublicError'
-  /partner/incorporation/{incorporationId}/files:
-    post:
-      summary: Register an incorporation file
-      description: Register a customer-scoped Commenda file to the incorporation context and return a `fileId` that can be linked as a participant document. This endpoint does not upload binary content.
-      operationId: registerPartnerIncorporationFile
-      servers:
-        - url: https://api.prod.commenda.io/api/v1
-      security:
-        - xApiKeyAuth: []
-      parameters:
-        - name: incorporationId
-          in: path
-          required: true
-          schema:
-            type: string
-          description: Incorporation identifier returned by create or list endpoints.
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/PartnerRegisterFileRequest'
-      responses:
-        '201':
-          description: File registered successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/PartnerRegisterFileResponse'
-        '400':
-          description: Malformed file registration payload
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AffiliatePublicError'
-        '401':
-          description: Missing or invalid partner API key
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AffiliatePublicError'
-        '403':
-          description: Incorporation is not accessible to the partner
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AffiliatePublicError'
-        '404':
-          description: Incorporation not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AffiliatePublicError'
   /partner/incorporation/{incorporationId}/participants:
     get:
       summary: List incorporation participants
@@ -2941,11 +2888,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AffiliatePublicError'
-  /partner/incorporation/{incorporationId}/documents:
-    post:
-      summary: Link a participant document
-      description: Link a registered incorporation file to a participant as a typed document required by the current incorporation requirements. Calling this endpoint again with the same participantId and documentKind replaces the linked fileId.
-      operationId: linkPartnerIncorporationParticipantDocument
+  /partner/incorporation/{incorporationId}/participants/{participantId}/documents/{documentKind}:
+    put:
+      summary: Upsert a participant document
+      description: Assign a customer-scoped Commenda file to one participant document slot. This request scopes the file to the incorporation and creates or replaces the typed participant document in one transaction. Repeating the request with the same fileId is safe.
+      operationId: upsertPartnerIncorporationParticipantDocument
       servers:
         - url: https://api.prod.commenda.io/api/v1
       security:
@@ -2957,21 +2904,33 @@ paths:
           schema:
             type: string
           description: Incorporation identifier returned by create or list endpoints.
+        - name: participantId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Incorporation-specific participant identifier returned by register, list, or read endpoints.
+        - name: documentKind
+          in: path
+          required: true
+          schema:
+            $ref: '#/components/schemas/PartnerIncorporationDocumentKind'
+          description: Typed document requirement to satisfy for this participant.
       requestBody:
         required: true
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PartnerLinkParticipantDocumentRequest'
+              $ref: '#/components/schemas/PartnerUpsertParticipantDocumentRequest'
       responses:
-        '201':
-          description: Participant document linked successfully
+        '200':
+          description: Participant document upserted successfully
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PartnerIncorporationParticipantDocumentResponse'
         '400':
-          description: Malformed document link payload, incompatible file type, or file not registered to this incorporation
+          description: Malformed participant document payload, incompatible file type, or document kind not required for this participant
           content:
             application/json:
               schema:
@@ -7627,7 +7586,7 @@ components:
           $ref: '#/components/schemas/PartnerIncorporationDocumentKind'
         fileId:
           type: integer
-          description: Registered Commenda file satisfying this document requirement.
+          description: Commenda file satisfying this document requirement. Files are scoped to the incorporation when they are upserted into a participant document slot.
           example: 456
         status:
           $ref: '#/components/schemas/PartnerIncorporationParticipantDocumentStatus'
@@ -7828,38 +7787,6 @@ components:
           example: Bad Request
         validation:
           $ref: '#/components/schemas/PartnerIncorporationValidationSummary'
-    PartnerRegisterFileRequest:
-      type: object
-      required:
-        - fileId
-      properties:
-        fileId:
-          type: integer
-          description: Existing Commenda file id to register to this incorporation.
-          example: 456
-    PartnerRegisterFileResponse:
-      type: object
-      required:
-        - file
-      properties:
-        file:
-          type: object
-          required:
-            - fileId
-            - fileName
-          properties:
-            fileId:
-              type: integer
-              example: 456
-            fileName:
-              type: string
-              example: passport.pdf
-            mimeType:
-              type: string
-              example: application/pdf
-            fileSize:
-              type: integer
-              example: 123456
     PartnerIncorporationParticipantsResponse:
       type: object
       required:
@@ -7922,26 +7849,16 @@ components:
           - role: director
           - role: shareholder
             ownershipPercentage: 40
-    PartnerLinkParticipantDocumentRequest:
+    PartnerUpsertParticipantDocumentRequest:
       type: object
       required:
-        - participantId
-        - documentKind
         - fileId
       properties:
-        participantId:
-          type: string
-          description: Participant this document belongs to.
-          example: participant_123
-        documentKind:
-          $ref: '#/components/schemas/PartnerIncorporationDocumentKind'
         fileId:
           type: integer
-          description: File id previously registered to this incorporation.
+          description: Existing customer-scoped Commenda file id to scope to this incorporation and assign to the participant document slot.
           example: 456
       example:
-        participantId: participant_123
-        documentKind: passport_scan
         fileId: 456
     PartnerIncorporationParticipantDocumentResponse:
       type: object

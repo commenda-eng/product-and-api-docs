@@ -11,7 +11,7 @@ Use this endpoint after uploading file bytes directly to S3 with [Create a docum
 - Use `businessEntityId` to link the file to a business entity.
 - Omit both fields to keep the file customer-scoped only.
 
-Do not send both `personId` and `businessEntityId` in the same request. For incorporation, save the returned `file.fileId`, register it with `POST /partner/incorporation/{incorporationId}/files`, then link it as a typed participant document with `POST /partner/incorporation/{incorporationId}/documents`.
+Do not send both `personId` and `businessEntityId` in the same request. For incorporation, save the returned `file.fileId`, then upsert it as a typed participant document with `PUT /partner/incorporation/{incorporationId}/participants/{participantId}/documents/{documentKind}`.
 
 ## Example
 

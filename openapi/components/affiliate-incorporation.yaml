@@ -101,21 +101,19 @@ schemas:
   PartnerCreateCustomerResponse:
     type: object
     required:
-      - customerId
+      - customer
     properties:
-      customerId:
-        type: integer
-        description: Commenda customer identifier.
-        example: 77
+      customer:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerCustomer"
   PartnerCustomer:
     type: object
     required:
-      - customerId
+      - id
       - name
       - createdAt
       - updatedAt
     properties:
-      customerId:
+      id:
         type: integer
         description: Commenda customer identifier.
         example: 77
@@ -361,26 +359,26 @@ schemas:
     type: string
     description: Current top-level lifecycle status for the incorporation.
     enum:
-      - awaiting_customer_input
-      - submitted
-      - in_progress
-      - blocked
-      - completed
+      - AWAITING_CUSTOMER_INPUT
+      - SUBMITTED
+      - IN_PROGRESS
+      - BLOCKED
+      - COMPLETED
   PartnerIncorporationStageStatus:
     type: string
     description: Public progress status for one incorporation workflow stage.
     enum:
-      - not_started
-      - in_progress
-      - blocked
-      - completed
+      - NOT_STARTED
+      - IN_PROGRESS
+      - BLOCKED
+      - COMPLETED
   PartnerIncorporationStatusStageOwner:
     type: string
     description: Party expected to own work in a public status stage.
     enum:
-      - partner
-      - customer
-      - commenda
+      - PARTNER
+      - CUSTOMER
+      - COMMENDA
   PartnerIncorporationStatusWorkflowStage:
     type: object
     required:
@@ -637,29 +635,44 @@ schemas:
       participantRequirements:
         - key: directors
           name: Directors
-          role: director
+          role: DIRECTOR
           allowedParticipantTypes:
-            - individual
+            - INDIVIDUAL
           allowedResourceTypes:
-            - keyPerson
+            - KEY_PERSON
           documentRequirements:
-            - documentKind: passport_scan
+            - documentKind: PASSPORT_SCAN
               name: Passport scan
-            - documentKind: utility_bill
+            - documentKind: UTILITY_BILL
               name: Utility bill
   PartnerIncorporationValidationIssue:
     type: object
     required:
+      - code
       - path
       - message
     properties:
+      code:
+        type: string
+        description: Stable machine-readable validation issue code.
+        example: PARTICIPANT_DOCUMENT_REQUIRED
       path:
         type: string
         description: Dot/bracket path for the missing or invalid requirement.
-        example: participants.participant_123.documents.passport_scan
+        example: participants.participant_123.documents.PASSPORT_SCAN
       message:
         type: string
-        example: Participant participant_123 requires a passport_scan document
+        example: Participant participant_123 requires a PASSPORT_SCAN document
+      participantId:
+        type: string
+        description: Included when the issue belongs to a participant.
+        example: participant_123
+      documentKind:
+        $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationDocumentKind"
+      displayName:
+        type: string
+        description: Included when available so UIs can render useful labels without joining across responses.
+        example: Jane Founder
   PartnerIncorporationValidationSummary:
     type: object
     required:
@@ -707,7 +720,7 @@ schemas:
         - name: Acme SG Pte Ltd
         - name: Acme Asia Pte Ltd
         - name: Acme Global Pte Ltd
-      registeredOfficeAddressSource: commendaService
+      registeredOfficeAddressSource: COMMENDA_SERVICE
   PartnerUpdateIntakeRequest:
     type: object
     required:
@@ -755,20 +768,20 @@ schemas:
     type: string
     description: Type of reusable Commenda OS resource registered to the incorporation.
     enum:
-      - individual
-      - corporate
+      - INDIVIDUAL
+      - CORPORATE
   PartnerIncorporationParticipantResourceType:
     type: string
     description: Commenda OS resource type represented by this participant.
     enum:
-      - keyPerson
-      - businessEntity
+      - KEY_PERSON
+      - BUSINESS_ENTITY
   PartnerIncorporationParticipantRoleName:
     type: string
     description: Role the participant holds in this incorporation.
     enum:
-      - director
-      - shareholder
+      - DIRECTOR
+      - SHAREHOLDER
   PartnerIncorporationParticipantResource:
     type: object
     required:
@@ -778,10 +791,9 @@ schemas:
       resourceType:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantResourceType"
       resourceId:
-        type: string
-        pattern: "^[0-9]+$"
-        description: Numeric Commenda OS identifier encoded as a string. For `keyPerson`, use the person id returned by Commenda OS. For `businessEntity`, use the business entity id.
-        example: "12"
+        type: integer
+        description: Numeric Commenda OS identifier. For `KEY_PERSON`, use the person id returned by Commenda OS. For `BUSINESS_ENTITY`, use the business entity id.
+        example: 12
   PartnerIncorporationParticipantRole:
     type: object
     required:
@@ -812,13 +824,13 @@ schemas:
         items:
           $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantRole"
     example:
-      participantType: individual
+      participantType: INDIVIDUAL
       resource:
-        resourceType: keyPerson
-        resourceId: "12"
+        resourceType: KEY_PERSON
+        resourceId: 12
       roles:
-        - role: director
-        - role: shareholder
+        - role: DIRECTOR
+        - role: SHAREHOLDER
           ownershipPercentage: 100
   PartnerPatchParticipantRequest:
     type: object
@@ -833,20 +845,20 @@ schemas:
           $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantRole"
     example:
       roles:
-        - role: director
-        - role: shareholder
+        - role: DIRECTOR
+        - role: SHAREHOLDER
           ownershipPercentage: 40
   PartnerIncorporationDocumentKind:
     type: string
     description: Type of document linked to an incorporation participant.
     enum:
-      - passport_scan
-      - utility_bill
+      - PASSPORT_SCAN
+      - UTILITY_BILL
   PartnerIncorporationParticipantDocumentStatus:
     type: string
     description: Current status of the participant document link.
     enum:
-      - submitted
+      - SUBMITTED
   PartnerIncorporationParticipantDocument:
     type: object
     required:
@@ -868,7 +880,7 @@ schemas:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationDocumentKind"
       fileId:
         type: integer
-        description: Commenda file satisfying this document requirement. Files are scoped to the incorporation when they are upserted into a participant document slot.
+        description: Commenda file satisfying this document requirement.
         example: 456
       status:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantDocumentStatus"
@@ -879,20 +891,20 @@ schemas:
     properties:
       fileId:
         type: integer
-        description: Existing customer-scoped Commenda file id to scope to this incorporation and assign to the participant document slot.
+        description: Existing customer-scoped Commenda file id to assign to the participant document slot.
         example: 456
     example:
       fileId: 456
   PartnerIncorporationParticipant:
     type: object
     required:
-      - participantId
+      - id
       - participantType
       - resource
       - roles
       - documents
     properties:
-      participantId:
+      id:
         type: string
         description: Incorporation-specific participant identifier.
         example: participant_123
@@ -909,26 +921,26 @@ schemas:
         items:
           $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationParticipantDocument"
     example:
-      participantId: participant_123
-      participantType: individual
+      id: participant_123
+      participantType: INDIVIDUAL
       resource:
-        resourceType: keyPerson
-        resourceId: "12"
+        resourceType: KEY_PERSON
+        resourceId: 12
       roles:
-        - role: director
-        - role: shareholder
+        - role: DIRECTOR
+        - role: SHAREHOLDER
           ownershipPercentage: 100
       documents:
         - documentId: document_123
           participantId: participant_123
-          documentKind: passport_scan
+          documentKind: PASSPORT_SCAN
           fileId: 456
-          status: submitted
+          status: SUBMITTED
         - documentId: document_124
           participantId: participant_123
-          documentKind: utility_bill
+          documentKind: UTILITY_BILL
           fileId: 789
-          status: submitted
+          status: SUBMITTED
   PartnerIncorporationParticipantResponse:
     type: object
     required:
@@ -1000,23 +1012,23 @@ schemas:
     type: string
     description: Current partner-visible issue code. Commenda may add additional issue codes in future API updates.
     enum:
-      - missing_information
-      - invalid_information
-      - document_required
-      - document_invalid
-      - company_name_rejected
-      - other
+      - MISSING_INFORMATION
+      - INVALID_INFORMATION
+      - DOCUMENT_REQUIRED
+      - DOCUMENT_INVALID
+      - COMPANY_NAME_REJECTED
+      - OTHER
   PartnerIncorporationIssueStatus:
     type: string
     enum:
-      - active
-      - resolved
+      - ACTIVE
+      - RESOLVED
   PartnerIncorporationIssueStatusFilter:
     type: string
     enum:
-      - active
-      - resolved
-      - all
+      - ACTIVE
+      - RESOLVED
+      - ALL
   PartnerIncorporationIssueScope:
     type: object
     description: Location the issue applies to. The `type` field determines which additional fields are present.
@@ -1027,14 +1039,14 @@ schemas:
       type:
         type: string
         enum:
-          - incorporation
-          - intake_field
-          - participant
-          - participant_document
-          - file
+          - INCORPORATION
+          - INTAKE_FIELD
+          - PARTICIPANT
+          - PARTICIPANT_DOCUMENT
+          - FILE
       path:
         type: string
-        description: Intake field path for `intake_field` scopes.
+        description: Intake field path for `INTAKE_FIELD` scopes.
         example: companyNames.companyNameOptions
       stageId:
         type: string
@@ -1051,24 +1063,24 @@ schemas:
           resourceType:
             type: string
             enum:
-              - keyPerson
-              - businessEntity
+              - KEY_PERSON
+              - BUSINESS_ENTITY
           resourceId:
-            type: string
-            example: "12"
+            type: integer
+            example: 12
       documentKind:
         type: string
         description: Participant document kind for participant-document issues.
-        example: passport_scan
+        example: PASSPORT_SCAN
       fileId:
         type: integer
         description: Commenda file id for file or participant-document issues.
         example: 456
     example:
-      type: participant_document
+      type: PARTICIPANT_DOCUMENT
       stageId: kyc
       participantId: participant_123
-      documentKind: passport_scan
+      documentKind: PASSPORT_SCAN
       fileId: 456
   PartnerIncorporationIssue:
     type: object
@@ -1105,7 +1117,7 @@ schemas:
       resolvedAt:
         type: string
         format: date-time
-        description: Present when `status` is `resolved`.
+        description: Present when `status` is `RESOLVED`.
         example: 2026-04-25T21:15:00.000Z
   PartnerIncorporationIssuesResponse:
     type: object
@@ -1124,12 +1136,12 @@ schemas:
     type: string
     description: Partner webhook event type. Commenda may add additional event types in future API updates.
     enum:
-      - incorporation.issue.created
-      - incorporation.issue.resolved
+      - INCORPORATION_ISSUE_CREATED
+      - INCORPORATION_ISSUE_RESOLVED
   PartnerWebhookSubscriptionStatus:
     type: string
     enum:
-      - active
+      - ACTIVE
   PartnerWebhookSubscription:
     type: object
     required:
@@ -1192,8 +1204,8 @@ schemas:
     example:
       url: https://partner.example.com/commenda/webhooks
       eventTypes:
-        - incorporation.issue.created
-        - incorporation.issue.resolved
+        - INCORPORATION_ISSUE_CREATED
+        - INCORPORATION_ISSUE_RESOLVED
   PartnerWebhookSubscriptionResponse:
     type: object
     required:
@@ -1258,7 +1270,6 @@ schemas:
     type: object
     required:
       - id
-      - incorporationId
       - customerId
       - country
       - countryOptions
@@ -1270,10 +1281,6 @@ schemas:
       id:
         type: string
         description: Incorporation identifier.
-        example: 0f9a8f5e-7f7c-4c1b-a60a-b1022f9d8c91
-      incorporationId:
-        type: string
-        description: Stable incorporation identifier. Same value as `id`.
         example: 0f9a8f5e-7f7c-4c1b-a60a-b1022f9d8c91
       customerId:
         type: integer
@@ -1301,7 +1308,7 @@ schemas:
   PartnerIncorporationResponse:
     type: object
     required:
-      - incorporation
+      - INCORPORATION
       - incorporationValidation
     properties:
       incorporation:

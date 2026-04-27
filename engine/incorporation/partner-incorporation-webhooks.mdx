@@ -9,8 +9,8 @@ Supported incorporation event types:
 
 | Event type | Trigger |
 | --- | --- |
-| `incorporation.issue.created` | Commenda creates a partner-visible issue for an incorporation. |
-| `incorporation.issue.resolved` | Commenda resolves a partner-visible issue. |
+| `INCORPORATION_ISSUE_CREATED` | Commenda creates a partner-visible issue for an incorporation. |
+| `INCORPORATION_ISSUE_RESOLVED` | Commenda resolves a partner-visible issue. |
 
 Use [List incorporation issues](/engine/incorporation/partner-incorporation-issues-GET) to fetch the current issue state directly.
 
@@ -28,8 +28,8 @@ curl --request POST \
   --data '{
     "url": "https://partner.example.com/commenda/webhooks",
     "eventTypes": [
-      "incorporation.issue.created",
-      "incorporation.issue.resolved"
+      "INCORPORATION_ISSUE_CREATED",
+      "INCORPORATION_ISSUE_RESOLVED"
     ]
   }'
 ```
@@ -38,4 +38,4 @@ The subscription is partner-level, not scoped to one company or incorporation.
 
 ## Correction cycle semantics
 
-Each issue row represents one remediation episode. Resolved incorporation issues are not reopened; if the same kind of correction is needed again later, Commenda creates a new issue and emits a new `incorporation.issue.created` event.
+Each issue row represents one remediation episode. Resolved incorporation issues are not reopened; if the same kind of correction is needed again later, Commenda creates a new issue and emits a new `INCORPORATION_ISSUE_CREATED` event.

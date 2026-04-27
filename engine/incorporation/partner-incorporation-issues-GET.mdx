@@ -7,7 +7,7 @@ Lists partner-visible issues for an incorporation.
 
 Issues are created and resolved by Commenda. Partners use this endpoint to understand what needs attention, then update intake data, participants, or documents through the normal incorporation endpoints. There is no public issue mutation endpoint in this phase.
 
-By default this endpoint returns active issues only. Use `status=resolved` for resolved issues or `status=all` for the full issue history.
+By default this endpoint returns active issues only. Use `status=RESOLVED` for resolved issues or `status=ALL` for the full issue history.
 
 ## Correction cycle semantics
 
@@ -16,10 +16,10 @@ Each issue row represents one remediation episode. If Commenda needs the same ki
 This keeps webhook delivery and partner reconciliation simple:
 
 - `issue.id` is stable for one correction episode.
-- `incorporation.issue.created` is emitted when that episode starts.
-- `incorporation.issue.resolved` is emitted once when that episode is resolved.
+- `INCORPORATION_ISSUE_CREATED` is emitted when that episode starts.
+- `INCORPORATION_ISSUE_RESOLVED` is emitted once when that episode is resolved.
 
-Active issues make `incorporationStatus` return `blocked`. Read [Get incorporation status](/engine/incorporation/partner-incorporation-status-GET) to see which issues are currently blocking the incorporation and, when Commenda has assigned a stage, which stage they block.
+Active issues make `incorporationStatus` return `BLOCKED`. Read [Get incorporation status](/engine/incorporation/partner-incorporation-status-GET) to see which issues are currently blocking the incorporation and, when Commenda has assigned a stage, which stage they block.
 
 ## Issue codes
 
@@ -27,12 +27,12 @@ Current issue codes:
 
 | Code | Meaning |
 | --- | --- |
-| `missing_information` | Required information is missing. |
-| `invalid_information` | Submitted information is present but invalid or inconsistent. |
-| `document_required` | A required participant document has not been provided. |
-| `document_invalid` | A participant document file could not be accepted. |
-| `company_name_rejected` | A proposed company name was rejected or cannot be used. |
-| `other` | General issue not covered by a more specific code. |
+| `MISSING_INFORMATION` | Required information is missing. |
+| `INVALID_INFORMATION` | Submitted information is present but invalid or inconsistent. |
+| `DOCUMENT_REQUIRED` | A required participant document has not been provided. |
+| `DOCUMENT_INVALID` | A participant document file could not be accepted. |
+| `COMPANY_NAME_REJECTED` | A proposed company name was rejected or cannot be used. |
+| `OTHER` | General issue not covered by a more specific code. |
 
 Commenda may add additional issue codes in future API updates. Avoid hard-coding business logic that assumes this list is permanently exhaustive.
 
@@ -42,11 +42,11 @@ Commenda may add additional issue codes in future API updates. Avoid hard-coding
 
 | Scope type | Meaning |
 | --- | --- |
-| `incorporation` | The issue applies to the overall incorporation. |
-| `intake_field` | The issue applies to an intake field validation path, such as `companyNames.companyNameOptions`. |
-| `participant` | The issue applies to a registered participant. |
-| `participant_document` | The issue applies to a participant document kind or linked file. |
-| `file` | The issue applies to an uploaded customer file used for the incorporation. |
+| `INCORPORATION` | The issue applies to the overall incorporation. |
+| `INTAKE_FIELD` | The issue applies to an intake field validation path, such as `companyNames.companyNameOptions`. |
+| `PARTICIPANT` | The issue applies to a registered participant. |
+| `PARTICIPANT_DOCUMENT` | The issue applies to a participant document kind or linked file. |
+| `FILE` | The issue applies to an uploaded customer file used for the incorporation. |
 
 Scopes may also include `stageId`. When present, it matches a stage returned by the status workflow and is used to attach the issue to that stage in the status response.
 
@@ -57,14 +57,14 @@ Example response:
   "issues": [
     {
       "id": "issue_123",
-      "code": "document_invalid",
+      "code": "DOCUMENT_INVALID",
       "message": "The passport scan for Jane Founder is unreadable. Please upload a clearer scan.",
-      "status": "active",
+      "status": "ACTIVE",
       "scope": {
-        "type": "participant_document",
+        "type": "PARTICIPANT_DOCUMENT",
         "stageId": "kyc",
         "participantId": "participant_123",
-        "documentKind": "passport_scan",
+        "documentKind": "PASSPORT_SCAN",
         "fileId": 456
       },
       "createdAt": "2026-04-25T20:58:00.000Z",

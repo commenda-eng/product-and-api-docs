@@ -38,14 +38,14 @@ curl --request GET \
         "id": "intake",
         "label": "Intake",
         "description": "Collect required incorporation information and documents.",
-        "owner": "partner",
+        "owner": "PARTNER",
         "position": 1
       },
       {
         "id": "kyc",
         "label": "KYC",
         "description": "Review required identity, ownership, and compliance materials.",
-        "owner": "commenda",
+        "owner": "COMMENDA",
         "position": 2
       }
     ]
@@ -57,8 +57,8 @@ curl --request GET \
 
 | Owner | Meaning |
 | --- | --- |
-| `partner` | The partner integration or partner team owns the stage. |
-| `customer` | The end customer must provide input. |
-| `commenda` | Commenda owns the stage. |
+| `PARTNER` | The partner integration or partner team owns the stage. |
+| `CUSTOMER` | The end customer must provide input. |
+| `COMMENDA` | Commenda owns the stage. |
 
 If the status workflow is not active for the selected incorporation type, the endpoint returns `404`.

@@ -29,7 +29,7 @@ For example, an incorporation type that requires company name options and a regi
 | --- | --- | --- |
 | `currentState.companyNameOptions` | `requirements.companyNameOptions` | Preferred legal names for the company being incorporated. |
 | `currentState.registeredOfficeAddressSource` | `requirements.registeredOfficeAddressSource` | How the registered office address should be satisfied. |
-| `currentState.registeredOfficeAddressLocation` | `requirements.registeredOfficeAddressLocation` | Commenda OS location reference used when the registered office address source is `partnerProvidedLocation`. |
+| `currentState.registeredOfficeAddressLocation` | `requirements.registeredOfficeAddressLocation` | Commenda OS location reference used when the registered office address source is `PARTNER_PROVIDED_LOCATION`. |
 
 Fetch [Get incorporation requirements](/engine/incorporation/partner-incorporation-requirements-GET) to see the fields for the selected incorporation type. Because updates are merge-based, `currentState` can contain previously submitted values that are no longer applicable after later choices. Treat `incorporationValidation` as the source of truth for whether the current incorporation can be submitted.
 

@@ -7,7 +7,7 @@ Retrieves an incorporation for one of your customers.
 
 Use this endpoint to refresh the latest `intakeState`, participants, and top-level `incorporationStatus` for an ongoing incorporation.
 
-`incorporationValidation.isComplete` tells you whether the current state is eligible to submit. `submitted` or `in_progress` is returned only after `POST /partner/incorporation/{incorporationId}/submit` succeeds for a currently complete incorporation.
+`incorporationValidation.isComplete` tells you whether the current state is eligible to submit. `SUBMITTED` or `IN_PROGRESS` is returned only after `POST /partner/incorporation/{incorporationId}/submit` succeeds for a currently complete incorporation.
 
 Use [Get incorporation status](/engine/incorporation/partner-incorporation-status-GET) for stage-level progress and blocking issue ids. Use [List incorporation issues](/engine/incorporation/partner-incorporation-issues-GET) to track active or resolved correction requests.
 
@@ -17,8 +17,8 @@ Use [Get incorporation status](/engine/incorporation/partner-incorporation-statu
 
 | Status | Meaning |
 |---|---|
-| `awaiting_customer_input` | Required intake information, participant roles, or documents are still missing or invalid, or the current state is complete but has not been submitted for review. |
-| `submitted` | The incorporation was explicitly submitted and currently validates against the incorporation requirements, but Commenda review has not started yet. |
-| `in_progress` | Commenda review is in progress. |
-| `blocked` | The incorporation has active partner-visible issues or review start/runtime failures. |
-| `completed` | The incorporation has been completed. |
+| `AWAITING_CUSTOMER_INPUT` | Required intake information, participant roles, or documents are still missing or invalid, or the current state is complete but has not been submitted for review. |
+| `SUBMITTED` | The incorporation was explicitly submitted and currently validates against the incorporation requirements, but Commenda review has not started yet. |
+| `IN_PROGRESS` | Commenda review is in progress. |
+| `BLOCKED` | The incorporation has active partner-visible issues or review start/runtime failures. |
+| `COMPLETED` | The incorporation has been completed. |

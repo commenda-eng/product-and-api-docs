@@ -11,14 +11,14 @@ Webhook subscriptions are partner-level resources under:
 https://api.prod.commenda.io/api/v1/partner/webhook-subscriptions
 ```
 
-They are not scoped to a single customer or incorporation. A subscription receives events for partner-accessible resources when its `eventTypes` includes the emitted event.
+They are not scoped to a single customer or incorporation. A subscription receives events for your resources when its `eventTypes` includes the emitted event.
 
 ## Supported events
 
 | Event type | Trigger |
 | --- | --- |
-| `incorporation.issue.created` | Commenda creates a partner-visible issue for an incorporation. |
-| `incorporation.issue.resolved` | Commenda resolves a partner-visible issue. |
+| `INCORPORATION_ISSUE_CREATED` | Commenda creates a partner-visible issue for an incorporation. |
+| `INCORPORATION_ISSUE_RESOLVED` | Commenda resolves a partner-visible issue. |
 
 Commenda may add additional event types in future API updates.
 
@@ -58,20 +58,20 @@ The full secret is returned only when you create the subscription. Later reads r
 ```json
 {
   "eventId": "evt_incorporation_issue_created_issue_123",
-  "eventType": "incorporation.issue.created",
+  "eventType": "INCORPORATION_ISSUE_CREATED",
   "createdAt": "2026-04-25T21:00:00.000Z",
   "data": {
     "customerId": 77,
     "incorporationId": "0f9a8f5e-7f7c-4c1b-a60a-b1022f9d8c91",
     "issue": {
       "id": "issue_123",
-      "code": "document_invalid",
+      "code": "DOCUMENT_INVALID",
       "message": "The passport scan for Jane Founder is unreadable. Please upload a clearer scan.",
-      "status": "active",
+      "status": "ACTIVE",
       "scope": {
-        "type": "participant_document",
+        "type": "PARTICIPANT_DOCUMENT",
         "participantId": "participant_123",
-        "documentKind": "passport_scan",
+        "documentKind": "PASSPORT_SCAN",
         "fileId": 456
       },
       "createdAt": "2026-04-25T20:58:00.000Z",
@@ -83,4 +83,4 @@ The full secret is returned only when you create the subscription. Later reads r
 
 ## Correction cycle semantics
 
-Resolved incorporation issues are not reopened. If Commenda needs another correction after a previous issue was resolved, a new issue is created and a new `incorporation.issue.created` event is emitted.
+Resolved incorporation issues are not reopened. If Commenda needs another correction after a previous issue was resolved, a new issue is created and a new `INCORPORATION_ISSUE_CREATED` event is emitted.

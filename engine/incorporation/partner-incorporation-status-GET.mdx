@@ -33,7 +33,7 @@ curl --request GET \
 
 ```json
 {
-  "incorporationStatus": "blocked",
+  "incorporationStatus": "BLOCKED",
   "incorporationId": "0f9a8f5e-7f7c-4c1b-a60a-b1022f9d8c91",
   "customerId": 77,
   "country": "SG",
@@ -52,9 +52,9 @@ curl --request GET \
       "id": "intake",
       "label": "Intake",
       "description": "Collect required incorporation information and documents.",
-      "owner": "partner",
+      "owner": "PARTNER",
       "position": 1,
-      "status": "completed",
+      "status": "COMPLETED",
       "startedAt": "2026-04-26T18:10:00.000Z",
       "completedAt": "2026-04-26T18:30:00.000Z",
       "blockedByIssueIds": []
@@ -63,9 +63,9 @@ curl --request GET \
       "id": "kyc",
       "label": "KYC",
       "description": "Review required identity, ownership, and compliance materials.",
-      "owner": "commenda",
+      "owner": "COMMENDA",
       "position": 2,
-      "status": "blocked",
+      "status": "BLOCKED",
       "startedAt": "2026-04-26T19:05:00.000Z",
       "completedAt": null,
       "blockedByIssueIds": ["issue_123"]
@@ -79,19 +79,19 @@ curl --request GET \
 
 | Status | Meaning |
 | --- | --- |
-| `awaiting_customer_input` | Required intake information, participant roles, or documents are missing or invalid, or the complete intake has not been submitted yet. |
-| `submitted` | The incorporation was submitted and still validates, but Commenda review has not started yet. |
-| `in_progress` | Commenda review is in progress. |
-| `blocked` | The incorporation has active partner-visible issues or review start/runtime failures. |
-| `completed` | The incorporation is complete. |
+| `AWAITING_CUSTOMER_INPUT` | Required intake information, participant roles, or documents are missing or invalid, or the complete intake has not been submitted yet. |
+| `SUBMITTED` | The incorporation was submitted and still validates, but Commenda review has not started yet. |
+| `IN_PROGRESS` | Commenda review is in progress. |
+| `BLOCKED` | The incorporation has active partner-visible issues or review start/runtime failures. |
+| `COMPLETED` | The incorporation is complete. |
 
 ## Stage status
 
 | Status | Meaning |
 | --- | --- |
-| `not_started` | The stage has not started. |
-| `in_progress` | At least one task in the stage has started and the stage is not complete. |
-| `blocked` | The stage is blocked by active issue ids or failed review work. |
-| `completed` | The stage is complete. |
+| `NOT_STARTED` | The stage has not started. |
+| `IN_PROGRESS` | At least one task in the stage has started and the stage is not complete. |
+| `BLOCKED` | The stage is blocked by active issue ids or failed review work. |
+| `COMPLETED` | The stage is complete. |
 
 Active issues are listed in `blockingIssueIds`. If an issue has a `scope.stageId`, that issue appears on the matching stage's `blockedByIssueIds`; otherwise it blocks the first non-completed stage.

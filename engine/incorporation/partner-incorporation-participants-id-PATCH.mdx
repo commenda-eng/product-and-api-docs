@@ -13,10 +13,10 @@ Send the full desired `roles` array. Omitted roles are removed.
 {
   "roles": [
     {
-      "role": "director"
+      "role": "DIRECTOR"
     },
     {
-      "role": "shareholder",
+      "role": "SHAREHOLDER",
       "ownershipPercentage": 40
     }
   ]
@@ -28,18 +28,18 @@ The response returns the updated participant and the refreshed `incorporationVal
 ```json
 {
   "participant": {
-    "participantId": "participant_123",
-    "participantType": "individual",
+    "id": "participant_123",
+    "participantType": "INDIVIDUAL",
     "resource": {
-      "resourceType": "keyPerson",
-      "resourceId": "12"
+      "resourceType": "KEY_PERSON",
+      "resourceId": 12
     },
     "roles": [
       {
-        "role": "director"
+        "role": "DIRECTOR"
       },
       {
-        "role": "shareholder",
+        "role": "SHAREHOLDER",
         "ownershipPercentage": 40
       }
     ],
@@ -50,6 +50,7 @@ The response returns the updated participant and the refreshed `incorporationVal
     "missingRequirements": [],
     "invalidRequirements": [
       {
+        "code": "SHAREHOLDER_OWNERSHIP_TOTAL_INVALID",
         "path": "participants.shareholders",
         "message": "Shareholders ownershipPercentage values must total 100"
       }

@@ -31,6 +31,8 @@ curl --request GET \
   },
   "blockingIssueIds": ["issue_123"],
   "blockingIssueCount": 1,
+  "projectionStatus": "complete",
+  "statusSource": "live_workflow_runtime",
   "stages": [
     {
       "id": "intake",
@@ -79,3 +81,15 @@ curl --request GET \
 | `completed` | The stage is complete. |
 
 Active issues are listed in `blockingIssueIds`. If an issue has a `scope.stageId`, that issue appears on the matching stage's `blockedByIssueIds`; otherwise it blocks the first non-completed stage.
+
+## Projection metadata
+
+`projectionStatus` indicates whether the response represents a complete view (`complete`) or a degraded view that fell back to a partial source due to upstream issues (`degraded`).
+
+`statusSource` reports which source was used to project the case status:
+
+| Value | Meaning |
+| --- | --- |
+| `db_only` | Case status was projected from database state only; no workflow runtime was consulted. |
+| `workflow_snapshot` | The latest persisted workflow snapshot was used. |
+| `live_workflow_runtime` | The live workflow runtime was consulted. |

@@ -1,0 +1,60 @@
+---
+title: "Jurisdiction catalog"
+description: "Use the catalog to show which incorporation options are currently available."
+---
+
+The jurisdiction catalog is the first step in an incorporation flow. It tells your integration which countries are currently supported and which country-specific options the customer must choose before you can fetch requirements or create an incorporation.
+
+Use it to render the customer's initial choice of jurisdiction and entity type.
+
+## What the catalog answers
+
+| Question | Catalog field | How to use it |
+| --- | --- | --- |
+| Which countries can my customer incorporate in? | `countries[].country` | Show available country choices. |
+| Which country-specific options are needed? | `countries[].fields` | Render the option fields for the selected country. |
+| Which values are accepted? | `fields[].options` | Restrict selections to the returned values. |
+| How do I send the selected options? | `fields[].key` | Build the `countryOptions` object using each field key. |
+
+## Country options
+
+Each field key maps to a path inside `countryOptions`. Simple keys become direct properties:
+
+```json
+{
+  "country": "SG",
+  "countryOptions": {
+    "corporationType": "PRIVATE_LIMITED_COMPANY"
+  }
+}
+```
+
+Dotted keys represent nested objects:
+
+```json
+{
+  "countryOptions": {
+    "corporationTypeOptions": {
+      "freeZone": "DMCC"
+    }
+  }
+}
+```
+
+For GET endpoints, send the same shape with deep-object query syntax:
+
+```text
+GET /partner/incorporation/requirements?country=SG&countryOptions[corporationType]=PRIVATE_LIMITED_COMPANY
+```
+
+## When to refetch
+
+The catalog is informational and may change as Commenda adds jurisdictions or supported entity types. You can cache it for UI rendering, but your integration should still handle validation errors from create and requirements endpoints.
+
+After the customer selects `country` and `countryOptions`, use that selection to fetch:
+
+| Next step | Endpoint |
+| --- | --- |
+| Required fields, participants, and documents | `GET /partner/incorporation/requirements` |
+| Public progress stages | `GET /partner/incorporation/status-workflow` |
+| New incorporation | `POST /partner/incorporation/customers/{customerId}/incorporations` |

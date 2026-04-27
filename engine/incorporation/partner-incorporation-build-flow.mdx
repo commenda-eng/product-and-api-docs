@@ -20,8 +20,9 @@ This guide shows the recommended implementation sequence for a customer incorpor
 | Phase | Developer question | What to do |
 | --- | --- | --- |
 | Setup | What record owns the work? | Create a customer and save `customerId`. |
-| Discovery | What can I incorporate and how will progress display? | Read the jurisdiction catalog, choose `country` plus `countryOptions`, and fetch the status workflow for the selected incorporation type. |
+| Jurisdiction catalog | What can I incorporate? | Read the jurisdiction catalog and choose `country` plus `countryOptions`. |
 | Requirements | What data do I need? | Fetch the requirements schema for the selected jurisdiction/type. |
+| Progress setup | How will progress display? | Fetch the status workflow for the selected incorporation type. |
 | Incorporation | How do I start the incorporation? | Create the incorporation and save `incorporation.id`. |
 | Add customer records | What reusable records must exist? | Create or reuse Commenda OS people, business entities, and locations. |
 | Participants | Who is involved? | Register reusable people/entities as directors and shareholders. |

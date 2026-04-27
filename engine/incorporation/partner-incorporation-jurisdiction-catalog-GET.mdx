@@ -7,7 +7,7 @@ Returns the currently supported incorporation countries and country-specific opt
 
 Use this endpoint as an informational catalog for rendering choices in your UI. The create incorporation endpoint remains the source of truth for validation.
 
-Field keys map to `countryOptions`. Dotted field keys, such as `corporationTypeOptions.freeZone`, represent nested objects in the create request.
+Field keys map directly to paths inside `countryOptions`. Simple keys become direct properties, such as `countryOptions.corporationType`. Dotted keys, such as `corporationTypeOptions.freeZone`, represent nested objects inside `countryOptions`.
 
 ## Supported countries
 
@@ -47,6 +47,39 @@ Use `key` as the path inside `countryOptions`. For example, `corporationTypeOpti
     }
   }
 }
+```
+
+For Singapore private limited companies, the catalog returns a simple `corporationType` field:
+
+```json
+{
+  "country": "SG",
+  "fields": [
+    {
+      "key": "corporationType",
+      "type": "select",
+      "required": true,
+      "options": ["PRIVATE_LIMITED_COMPANY"]
+    }
+  ]
+}
+```
+
+Send that selection in `countryOptions` as:
+
+```json
+{
+  "country": "SG",
+  "countryOptions": {
+    "corporationType": "PRIVATE_LIMITED_COMPANY"
+  }
+}
+```
+
+For GET endpoints that use query parameters, send the same shape with deep-object query syntax:
+
+```text
+GET /partner/incorporation/requirements?country=SG&countryOptions[corporationType]=PRIVATE_LIMITED_COMPANY
 ```
 
 This endpoint is informational only. It is safe to use for UI rendering, but clients should still handle validation errors from `POST /partner/incorporation/customers/{customerId}/incorporations`.

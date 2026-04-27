@@ -580,7 +580,7 @@ schemas:
     properties:
       key:
         type: string
-        description: Key to send inside `countryOptions`.
+        description: Path to send inside `countryOptions`. Simple keys become direct properties, such as `countryOptions.corporationType`; dotted keys represent nested objects, such as `countryOptions.corporationTypeOptions.freeZone`.
         example: corporationType
       type:
         type: string

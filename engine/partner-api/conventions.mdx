@@ -254,12 +254,6 @@ Use HTTP status codes consistently:
 
 When an endpoint returns validation details, include the same `incorporationValidation` shape used by successful write responses.
 
-## Backward-compatible rollout checklist
+## Backward-compatibility not a requirement
 
-When updating an existing Partner API endpoint to match these conventions:
-
-1. Update the OpenAPI schema first so generated clients show the intended contract.
-2. Update docs prose and examples at the same time.
-3. Update backend serializers at the Partner API boundary. Do not rename keys inside opaque customer-provided payloads.
-4. Add tests that assert public field names, ID types, wrappers, enum values, and error statuses.
-5. If partners already depend on the old shape, provide an explicit migration plan before removing the old fields.
+Since this application doesn't have any customers yet, you can just clean things up without worrying about backwards-compatibility. 

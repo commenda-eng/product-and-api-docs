@@ -7764,6 +7764,7 @@ components:
       required:
         - incorporation
         - incorporationValidation
+        - intakeState
       properties:
         incorporation:
           $ref: '#/components/schemas/PartnerIncorporation'

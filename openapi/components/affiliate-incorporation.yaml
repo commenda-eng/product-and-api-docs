@@ -339,12 +339,12 @@ schemas:
         type: array
         items:
           $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationStatusWorkflowStage"
-  PartnerIncorporationStatusWorkflowResponse:
+  PartnerIncorporationWorkflowStagesResponse:
     type: object
     required:
-      - statusWorkflow
+      - workflowStages
     properties:
-      statusWorkflow:
+      workflowStages:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationStatusWorkflow"
   PartnerIncorporationStatusWorkflowSummary:
     type: object

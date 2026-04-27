@@ -2162,11 +2162,11 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AffiliatePublicError'
-  /partner/incorporation/status-workflow:
+  /partner/incorporation/workflow-stages:
     get:
-      summary: Get incorporation status workflow
-      description: Retrieve the public status workflow for a selected incorporation jurisdiction and type. The response is derived from the active workflow template and includes ordered public stages.
-      operationId: getPartnerIncorporationStatusWorkflow
+      summary: Get incorporation workflow stages
+      description: Retrieve the public workflow stages for a selected incorporation jurisdiction and type. The response is derived from the active workflow template and includes ordered public stages.
+      operationId: getPartnerIncorporationWorkflowStages
       servers:
         - url: https://api.prod.commenda.io/api/v1
       security:
@@ -2189,11 +2189,11 @@ paths:
           description: Country-specific options using deep-object query syntax, for example `countryOptions[corporationType]=PRIVATE_LIMITED_COMPANY`.
       responses:
         '200':
-          description: Status workflow retrieved successfully
+          description: Workflow stages retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PartnerIncorporationStatusWorkflowResponse'
+                $ref: '#/components/schemas/PartnerIncorporationWorkflowStagesResponse'
         '400':
           description: Unsupported or malformed incorporation selection
           content:
@@ -2207,7 +2207,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AffiliatePublicError'
         '404':
-          description: Status workflow is not available or active for the requested selection
+          description: Workflow stages are not available or active for the requested selection
           content:
             application/json:
               schema:
@@ -6867,12 +6867,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PartnerIncorporationStatusWorkflowStage'
-    PartnerIncorporationStatusWorkflowResponse:
+    PartnerIncorporationWorkflowStagesResponse:
       type: object
       required:
-        - statusWorkflow
+        - workflowStages
       properties:
-        statusWorkflow:
+        workflowStages:
           $ref: '#/components/schemas/PartnerIncorporationStatusWorkflow'
     PartnerIncorporationStatus:
       type: string

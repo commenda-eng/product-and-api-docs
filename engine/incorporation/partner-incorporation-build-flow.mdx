@@ -14,7 +14,7 @@ The Partner Incorporation API does not create or return payment intents. Billing
 | Phase | Developer question | What to do |
 | --- | --- | --- |
 | Setup | What container owns the work? | Create a company and save `companyId`. |
-| Discovery | What can I incorporate and how will progress display? | Read the jurisdiction catalog, choose `country` plus `countryOptions`, and fetch the status workflow for the selected case type. |
+| Discovery | What can I incorporate and how will progress display? | Read the jurisdiction catalog, choose `country` plus `countryOptions`, and fetch the workflow stages for the selected case type. |
 | Requirements | What data do I need? | Fetch the requirements DSL for the selected jurisdiction/type. |
 | Incorporation | How do I start the case? | Create the incorporation and save `incorporation.id`. |
 | Resource prep | What reusable records must exist? | Create or reuse Commenda OS people, business entities, and locations. |
@@ -38,7 +38,7 @@ The Partner Incorporation API does not create or return payment intents. Billing
 | `upload.hostedUrl` | `POST /partner/commenda-os/companies/{companyId}/documents/upload-url` | `fileUrl` in `POST /partner/commenda-os/companies/{companyId}/documents` | Stable S3 URL for the uploaded object. |
 | `fileId` | `POST /partner/commenda-os/companies/{companyId}/documents` | Register file; link participant document | Company-scoped file id. Upload bytes directly to S3 first, then create the company document. |
 | `documentId` | Link participant document | Read/list participant state | Incorporation-scoped typed document link. |
-| `statusWorkflow.stages[].id` | Status workflow or case status | Progress UI and issue-stage correlation | Stage ids come from the active workflow definition, plus the synthetic `intake` stage. |
+| `stages[].id` | Workflow stages or case status | Progress UI and issue-stage correlation | Stage ids come from the active workflow definition, plus the synthetic `intake` stage. Returned under `workflowStages.stages` (workflow-stages endpoint) or `statusWorkflow.stages` and the case `stages` array (status endpoint). |
 | `issue.id` | List issues or issue webhook payload | Dedupe issue webhooks; correlate correction requests | One issue row represents one remediation episode. |
 | `webhookSubscription.id` | Create/list webhook subscriptions | Read or delete webhook subscription | Partner-level subscription, not scoped to one company. |
 
@@ -90,7 +90,7 @@ For the public progress stages:
 
 ```bash
 curl --request GET \
-  --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/status-workflow?country=SG&countryOptions[corporationType]=PRIVATE_LIMITED_COMPANY' \
+  --url 'https://api.prod.commenda.io/api/v1/partner/incorporation/workflow-stages?country=SG&countryOptions[corporationType]=PRIVATE_LIMITED_COMPANY' \
   --header 'x-api-key: <partner_api_key>'
 ```
 

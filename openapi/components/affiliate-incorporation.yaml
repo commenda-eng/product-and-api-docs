@@ -777,6 +777,7 @@ schemas:
       registeredOfficeAddressSource: COMMENDA_SERVICE
   PartnerUpdateIntakeRequest:
     type: object
+    description: Request to update incorporation-level intake values. `requirements` only accepts keys listed in `requirements.blocks[].fields[]`; participant roles, participant resource fields, and participant documents are stored through their own endpoints.
     required:
       - requirements
     properties:
@@ -799,6 +800,7 @@ schemas:
         example: 0f9a8f5e-7f7c-4c1b-a60a-b1022f9d8c91
       currentState:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirementValues"
+        description: Latest partner-submitted incorporation-level intake values. Participant resource fields such as a person's residentialAddress are not stored here; update the referenced Commenda OS resource instead.
       createdAt:
         type: string
         format: date-time

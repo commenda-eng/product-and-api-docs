@@ -1213,7 +1213,7 @@ schemas:
         example: "+14155550123"
       residentialAddress:
         "$ref": "./commenda-os.yaml#/schemas/CommendaOsPersonAddress"
-        description: Person residential address. Use this for participant resource requirements such as `participants.{participantId}.resource.residentialAddress`.
+        description: Person residential address. This is the only supported write interface for participant resource requirements such as `participants.{participantId}.resource.residentialAddress`; do not use person locations, locationTypes, CONTACT_ADDRESS, or resource.residentialAddress for this requirement.
       employmentStartDate:
         type: string
         format: date
@@ -1255,7 +1255,7 @@ schemas:
         example: "+14155550123"
       residentialAddress:
         "$ref": "./commenda-os.yaml#/schemas/CommendaOsPersonAddress"
-        description: Person residential address. Use this for participant resource requirements such as `participants.{participantId}.resource.residentialAddress`.
+        description: Person residential address. This is the only supported write interface for participant resource requirements such as `participants.{participantId}.resource.residentialAddress`; do not use person locations, locationTypes, CONTACT_ADDRESS, or resource.residentialAddress for this requirement.
       employmentStartDate:
         type: string
         format: date

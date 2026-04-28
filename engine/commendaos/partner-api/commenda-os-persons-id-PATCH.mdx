@@ -11,7 +11,7 @@ Use incorporation participant and document endpoints for incorporation-specific 
 
 ## Residential address
 
-Some incorporation requirements validate fields on the referenced person resource. For Singapore individual directors and shareholders, `participants.{participantId}.resource.residentialAddress` is satisfied by setting `residentialAddress` on the person:
+Some incorporation requirements validate fields on the referenced person resource. For Singapore individual directors and shareholders, `participants.{participantId}.resource.residentialAddress` is satisfied in exactly one way: update the referenced person with the top-level `residentialAddress` field.
 
 ```json
 {
@@ -25,3 +25,5 @@ Some incorporation requirements validate fields on the referenced person resourc
 ```
 
 This stores the address on the person. Person read responses return it as the top-level `residentialAddress` field. It does not create a Commenda OS Location; Location resources are business-entity addresses, such as a partner-provided registered office address.
+
+Do not send person `locations`, `locationTypes`, `CONTACT_ADDRESS`, or `resource.residentialAddress` for residential address requirements. Those fields are not the public Partner API contract for a person's residential address and are rejected.

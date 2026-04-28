@@ -13,6 +13,8 @@ The incorporation is ready to submit when `incorporationValidation.isComplete` i
 
 Participant roles, participant resource fields, and participant documents are managed outside this intake payload. Register participant roles with the participant endpoints, complete required person or business entity fields through the Commenda OS Partner API, and upsert participant documents through the document endpoint.
 
+The intake endpoint only accepts incorporation-level requirement keys listed in `requirements.blocks[].fields[]`. Do not send participant-scoped keys such as `requirements.participants.directors[].residentialAddress`, `requirements.participants.directors[].resource.residentialAddress`, or `requirements.directors[].residentialAddress`; those are rejected because they would not update the participant's reusable Commenda OS person. For a validation path such as `participants.{participantId}.resource.residentialAddress`, update the referenced person with top-level `residentialAddress` instead.
+
 ## Intake fields
 
 Use this endpoint for incorporation-level requirements such as company name options and registered office address choice.
@@ -105,3 +107,5 @@ For participant-specific requirements, register participants with roles and upse
 - Use `POST /partner/incorporation/{incorporationId}/participants` for director/shareholder roles.
 - Use `POST /partner/commenda-os/customers/{customerId}/persons` or `PATCH /partner/commenda-os/customers/{customerId}/persons/{personId}` for required person fields such as `residentialAddress`.
 - Use `PUT /partner/incorporation/{incorporationId}/participants/{participantId}/documents/{documentKind}` for participant document requirements.
+
+Do not satisfy participant residential address requirements with Commenda OS `locations`, `locationTypes`, `CONTACT_ADDRESS`, or `resource.residentialAddress`. The Partner API uses exactly one write interface for this requirement: the person's top-level `residentialAddress` field.

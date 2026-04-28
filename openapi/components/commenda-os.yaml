@@ -52,7 +52,6 @@ schemas:
     type: object
     required:
       - addressLine1
-      - postalCode
       - country
     properties:
       addressLine1:
@@ -71,6 +70,7 @@ schemas:
         example: San Francisco
       postalCode:
         type: string
+        nullable: true
         example: "94104"
       state:
         type: string

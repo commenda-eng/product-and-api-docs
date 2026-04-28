@@ -15,6 +15,8 @@ Do not send the requirements response back unchanged. Render from requirements, 
 | What files must be attached to a participant? | `documentRequirements` | Upload a customer file, then upsert it into the participant's required document slot. |
 | Why is validation still incomplete? | `missingRequirements` and `invalidRequirements` | Follow each validation path back to the field, participant, resource field, or document slot that needs attention. |
 
+If one participant has multiple roles with the same required `documentKind`, one upsert for that participant and `documentKind` satisfies the overlapping requirement.
+
 ## Renderer model
 
 Build your renderer around each field's `kind`.
@@ -27,6 +29,8 @@ Build your renderer around each field's `kind`.
 | `resource` | A resource picker or nested resource fields | Depends on location in the requirements response | For intake blocks, send a resource object. For participant resource fields, update the referenced Commenda OS resource. |
 
 For `blocks[].fields`, field keys become top-level keys in the intake `requirements` object. For nested `object` and `collection` fields, preserve the nested shape under the parent key.
+
+Use each field's `key` to build request payloads. `commendaOs.field` is an absolute Commenda OS mapping path, not the nested JSON key for the current renderer position.
 
 For `participantRequirements[].resourceFieldsByParticipantType`, field keys describe data that must exist on the registered participant's `resource`. Do not send those values to the intake endpoint. Update the referenced person or business entity through the Commenda OS Partner API.
 
@@ -94,6 +98,8 @@ When a resource field appears under `blocks[].fields`, submit a resource object 
 
 When a resource field includes a `fields` array, those child fields describe the keys accepted under `data`. For `existingResource`, `data` supplements the saved resource values for incorporation validation. For `inlineData`, `data` is the full submitted resource value.
 
+Use child field `key` values as the `data` keys. Child `commendaOs.field` values, when present, are absolute paths from the Commenda OS resource root.
+
 Use `existingResource` when the customer already has a Commenda OS resource:
 
 ```json
@@ -145,11 +151,13 @@ Use `inlineData` when the incorporation should store the resource data only for 
 }
 ```
 
-`commendaOsResource.entity` tells you what kind of Commenda OS resource an `existingResource` value should reference. It does not create the resource automatically.
+`commendaOs.field` tells you where a field maps on a Commenda OS resource. `commendaOsResource.entity` tells you what kind of Commenda OS resource an `existingResource` value should reference. It does not create the resource automatically.
 
 ### Participant resource fields
 
 When a resource field appears under `participantRequirements[].resourceFieldsByParticipantType`, it describes data that must exist on the registered participant's Commenda OS resource.
+
+Do not render the intake resource object controls (`mode` and `resourceId`) for participant resource fields. Render the nested fields and submit them to the referenced person or business entity endpoint.
 
 For Singapore individual directors and shareholders, `residentialAddress` is a required resource field on the `KEY_PERSON` resource. Satisfy it by updating the referenced person:
 
@@ -167,6 +175,8 @@ For Singapore individual directors and shareholders, `residentialAddress` is a r
 This is not an intake value and it is not the registered office address location. Submit it through `POST /partner/commenda-os/customers/{customerId}/persons` or `PATCH /partner/commenda-os/customers/{customerId}/persons/{personId}`.
 
 The Partner API person endpoints accept `residentialAddress` directly. They do not accept a person `locations` array.
+
+If a child field under `residentialAddress` has `key: "addressLine1"` and `commendaOs.field: "residentialAddress.addressLine1"`, submit it once under the parent object: `{ "residentialAddress": { "addressLine1": "1 Raffles Place" } }`. Do not submit `{ "residentialAddress": { "residentialAddress": { "addressLine1": "1 Raffles Place" } } }`.
 
 ## Worked example: Singapore Pte. Ltd.
 

@@ -58,7 +58,7 @@ Most integrations can route requirements with this mapping:
 
 Use validation responses to resolve a requirement to a specific incorporation record. For participant resource fields, the path includes the concrete `participantId`. Look up that participant in the incorporation response, read its `resource.resourceType` and `resource.resourceId`, then update the matching Commenda OS resource.
 
-Only `blocks[].fields[]` keys belong in the intake endpoint. Participant resource fields do not become nested intake paths. For example, do not send `requirements.participants.directors[].residentialAddress`, `requirements.participants.directors[].resource.residentialAddress`, or `requirements.directors[].residentialAddress`; update the referenced person or business entity instead.
+Only `blocks[].fields[]` keys belong in the intake endpoint. Participant resource fields do not become nested intake paths. Use the Commenda OS endpoint collection to update the referenced person or business entity instead.
 
 ## Example: residential address
 

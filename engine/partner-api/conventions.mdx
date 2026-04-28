@@ -28,7 +28,7 @@ Use stable ID types by resource family.
 
 | Resource | Public field | JSON type | Notes |
 | --- | --- | --- | --- |
-| Customer | `customerId` | integer | Numeric id for the customer that owns the work. |
+| Customer | `customerId` or `customer.id` | integer | Numeric id for the customer that owns the work. |
 | Business entity | `businessEntityId` or `businessEntity.id` | integer | Numeric Commenda OS business-entity id. |
 | Person | `personId` or `person.id` | integer | Numeric Commenda OS person id. |
 | File | `fileId` | integer | Numeric reusable file id. |
@@ -74,7 +74,7 @@ Prefer this:
 
 ```json
 {
-  "participantType": "individual",
+  "participantType": "INDIVIDUAL",
   "personId": 12
 }
 ```
@@ -83,7 +83,7 @@ or this:
 
 ```json
 {
-  "participantType": "corporate",
+  "participantType": "CORPORATE",
   "businessEntityId": 44
 }
 ```
@@ -93,8 +93,8 @@ Avoid this for new endpoints:
 ```json
 {
   "resource": {
-    "resourceType": "keyPerson",
-    "resourceId": "12"
+    "resourceType": "KEY_PERSON",
+    "resourceId": 12
   }
 }
 ```
@@ -124,7 +124,7 @@ JSON property names use camelCase.
 
 ```json
 {
-  "registeredOfficeAddressSource": "commendaService",
+  "registeredOfficeAddressSource": "COMMENDA_SERVICE",
   "incorporationValidation": {
     "isComplete": true
   }
@@ -135,13 +135,13 @@ Do not use snake_case JSON property names in Partner API request or response bod
 
 ## Enum and machine value casing
 
-Commenda-defined enum values use lowerCamelCase.
+Commenda-defined enum values use `SCREAMING_SNAKE_CASE`.
 
 ```json
 {
-  "incorporationStatus": "awaitingCustomerInput",
-  "documentKind": "passportScan",
-  "registeredOfficeAddressSource": "partnerProvidedLocation"
+  "incorporationStatus": "AWAITING_CUSTOMER_INPUT",
+  "documentKind": "PASSPORT_SCAN",
+  "registeredOfficeAddressSource": "PARTNER_PROVIDED_LOCATION"
 }
 ```
 

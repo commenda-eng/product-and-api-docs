@@ -5,7 +5,7 @@ openapi: "POST /partner/incorporation/customers/{customerId}/incorporations"
 
 Starts an incorporation for one of your customers.
 
-The response returns the incorporation resource directly, plus `incorporationValidation`, current requirements, and `intakeState` when available.
+The response returns the incorporation resource directly, plus `incorporationValidation`, current requirements, and `intakeState`. If no initial intake values are supplied, `intakeState.currentState` is `{}`.
 
 For a complete Singapore walkthrough with the IDs to save, see [Build an incorporation flow](/engine/incorporation/partner-incorporation-build-flow).
 
@@ -64,4 +64,4 @@ Use `GET /partner/incorporation/jurisdiction-catalog` to see currently supported
 
 ## Response status
 
-New incorporations are returned with `incorporationStatus: "awaiting_customer_input"`. Once required intake data, participant roles, and documents validate, call `POST /partner/incorporation/{incorporationId}/submit`; after submit succeeds, the status becomes `submitted` or `in_progress` depending on workflow start state.
+New incorporations are returned with `incorporationStatus: "AWAITING_CUSTOMER_INPUT"`. Once required intake data, participant roles, and documents validate, call `POST /partner/incorporation/{incorporationId}/submit`; after submit succeeds, the status becomes `SUBMITTED` or `IN_PROGRESS` depending on workflow start state.

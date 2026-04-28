@@ -5,7 +5,7 @@ openapi: "POST /partner/incorporation/{incorporationId}/submit"
 
 Submits a complete incorporation and begins Commenda review.
 
-Use this endpoint after the current incorporation state satisfies the incorporation requirements. `incorporationValidation.isComplete` means the incorporation is eligible to submit; it does not move to `submitted` or `in_progress` until you call this endpoint.
+Use this endpoint after the current incorporation state satisfies the incorporation requirements. `incorporationValidation.isComplete` means the incorporation is eligible to submit; it does not move to `SUBMITTED` or `IN_PROGRESS` until you call this endpoint.
 
 This endpoint refreshes validation before accepting the submit request. If required intake fields, participants, ownership totals, or participant documents are still missing or invalid, the request returns `400` and the response includes validation details.
 
@@ -22,6 +22,7 @@ Submit is idempotent for an already-submitted, still-complete incorporation. Ret
     "isComplete": false,
     "missingRequirements": [
       {
+        "code": "PARTICIPANT_REQUIRED",
         "path": "participants.directors",
         "message": "At least one director is required"
       }
@@ -34,9 +35,9 @@ Submit is idempotent for an already-submitted, still-complete incorporation. Ret
 ## Lifecycle effect
 
 ```text
-awaiting_customer_input
-  -> submitted    after POST /submit succeeds and before Commenda review work starts
-  -> in_progress  when Commenda review is in progress
-  -> blocked      when there are active partner-visible issues or review start/runtime failures
-  -> completed    when the incorporation is complete
+AWAITING_CUSTOMER_INPUT
+  -> SUBMITTED    after POST /submit succeeds and before Commenda review work starts
+  -> IN_PROGRESS  when Commenda review is in progress
+  -> BLOCKED      when there are active partner-visible issues or review start/runtime failures
+  -> COMPLETED    when the incorporation is complete
 ```

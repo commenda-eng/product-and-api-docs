@@ -2691,7 +2691,7 @@ paths:
   /partner/incorporation/{incorporationId}/submit:
     post:
       summary: Submit an incorporation
-      description: Submit a currently complete incorporation for Commenda review. The server refreshes validation before accepting the submit request. `incorporationValidation.isComplete` means eligible to submit; `submitted` or `in_progress` is returned only after this endpoint succeeds.
+      description: Submit a currently complete incorporation for Commenda review. The server refreshes validation before accepting the submit request. `incorporationValidation.isComplete` means eligible to submit; `SUBMITTED` or `IN_PROGRESS` is returned only after this endpoint succeeds.
       operationId: submitPartnerIncorporation
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -2778,7 +2778,7 @@ paths:
                 $ref: '#/components/schemas/AffiliatePublicError'
     post:
       summary: Register an incorporation participant
-      description: Register an existing Commenda OS key person or business entity as a participant in an incorporation, including details about their role.
+      description: Register an existing Commenda OS person or business entity as a participant in an incorporation, including details about their role.
       operationId: registerPartnerIncorporationParticipant
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -2936,7 +2936,7 @@ paths:
   /partner/incorporation/{incorporationId}/participants/{participantId}/documents/{documentKind}:
     put:
       summary: Upsert a participant document
-      description: Assign a customer-scoped Commenda file to one participant document slot. This request scopes the file to the incorporation and creates or replaces the typed participant document in one transaction. Repeating the request with the same fileId is safe.
+      description: Assign a customer-scoped Commenda file to one participant document slot. This request creates or replaces the typed participant document in one transaction without changing the reusable file. Repeating the request with the same fileId is safe.
       operationId: upsertPartnerIncorporationParticipantDocument
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -3217,7 +3217,7 @@ paths:
   /partner/commenda-os/customers/{customerId}/business-entities:
     post:
       summary: Create a business entity
-      description: Create a reusable Commenda OS business entity for one of your customers. Use the returned `businessEntity.id` as a `businessEntity` resource id when registering corporate incorporation participants.
+      description: Create a reusable Commenda OS business entity for one of your customers. Use the returned `businessEntity.id` as a `BUSINESS_ENTITY` resource id when registering corporate incorporation participants.
       operationId: createPartnerCommendaOsBusinessEntity
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -3721,7 +3721,7 @@ paths:
                 $ref: '#/components/schemas/CommendaOsPartnerError'
     post:
       summary: Create a person
-      description: Create a reusable Commenda OS key person for one of your customers. Use the returned `id` as a `keyPerson` resource id when registering incorporation participants. For Singapore residential address requirements, include `residentialAddress`.
+      description: Create a reusable Commenda OS person for one of your customers. Use the returned `person.id` as a `KEY_PERSON` resource id when registering incorporation participants. For Singapore residential address requirements, include `residentialAddress`.
       operationId: createPartnerCommendaOsPerson
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -3781,7 +3781,7 @@ paths:
   /partner/commenda-os/customers/{customerId}/persons/{personId}:
     patch:
       summary: Update a person
-      description: Partially update a reusable Commenda OS key person. Omitted fields are left unchanged. For Singapore residential address requirements, include `residentialAddress`.
+      description: Partially update a reusable Commenda OS person. Omitted fields are left unchanged. For Singapore residential address requirements, include `residentialAddress`.
       operationId: updatePartnerCommendaOsPerson
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -4293,7 +4293,7 @@ paths:
           required: false
           schema:
             $ref: '#/components/schemas/PartnerIncorporationIssueStatusFilter'
-          description: Filter issues by status. Defaults to `active`.
+          description: Filter issues by status. Defaults to `ACTIVE`.
       responses:
         '200':
           description: Issues retrieved successfully
@@ -7254,12 +7254,12 @@ components:
     PartnerCustomer:
       type: object
       required:
-        - customerId
+        - id
         - name
         - createdAt
         - updatedAt
       properties:
-        customerId:
+        id:
           type: integer
           description: Commenda customer identifier.
           example: 77
@@ -7309,12 +7309,10 @@ components:
     PartnerCreateCustomerResponse:
       type: object
       required:
-        - customerId
+        - customer
       properties:
-        customerId:
-          type: integer
-          description: Commenda customer identifier.
-          example: 77
+        customer:
+          $ref: '#/components/schemas/PartnerCustomer'
     PartnerIncorporationCountry:
       type: string
       description: ISO 3166-1 alpha-2 country code for the incorporation jurisdiction.
@@ -7401,13 +7399,13 @@ components:
         participantRequirements:
           - key: directors
             name: Directors
-            role: director
+            role: DIRECTOR
             allowedParticipantTypes:
-              - individual
+              - INDIVIDUAL
             allowedResourceTypes:
-              - keyPerson
+              - KEY_PERSON
             resourceFieldsByParticipantType:
-              individual:
+              INDIVIDUAL:
                 - kind: resource
                   key: residentialAddress
                   name: Residential address
@@ -7415,7 +7413,7 @@ components:
                   required: true
                   resourceKind: address
                   commendaOs:
-                    entity: keyPerson
+                    entity: KEY_PERSON
                     field: residentialAddress
                   fields:
                     - kind: scalar
@@ -7423,26 +7421,26 @@ components:
                       name: Address line 1
                       required: true
                       commendaOs:
-                        entity: keyPerson
+                        entity: KEY_PERSON
                         field: residentialAddress.addressLine1
                     - kind: scalar
                       key: city
                       name: City
                       required: true
                       commendaOs:
-                        entity: keyPerson
+                        entity: KEY_PERSON
                         field: residentialAddress.city
                     - kind: scalar
                       key: country
                       name: Country
                       required: true
                       commendaOs:
-                        entity: keyPerson
+                        entity: KEY_PERSON
                         field: residentialAddress.country
             documentRequirements:
-              - documentKind: passport_scan
+              - documentKind: PASSPORT_SCAN
                 name: Passport scan
-              - documentKind: utility_bill
+              - documentKind: UTILITY_BILL
                 name: Utility bill
     PartnerRequirementsResponse:
       type: object
@@ -7455,9 +7453,9 @@ components:
       type: string
       description: Party expected to own work in a public status stage.
       enum:
-        - partner
-        - customer
-        - commenda
+        - PARTNER
+        - CUSTOMER
+        - COMMENDA
     PartnerIncorporationStatusWorkflowStage:
       type: object
       required:
@@ -7532,16 +7530,15 @@ components:
       type: string
       description: Current top-level lifecycle status for the incorporation.
       enum:
-        - awaiting_customer_input
-        - submitted
-        - in_progress
-        - blocked
-        - completed
+        - AWAITING_CUSTOMER_INPUT
+        - SUBMITTED
+        - IN_PROGRESS
+        - BLOCKED
+        - COMPLETED
     PartnerIncorporation:
       type: object
       required:
         - id
-        - incorporationId
         - customerId
         - country
         - countryOptions
@@ -7553,10 +7550,6 @@ components:
         id:
           type: string
           description: Incorporation identifier.
-          example: 0f9a8f5e-7f7c-4c1b-a60a-b1022f9d8c91
-        incorporationId:
-          type: string
-          description: Stable incorporation identifier. Same value as `id`.
           example: 0f9a8f5e-7f7c-4c1b-a60a-b1022f9d8c91
         customerId:
           type: integer
@@ -7604,7 +7597,7 @@ components:
           - name: Acme SG Pte Ltd
           - name: Acme Asia Pte Ltd
           - name: Acme Global Pte Ltd
-        registeredOfficeAddressSource: commendaService
+        registeredOfficeAddressSource: COMMENDA_SERVICE
     PartnerCreateCustomerScopedIncorporationRequest:
       type: object
       required:
@@ -7621,19 +7614,40 @@ components:
           properties:
             requirements:
               $ref: '#/components/schemas/PartnerIncorporationRequirementValues'
+    PartnerIncorporationDocumentKind:
+      type: string
+      description: Type of document linked to an incorporation participant.
+      enum:
+        - PASSPORT_SCAN
+        - UTILITY_BILL
     PartnerIncorporationValidationIssue:
       type: object
       required:
+        - code
         - path
         - message
       properties:
+        code:
+          type: string
+          description: Stable machine-readable validation issue code.
+          example: PARTICIPANT_DOCUMENT_REQUIRED
         path:
           type: string
           description: Dot/bracket path for the missing or invalid requirement.
-          example: participants.participant_123.documents.passport_scan
+          example: participants.participant_123.documents.PASSPORT_SCAN
         message:
           type: string
-          example: Participant participant_123 requires a passport_scan document
+          example: Participant participant_123 requires a PASSPORT_SCAN document
+        participantId:
+          type: string
+          description: Included when the issue belongs to a participant.
+          example: participant_123
+        documentKind:
+          $ref: '#/components/schemas/PartnerIncorporationDocumentKind'
+        displayName:
+          type: string
+          description: Included when available so UIs can render useful labels without joining across responses.
+          example: Jane Founder
     PartnerIncorporationValidationSummary:
       type: object
       required:
@@ -7680,14 +7694,14 @@ components:
       type: string
       description: Type of reusable Commenda OS resource registered to the incorporation.
       enum:
-        - individual
-        - corporate
+        - INDIVIDUAL
+        - CORPORATE
     PartnerIncorporationParticipantResourceType:
       type: string
       description: Commenda OS resource type represented by this participant.
       enum:
-        - keyPerson
-        - businessEntity
+        - KEY_PERSON
+        - BUSINESS_ENTITY
     PartnerIncorporationParticipantResource:
       type: object
       required:
@@ -7697,16 +7711,15 @@ components:
         resourceType:
           $ref: '#/components/schemas/PartnerIncorporationParticipantResourceType'
         resourceId:
-          type: string
-          pattern: ^[0-9]+$
-          description: Numeric Commenda OS identifier encoded as a string. For `keyPerson`, use the person id returned by Commenda OS. For `businessEntity`, use the business entity id.
-          example: '12'
+          type: integer
+          description: Numeric Commenda OS identifier. For `KEY_PERSON`, use the person id returned by Commenda OS. For `BUSINESS_ENTITY`, use the business entity id.
+          example: 12
     PartnerIncorporationParticipantRoleName:
       type: string
       description: Role the participant holds in this incorporation.
       enum:
-        - director
-        - shareholder
+        - DIRECTOR
+        - SHAREHOLDER
     PartnerIncorporationParticipantRole:
       type: object
       required:
@@ -7720,17 +7733,11 @@ components:
           minimum: 0
           maximum: 100
           example: 100
-    PartnerIncorporationDocumentKind:
-      type: string
-      description: Type of document linked to an incorporation participant.
-      enum:
-        - passport_scan
-        - utility_bill
     PartnerIncorporationParticipantDocumentStatus:
       type: string
       description: Current status of the participant document link.
       enum:
-        - submitted
+        - SUBMITTED
     PartnerIncorporationParticipantDocument:
       type: object
       required:
@@ -7752,20 +7759,20 @@ components:
           $ref: '#/components/schemas/PartnerIncorporationDocumentKind'
         fileId:
           type: integer
-          description: Commenda file satisfying this document requirement. Files are scoped to the incorporation when they are upserted into a participant document slot.
+          description: Commenda file satisfying this document requirement.
           example: 456
         status:
           $ref: '#/components/schemas/PartnerIncorporationParticipantDocumentStatus'
     PartnerIncorporationParticipant:
       type: object
       required:
-        - participantId
+        - id
         - participantType
         - resource
         - roles
         - documents
       properties:
-        participantId:
+        id:
           type: string
           description: Incorporation-specific participant identifier.
           example: participant_123
@@ -7782,31 +7789,32 @@ components:
           items:
             $ref: '#/components/schemas/PartnerIncorporationParticipantDocument'
       example:
-        participantId: participant_123
-        participantType: individual
+        id: participant_123
+        participantType: INDIVIDUAL
         resource:
-          resourceType: keyPerson
-          resourceId: '12'
+          resourceType: KEY_PERSON
+          resourceId: 12
         roles:
-          - role: director
-          - role: shareholder
+          - role: DIRECTOR
+          - role: SHAREHOLDER
             ownershipPercentage: 100
         documents:
           - documentId: document_123
             participantId: participant_123
-            documentKind: passport_scan
+            documentKind: PASSPORT_SCAN
             fileId: 456
-            status: submitted
+            status: SUBMITTED
           - documentId: document_124
             participantId: participant_123
-            documentKind: utility_bill
+            documentKind: UTILITY_BILL
             fileId: 789
-            status: submitted
+            status: SUBMITTED
     PartnerIncorporationResponse:
       type: object
       required:
         - incorporation
         - incorporationValidation
+        - participants
       properties:
         incorporation:
           $ref: '#/components/schemas/PartnerIncorporation'
@@ -7841,39 +7849,60 @@ components:
       type: string
       description: Public progress status for one incorporation workflow stage.
       enum:
-        - not_started
-        - in_progress
-        - blocked
-        - completed
+        - NOT_STARTED
+        - IN_PROGRESS
+        - BLOCKED
+        - COMPLETED
     PartnerIncorporationStatusStage:
-      allOf:
-        - $ref: '#/components/schemas/PartnerIncorporationStatusWorkflowStage'
-        - type: object
-          required:
-            - status
-            - startedAt
-            - completedAt
-            - blockedByIssueIds
-          properties:
-            status:
-              $ref: '#/components/schemas/PartnerIncorporationStageStatus'
-            startedAt:
-              type: string
-              format: date-time
-              nullable: true
-              example: '2026-04-26T19:05:00.000Z'
-            completedAt:
-              type: string
-              format: date-time
-              nullable: true
-              example: null
-            blockedByIssueIds:
-              type: array
-              description: Active issue ids blocking this stage.
-              items:
-                type: string
-              example:
-                - issue_123
+      type: object
+      required:
+        - id
+        - label
+        - description
+        - owner
+        - position
+        - status
+        - startedAt
+        - completedAt
+        - blockedByIssueIds
+      properties:
+        id:
+          type: string
+          description: Stable stage identifier. Issue scopes reference this value as `scope.stageId`.
+          example: kyc
+        label:
+          type: string
+          description: Human-readable stage label.
+          example: KYC
+        description:
+          type: string
+          description: Human-readable explanation of the stage.
+          example: Review required identity, ownership, and compliance materials.
+        owner:
+          $ref: '#/components/schemas/PartnerIncorporationStatusStageOwner'
+        position:
+          type: integer
+          description: One-based display order.
+          example: 2
+        status:
+          $ref: '#/components/schemas/PartnerIncorporationStageStatus'
+        startedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: '2026-04-26T19:05:00.000Z'
+        completedAt:
+          type: string
+          format: date-time
+          nullable: true
+          example: null
+        blockedByIssueIds:
+          type: array
+          description: Active issue ids blocking this stage.
+          items:
+            type: string
+          example:
+            - issue_123
     PartnerIncorporationStatusResponse:
       type: object
       required:
@@ -7997,13 +8026,13 @@ components:
           items:
             $ref: '#/components/schemas/PartnerIncorporationParticipantRole'
       example:
-        participantType: individual
+        participantType: INDIVIDUAL
         resource:
-          resourceType: keyPerson
-          resourceId: '12'
+          resourceType: KEY_PERSON
+          resourceId: 12
         roles:
-          - role: director
-          - role: shareholder
+          - role: DIRECTOR
+          - role: SHAREHOLDER
             ownershipPercentage: 100
     PartnerIncorporationParticipantMutationResponse:
       type: object
@@ -8040,8 +8069,8 @@ components:
             $ref: '#/components/schemas/PartnerIncorporationParticipantRole'
       example:
         roles:
-          - role: director
-          - role: shareholder
+          - role: DIRECTOR
+          - role: SHAREHOLDER
             ownershipPercentage: 40
     PartnerUpsertParticipantDocumentRequest:
       type: object
@@ -8050,7 +8079,7 @@ components:
       properties:
         fileId:
           type: integer
-          description: Existing customer-scoped Commenda file id to scope to this incorporation and assign to the participant document slot.
+          description: Existing customer-scoped Commenda file id to assign to the participant document slot.
           example: 456
       example:
         fileId: 456
@@ -8297,10 +8326,6 @@ components:
         id:
           type: string
           example: loc_123
-        _internalAddressId:
-          type: integer
-          description: Internal Commenda address identifier.
-          example: 9876
         name:
           type: string
           nullable: true
@@ -8668,7 +8693,7 @@ components:
           description: Standard error label for the response status.
     CommendaOsBusinessEntityCreateRequest:
       type: object
-      description: Create a reusable Commenda OS business entity for one of your customers. Use the returned `businessEntity.id` as a `businessEntity` resource id when registering corporate incorporation participants.
+      description: Create a reusable Commenda OS business entity for one of your customers. Use the returned `businessEntity.id` as a `BUSINESS_ENTITY` resource id when registering corporate incorporation participants.
       required:
         - incorporationCountry
         - legalName
@@ -9131,7 +9156,7 @@ components:
           example: 2
     CommendaOsPersonCreateRequest:
       type: object
-      description: Create a reusable Commenda OS key person for one of your customers. The `customerId` is taken from the URL path.
+      description: Create a reusable Commenda OS person for one of your customers. The `customerId` is taken from the URL path.
       required:
         - firstName
       properties:
@@ -9176,15 +9201,13 @@ components:
     CommendaOsPersonMutationResponse:
       type: object
       required:
-        - id
+        - person
       properties:
-        id:
-          type: integer
-          description: Updated Commenda OS person identifier.
-          example: 12
+        person:
+          $ref: '#/components/schemas/CommendaOsPerson'
     CommendaOsPersonUpdateRequest:
       type: object
-      description: Partial update payload for a reusable Commenda OS key person. Omitted fields are left unchanged.
+      description: Partial update payload for a reusable Commenda OS person. Omitted fields are left unchanged.
       properties:
         firstName:
           type: string
@@ -9598,24 +9621,24 @@ components:
     PartnerIncorporationIssueStatusFilter:
       type: string
       enum:
-        - active
-        - resolved
-        - all
+        - ACTIVE
+        - RESOLVED
+        - ALL
     PartnerIncorporationIssueCode:
       type: string
       description: Current partner-visible issue code. Commenda may add additional issue codes in future API updates.
       enum:
-        - missing_information
-        - invalid_information
-        - document_required
-        - document_invalid
-        - company_name_rejected
-        - other
+        - MISSING_INFORMATION
+        - INVALID_INFORMATION
+        - DOCUMENT_REQUIRED
+        - DOCUMENT_INVALID
+        - COMPANY_NAME_REJECTED
+        - OTHER
     PartnerIncorporationIssueStatus:
       type: string
       enum:
-        - active
-        - resolved
+        - ACTIVE
+        - RESOLVED
     PartnerIncorporationIssueScope:
       type: object
       description: Location the issue applies to. The `type` field determines which additional fields are present.
@@ -9626,14 +9649,14 @@ components:
         type:
           type: string
           enum:
-            - incorporation
-            - intake_field
-            - participant
-            - participant_document
-            - file
+            - INCORPORATION
+            - INTAKE_FIELD
+            - PARTICIPANT
+            - PARTICIPANT_DOCUMENT
+            - FILE
         path:
           type: string
-          description: Intake field path for `intake_field` scopes.
+          description: Intake field path for `INTAKE_FIELD` scopes.
           example: companyNames.companyNameOptions
         stageId:
           type: string
@@ -9650,24 +9673,24 @@ components:
             resourceType:
               type: string
               enum:
-                - keyPerson
-                - businessEntity
+                - KEY_PERSON
+                - BUSINESS_ENTITY
             resourceId:
-              type: string
-              example: '12'
+              type: integer
+              example: 12
         documentKind:
           type: string
           description: Participant document kind for participant-document issues.
-          example: passport_scan
+          example: PASSPORT_SCAN
         fileId:
           type: integer
           description: Commenda file id for file or participant-document issues.
           example: 456
       example:
-        type: participant_document
+        type: PARTICIPANT_DOCUMENT
         stageId: kyc
         participantId: participant_123
-        documentKind: passport_scan
+        documentKind: PASSPORT_SCAN
         fileId: 456
     PartnerIncorporationIssue:
       type: object
@@ -9704,7 +9727,7 @@ components:
         resolvedAt:
           type: string
           format: date-time
-          description: Present when `status` is `resolved`.
+          description: Present when `status` is `RESOLVED`.
           example: '2026-04-25T21:15:00.000Z'
     PartnerIncorporationIssuesResponse:
       type: object
@@ -9723,12 +9746,12 @@ components:
       type: string
       description: Partner webhook event type. Commenda may add additional event types in future API updates.
       enum:
-        - incorporation.issue.created
-        - incorporation.issue.resolved
+        - INCORPORATION_ISSUE_CREATED
+        - INCORPORATION_ISSUE_RESOLVED
     PartnerWebhookSubscriptionStatus:
       type: string
       enum:
-        - active
+        - ACTIVE
     PartnerWebhookSubscription:
       type: object
       required:
@@ -9793,8 +9816,8 @@ components:
       example:
         url: https://partner.example.com/commenda/webhooks
         eventTypes:
-          - incorporation.issue.created
-          - incorporation.issue.resolved
+          - INCORPORATION_ISSUE_CREATED
+          - INCORPORATION_ISSUE_RESOLVED
     PartnerCreatedWebhookSubscription:
       allOf:
         - $ref: '#/components/schemas/PartnerWebhookSubscription'

@@ -123,10 +123,6 @@ schemas:
       id:
         type: string
         example: loc_123
-      _internalAddressId:
-        type: integer
-        description: Internal Commenda address identifier.
-        example: 9876
       name:
         type: string
         nullable: true
@@ -461,7 +457,7 @@ schemas:
         example: 2026-03-01T00:00:00.000Z
   CommendaOsBusinessEntityCreateRequest:
     type: object
-    description: Create a reusable Commenda OS business entity for one of your customers. Use the returned `businessEntity.id` as a `businessEntity` resource id when registering corporate incorporation participants.
+    description: Create a reusable Commenda OS business entity for one of your customers. Use the returned `businessEntity.id` as a `BUSINESS_ENTITY` resource id when registering corporate incorporation participants.
     required:
       - incorporationCountry
       - legalName
@@ -1198,7 +1194,7 @@ schemas:
         example: 2
   CommendaOsPersonCreateRequest:
     type: object
-    description: Create a reusable Commenda OS key person for one of your customers. The `customerId` is taken from the URL path.
+    description: Create a reusable Commenda OS person for one of your customers. The `customerId` is taken from the URL path.
     required:
       - firstName
     properties:
@@ -1242,7 +1238,7 @@ schemas:
         example: "00012345"
   CommendaOsPersonUpdateRequest:
     type: object
-    description: Partial update payload for a reusable Commenda OS key person. Omitted fields are left unchanged.
+    description: Partial update payload for a reusable Commenda OS person. Omitted fields are left unchanged.
     properties:
       firstName:
         type: string
@@ -1285,12 +1281,10 @@ schemas:
   CommendaOsPersonMutationResponse:
     type: object
     required:
-      - id
+      - person
     properties:
-      id:
-        type: integer
-        description: Updated Commenda OS person identifier.
-        example: 12
+      person:
+        $ref: "./commenda-os.yaml#/schemas/CommendaOsPerson"
   CommendaOsGovernmentIdentifierResponse:
     type: object
     required:

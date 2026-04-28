@@ -25,12 +25,12 @@ The requirements response describes participant requirements in terms of role, p
 
 | Role requirement | `participantType` | `resource.resourceType` | Notes |
 | --- | --- | --- | --- |
-| Individual director | `individual` | `keyPerson` | Use a Commenda OS person id. One person can also hold a shareholder role. |
-| Individual shareholder | `individual` | `keyPerson` | Use a Commenda OS person id and include `ownershipPercentage`. |
-| Corporate shareholder | `corporate` | `businessEntity` | Use a Commenda OS business entity id and include `ownershipPercentage`. |
-| Corporate director | `corporate` | `businessEntity` | Not supported for Singapore private limited companies. |
+| Individual director | `INDIVIDUAL` | `KEY_PERSON` | Use a Commenda OS person id. One person can also hold a shareholder role. |
+| Individual shareholder | `INDIVIDUAL` | `KEY_PERSON` | Use a Commenda OS person id and include `ownershipPercentage`. |
+| Corporate shareholder | `CORPORATE` | `BUSINESS_ENTITY` | Use a Commenda OS business entity id and include `ownershipPercentage`. |
+| Corporate director | `CORPORATE` | `BUSINESS_ENTITY` | Not supported for Singapore private limited companies. |
 
-When `documentRequirements` are returned, match them by `role`, `participantType`, and `resourceType`. Individual Singapore directors and shareholders require `passport_scan` and `utility_bill`; corporate shareholder documents, if required by the selected incorporation type, are surfaced by the same `documentRequirements` array.
+When `documentRequirements` are returned, match them by `role`, `participantType`, and `resourceType`. Individual Singapore directors and shareholders require `PASSPORT_SCAN` and `UTILITY_BILL`; corporate shareholder documents, if required by the selected incorporation type, are surfaced by the same `documentRequirements` array.
 
 Some participant requirements also include `resourceFieldsByParticipantType`. These are fields on the Commenda OS resource you registered as the participant. For example, Singapore individual directors require the key person to have `residentialAddress`. Satisfy that field by creating or updating the person with `residentialAddress`; it is not a reusable Commenda OS Location and should not be sent as `registeredOfficeAddressLocation`.
 
@@ -41,17 +41,17 @@ Requirements snippet:
   "participantRequirements": [
     {
       "key": "directors",
-      "role": "director",
-      "allowedParticipantTypes": ["individual"],
-      "allowedResourceTypes": ["keyPerson"],
+      "role": "DIRECTOR",
+      "allowedParticipantTypes": ["INDIVIDUAL"],
+      "allowedResourceTypes": ["KEY_PERSON"],
       "resourceFieldsByParticipantType": {
-        "individual": [
+        "INDIVIDUAL": [
           {
             "kind": "resource",
             "key": "residentialAddress",
             "required": true,
             "commendaOs": {
-              "entity": "keyPerson",
+              "entity": "KEY_PERSON",
               "field": "residentialAddress"
             }
           }
@@ -77,7 +77,7 @@ Find `participant_123` in the incorporation response:
 {
   "participantId": "participant_123",
   "resource": {
-    "resourceType": "keyPerson",
+    "resourceType": "KEY_PERSON",
     "resourceId": "12"
   }
 }
@@ -96,6 +96,6 @@ Then update person `12`:
 }
 ```
 
-Validation paths in `missingRequirements` and `invalidRequirements` correspond to requirements fields or participant/document requirements. Field validation paths include the requirements block key, such as `companyNames.companyNameOptions`, even though the intake payload key remains `requirements.companyNameOptions`. Participant resource paths look like `participants.participant_123.resource.residentialAddress`. Participant document paths look like `participants.participant_123.documents.passport_scan`.
+Validation paths in `missingRequirements` and `invalidRequirements` correspond to requirements fields or participant/document requirements. Field validation paths include the requirements block key, such as `companyNames.companyNameOptions`, even though the intake payload key remains `requirements.companyNameOptions`. Participant resource paths look like `participants.participant_123.resource.residentialAddress`. Participant document paths look like `participants.participant_123.documents.PASSPORT_SCAN`.
 
 You may cache the requirements response by `country` plus `countryOptions`, but do not send a requirements version back to Commenda. If validation returns new missing or invalid requirements, update your UI from the latest response.

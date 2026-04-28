@@ -34,7 +34,7 @@ The `commendaOs` hint on a field identifies the Commenda OS resource and field t
 ```json
 {
   "commendaOs": {
-    "entity": "keyPerson",
+    "entity": "KEY_PERSON",
     "field": "residentialAddress"
   }
 }
@@ -52,9 +52,9 @@ Most integrations can route requirements with this mapping:
 | --- | --- | --- |
 | `blocks[].fields[]` | `companyNameOptions`, `registeredOfficeAddressSource` | `PATCH /partner/incorporation/{incorporationId}/intake` |
 | `participantRequirements[]` | `directors`, `shareholders` | `POST /partner/incorporation/{incorporationId}/participants` |
-| `resourceFieldsByParticipantType.individual[]` | `firstName`, `dateOfBirth`, `residentialAddress` | `POST` or `PATCH /partner/commenda-os/customers/{customerId}/persons` |
-| `resourceFieldsByParticipantType.corporate[]` | `legalName`, `jurisdiction`, `registrationNumber` | Commenda OS business entity endpoints |
-| `documentRequirements[]` | `passport_scan`, `utility_bill` | Upload a customer file, then `PUT /partner/incorporation/{incorporationId}/participants/{participantId}/documents/{documentKind}` |
+| `resourceFieldsByParticipantType.INDIVIDUAL[]` | `firstName`, `dateOfBirth`, `residentialAddress` | `POST` or `PATCH /partner/commenda-os/customers/{customerId}/persons` |
+| `resourceFieldsByParticipantType.CORPORATE[]` | `legalName`, `jurisdiction`, `registrationNumber` | Commenda OS business entity endpoints |
+| `documentRequirements[]` | `PASSPORT_SCAN`, `UTILITY_BILL` | Upload a customer file, then `PUT /partner/incorporation/{incorporationId}/participants/{participantId}/documents/{documentKind}` |
 
 Use validation responses to resolve a requirement to a specific incorporation record. For participant resource fields, the path includes the concrete `participantId`. Look up that participant in the incorporation response, read its `resource.resourceType` and `resource.resourceId`, then update the matching Commenda OS resource.
 
@@ -67,17 +67,17 @@ For a Singapore private limited company, the requirements response may say an in
   "participantRequirements": [
     {
       "key": "directors",
-      "role": "director",
-      "allowedParticipantTypes": ["individual"],
-      "allowedResourceTypes": ["keyPerson"],
+      "role": "DIRECTOR",
+      "allowedParticipantTypes": ["INDIVIDUAL"],
+      "allowedResourceTypes": ["KEY_PERSON"],
       "resourceFieldsByParticipantType": {
-        "individual": [
+        "INDIVIDUAL": [
           {
             "kind": "resource",
             "key": "residentialAddress",
             "required": true,
             "commendaOs": {
-              "entity": "keyPerson",
+              "entity": "KEY_PERSON",
               "field": "residentialAddress"
             }
           }
@@ -103,7 +103,7 @@ Find `participant_123` in the incorporation response:
 {
   "participantId": "participant_123",
   "resource": {
-    "resourceType": "keyPerson",
+    "resourceType": "KEY_PERSON",
     "resourceId": "12"
   }
 }
@@ -129,9 +129,9 @@ Validation paths in `missingRequirements` and `invalidRequirements` point to the
 | Example path | Meaning | Fix |
 | --- | --- | --- |
 | `companyNames.companyNameOptions` | Company name options are missing or invalid | Submit valid names through the intake endpoint as `requirements.companyNameOptions`. |
-| `registeredOfficeAddress.registeredOfficeAddressLocation` | A partner-provided registered office address location is required | Submit a Commenda OS location reference as `requirements.registeredOfficeAddressLocation` or choose `commendaService`. |
+| `registeredOfficeAddress.registeredOfficeAddressLocation` | A partner-provided registered office address location is required | Submit a Commenda OS location reference as `requirements.registeredOfficeAddressLocation` or choose `COMMENDA_SERVICE`. |
 | `participants.directors` | A required director participant is missing | Register a person or business entity as a director. |
 | `participants.participant_123.resource.residentialAddress` | A registered participant's referenced person is missing a residential address | Update that Commenda OS person with `residentialAddress`. |
-| `participants.participant_123.documents.passport_scan` | A participant is missing a passport scan | Upload a customer file, then upsert it as `passport_scan` for that participant. |
+| `participants.participant_123.documents.PASSPORT_SCAN` | A participant is missing a passport scan | Upload a customer file, then upsert it as `PASSPORT_SCAN` for that participant. |
 
 Render your UI from the requirements response, but decide readiness from validation returned by write/read calls because Commenda may update requirements over time.

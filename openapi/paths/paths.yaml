@@ -2773,7 +2773,7 @@
 "/partner/incorporation/{incorporationId}/submit":
   post:
     summary: Submit an incorporation
-    description: Submit a currently complete incorporation for Commenda review. The server refreshes validation before accepting the submit request. `incorporationValidation.isComplete` means eligible to submit; `submitted` or `in_progress` is returned only after this endpoint succeeds.
+    description: Submit a currently complete incorporation for Commenda review. The server refreshes validation before accepting the submit request. `incorporationValidation.isComplete` means eligible to submit; `SUBMITTED` or `IN_PROGRESS` is returned only after this endpoint succeeds.
     operationId: submitPartnerIncorporation
     servers:
       - url: https://api.prod.commenda.io/api/v1
@@ -2860,7 +2860,7 @@
               "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
   post:
     summary: Register an incorporation participant
-    description: Register an existing Commenda OS key person or business entity as a participant in an incorporation, including details about their role.
+    description: Register an existing Commenda OS person or business entity as a participant in an incorporation, including details about their role.
     operationId: registerPartnerIncorporationParticipant
     servers:
       - url: https://api.prod.commenda.io/api/v1
@@ -3018,7 +3018,7 @@
 "/partner/incorporation/{incorporationId}/participants/{participantId}/documents/{documentKind}":
   put:
     summary: Upsert a participant document
-    description: Assign a customer-scoped Commenda file to one participant document slot. This request scopes the file to the incorporation and creates or replaces the typed participant document in one transaction. Repeating the request with the same fileId is safe.
+    description: Assign a customer-scoped Commenda file to one participant document slot. This request creates or replaces the typed participant document in one transaction without changing the reusable file. Repeating the request with the same fileId is safe.
     operationId: upsertPartnerIncorporationParticipantDocument
     servers:
       - url: https://api.prod.commenda.io/api/v1
@@ -3299,7 +3299,7 @@
 "/partner/commenda-os/customers/{customerId}/business-entities":
   post:
     summary: Create a business entity
-    description: Create a reusable Commenda OS business entity for one of your customers. Use the returned `businessEntity.id` as a `businessEntity` resource id when registering corporate incorporation participants.
+    description: Create a reusable Commenda OS business entity for one of your customers. Use the returned `businessEntity.id` as a `BUSINESS_ENTITY` resource id when registering corporate incorporation participants.
     operationId: createPartnerCommendaOsBusinessEntity
     servers:
       - url: https://api.prod.commenda.io/api/v1
@@ -3803,7 +3803,7 @@
               "$ref": "../components/components.yaml#/components/schemas/CommendaOsPartnerError"
   post:
     summary: Create a person
-    description: Create a reusable Commenda OS key person for one of your customers. Use the returned `id` as a `keyPerson` resource id when registering incorporation participants. For Singapore residential address requirements, include `residentialAddress`.
+    description: Create a reusable Commenda OS person for one of your customers. Use the returned `person.id` as a `KEY_PERSON` resource id when registering incorporation participants. For Singapore residential address requirements, include `residentialAddress`.
     operationId: createPartnerCommendaOsPerson
     servers:
       - url: https://api.prod.commenda.io/api/v1
@@ -3863,7 +3863,7 @@
 "/partner/commenda-os/customers/{customerId}/persons/{personId}":
   patch:
     summary: Update a person
-    description: Partially update a reusable Commenda OS key person. Omitted fields are left unchanged. For Singapore residential address requirements, include `residentialAddress`.
+    description: Partially update a reusable Commenda OS person. Omitted fields are left unchanged. For Singapore residential address requirements, include `residentialAddress`.
     operationId: updatePartnerCommendaOsPerson
     servers:
       - url: https://api.prod.commenda.io/api/v1
@@ -4375,7 +4375,7 @@
         required: false
         schema:
           "$ref": "../components/components.yaml#/components/schemas/PartnerIncorporationIssueStatusFilter"
-        description: Filter issues by status. Defaults to `active`.
+        description: Filter issues by status. Defaults to `ACTIVE`.
     responses:
       "200":
         description: Issues retrieved successfully

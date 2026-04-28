@@ -23,8 +23,12 @@ Each item in `missingRequirements` and `invalidRequirements` has the same shape.
 
 | Attribute | Type | Description |
 | --- | --- | --- |
-| `path` | string | Dot/bracket path for the missing or invalid requirement. Values depend on the current requirements and participant ids, such as `companyNames.companyNameOptions` or `participants.participant_123.documents.passport_scan`. |
+| `code` | string | Stable machine-readable validation issue code. |
+| `path` | string | Dot/bracket path for the missing or invalid requirement. Values depend on the current requirements and participant ids, such as `companyNames.companyNameOptions` or `participants.participant_123.documents.PASSPORT_SCAN`. |
 | `message` | string | Human-readable explanation of what is missing or invalid. |
+| `participantId` | string | Present when the issue belongs to a participant. |
+| `documentKind` | string | Present when the issue belongs to a participant document. |
+| `displayName` | string | Present when Commenda can provide a useful label for the affected person, business entity, or field. |
 
 ## Endpoints
 

@@ -5,7 +5,7 @@ openapi: "POST /partner/customers"
 
 Create a customer record that scopes later Partner API calls.
 
-Save the returned `customerId`. Use it when creating incorporations and when managing reusable Commenda OS resources such as key persons, business entities, and documents.
+Save the returned `customer.id`. Use it as `{customerId}` when creating incorporations and when managing reusable Commenda OS resources such as people, business entities, and files.
 
 ```bash
 curl --request POST \
@@ -20,6 +20,11 @@ curl --request POST \
 
 ```json
 {
-  "customerId": 77
+  "customer": {
+    "id": 77,
+    "name": "Acme Holdings",
+    "createdAt": "2026-04-20T19:35:00.000Z",
+    "updatedAt": "2026-04-20T19:35:00.000Z"
+  }
 }
 ```

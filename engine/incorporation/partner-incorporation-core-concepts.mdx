@@ -11,7 +11,7 @@ description: "Understand the records, IDs, and API choices that make up a custom
 | Customer | One of your customers. Every resource in the incorporation API is scoped to a specific customer. | `customerId` |
 | Incorporation | A specific incorporation workflow, including selected jurisdiction/entity type. | `incorporation.id` |
 | Commenda OS reusable resource | Customer data that can be reused across workflows, such as people, business entities, locations, and files. | Resource-specific IDs |
-| Participant | A reference to a person or business entity in Commenda OS, attached to this incorporation with a role such as `director` or `shareholder`. | `participantId` |
+| Participant | A reference to a person or business entity in Commenda OS, attached to this incorporation with a role such as `DIRECTOR` or `SHAREHOLDER`. | `participantId` |
 | Intake | A collection of user-provided information about the entity being incorporated, such as company name options and registered office address choice. | `intakeState` |
 | Status and issues | Post-submit progress and partner-visible correction requests. | `incorporationStatus`, `issue.id` |
 
@@ -34,7 +34,7 @@ People, business entities, locations, and files live in Commenda OS so customers
 | Director or shareholder person | Commenda OS Persons | Incorporation Participants |
 | Corporate shareholder | Commenda OS Business Entities | Incorporation Participants |
 | Registered office location | Commenda OS Locations | Intake `registeredOfficeAddressLocation` |
-| Passport, utility bill, or other source file | Commenda OS Documents | Participant document upsert |
+| Passport, utility bill, or other source file | Commenda OS Files | Participant document upsert |
 
 ## Which API to call
 
@@ -42,7 +42,7 @@ People, business entities, locations, and files live in Commenda OS so customers
 | --- | --- |
 | Customer setup | Create or list the customer record that scopes later calls. |
 | Partner Incorporation API | Discover requirements, create incorporations, register participants, upsert participant documents, submit intake, track status, and read issues. |
-| Commenda OS Partner API | Manage reusable customer data such as people, business entities, locations, documents, government identifiers, and registrations. |
+| Commenda OS Partner API | Manage reusable customer data such as people, business entities, locations, files, documents, government identifiers, and registrations. |
 | Partner webhooks | Subscribe to partner events such as incorporation issue creation and resolution. |
 
 ## What to read next

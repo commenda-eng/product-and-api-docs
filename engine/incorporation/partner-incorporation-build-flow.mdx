@@ -40,7 +40,7 @@ This guide shows the recommended implementation sequence for a customer incorpor
 | `businessEntityId` | Create/list/get incorporation | Commenda OS business-entity endpoints for the entity being incorporated | Target business entity id for the entity being incorporated. For new Partner API incorporations, this is returned on create. It is different from corporate shareholder `businessEntity.id` values. |
 | Person `id` | `POST /partner/commenda-os/customers/{customerId}/persons` | Participant `resource.resourceId` | Send as a number, for example `12`. |
 | Business entity `id` | `POST /partner/commenda-os/customers/{customerId}/business-entities` | Corporate participant `resource.resourceId` | Send as a number, for example `44`. |
-| `participantId` | Register participant | Update participant roles; upsert participant documents | Incorporation-scoped participant id. |
+| Participant `id` | Register participant | Update participant roles; upsert participant documents | Incorporation-scoped participant id. |
 | `fileId` | `POST /partner/commenda-os/customers/{customerId}/files` | Upsert participant document | Customer-scoped file id returned after multipart upload. |
 | `documentId` | Upsert participant document | Read/list participant state | Incorporation-scoped typed document link. |
 | `statusWorkflow.stages[].id` | Status workflow or incorporation status | Progress UI and issue-stage correlation | Stage ids come from the active workflow definition. |

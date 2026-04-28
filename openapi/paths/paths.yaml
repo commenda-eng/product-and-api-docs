@@ -2913,7 +2913,7 @@
 "/partner/incorporation/{incorporationId}/participants/{participantId}":
   patch:
     summary: Update an incorporation participant
-    description: Update an existing incorporation participant. Use this endpoint to correct director/shareholder roles or shareholder ownership percentages without modifying the underlying Commenda OS person or business entity.
+    description: Partially update an existing incorporation participant. Use this endpoint to correct director/shareholder roles, shareholder ownership percentages, or to re-point the participant at a different Commenda OS person or business entity. Provide `roles`, `resource`, or both. The underlying Commenda OS resource is not modified by this endpoint.
     operationId: updatePartnerIncorporationParticipant
     servers:
       - url: https://api.prod.commenda.io/api/v1
@@ -2946,7 +2946,7 @@
             schema:
               "$ref": "../components/components.yaml#/components/schemas/PartnerIncorporationParticipantMutationResponse"
       "400":
-        description: Malformed participant update payload, invalid role combination, missing shareholder ownership percentage, or shareholder ownership exceeding the selected requirements total
+        description: Malformed participant update payload, neither `roles` nor `resource` provided, invalid role combination, missing shareholder ownership percentage, shareholder ownership exceeding the selected requirements total, or the supplied resource is already registered as another participant on this incorporation
         content:
           application/json:
             schema:
@@ -2958,7 +2958,7 @@
             schema:
               "$ref": "../components/components.yaml#/components/schemas/AffiliatePublicError"
       "403":
-        description: Incorporation is not accessible to the partner
+        description: Incorporation is not accessible to the partner, or the supplied resource is not accessible to the partner
         content:
           application/json:
             schema:

@@ -2831,7 +2831,7 @@ paths:
   /partner/incorporation/{incorporationId}/participants/{participantId}:
     patch:
       summary: Update an incorporation participant
-      description: Update an existing incorporation participant. Use this endpoint to correct director/shareholder roles or shareholder ownership percentages without modifying the underlying Commenda OS person or business entity.
+      description: Partially update an existing incorporation participant. Use this endpoint to correct director/shareholder roles, shareholder ownership percentages, or to re-point the participant at a different Commenda OS person or business entity. Provide `roles`, `resource`, or both. The underlying Commenda OS resource is not modified by this endpoint.
       operationId: updatePartnerIncorporationParticipant
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -2864,7 +2864,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PartnerIncorporationParticipantMutationResponse'
         '400':
-          description: Malformed participant update payload, invalid role combination, missing shareholder ownership percentage, or shareholder ownership exceeding the selected requirements total
+          description: Malformed participant update payload, neither `roles` nor `resource` provided, invalid role combination, missing shareholder ownership percentage, shareholder ownership exceeding the selected requirements total, or the supplied resource is already registered as another participant on this incorporation
           content:
             application/json:
               schema:
@@ -2876,7 +2876,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/AffiliatePublicError'
         '403':
-          description: Incorporation is not accessible to the partner
+          description: Incorporation is not accessible to the partner, or the supplied resource is not accessible to the partner
           content:
             application/json:
               schema:
@@ -8060,15 +8060,18 @@ components:
           $ref: '#/components/schemas/PartnerIncorporationValidationSummary'
     PartnerPatchParticipantRequest:
       type: object
-      description: Replaces the roles on an existing incorporation participant. Omitted roles are removed.
-      required:
-        - roles
+      description: Partially updates an existing incorporation participant. Provide `roles`, `resource`, or both. At least one of the two fields is required. When `roles` is provided, the supplied array fully replaces the existing roles and any omitted roles are removed. When `resource` is provided, the participant is re-pointed at a different Commenda OS person or business entity.
       properties:
+        resource:
+          allOf:
+            - $ref: '#/components/schemas/PartnerIncorporationParticipantResource'
+          description: Reusable Commenda OS resource the participant should reference. Provide this when correcting which person or business entity is registered as this participant. The new resource must not already be registered as another participant on the same incorporation.
         roles:
           type: array
           minItems: 1
           items:
             $ref: '#/components/schemas/PartnerIncorporationParticipantRole'
+          description: Full replacement set of roles for the participant. Omitted roles are removed.
       example:
         roles:
           - role: DIRECTOR

@@ -670,7 +670,7 @@ schemas:
                 required: true
                 resourceKind: address
                 commendaOs:
-                  entity: KEY_PERSON
+                  entity: keyPerson
                   field: residentialAddress
                 fields:
                   - kind: scalar
@@ -678,21 +678,21 @@ schemas:
                     name: Address line 1
                     required: true
                     commendaOs:
-                      entity: KEY_PERSON
+                      entity: keyPerson
                       field: residentialAddress.addressLine1
                   - kind: scalar
                     key: city
                     name: City
                     required: true
                     commendaOs:
-                      entity: KEY_PERSON
+                      entity: keyPerson
                       field: residentialAddress.city
                   - kind: scalar
                     key: country
                     name: Country
                     required: true
                     commendaOs:
-                      entity: KEY_PERSON
+                      entity: keyPerson
                       field: residentialAddress.country
           documentRequirements:
             - documentKind: PASSPORT_SCAN

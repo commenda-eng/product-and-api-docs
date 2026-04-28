@@ -1,85 +1,194 @@
 ---
 title: "Requirements guide"
-description: "Understand how to route incorporation requirements to the right Partner API endpoints."
+description: "Render incorporation requirements and submit the resulting values to the right Partner API endpoints."
 ---
 
-The requirements response is a machine-readable checklist for one incorporation type. It tells you what your customer needs to provide, which Partner API endpoint should store that data, and which follow-up validation paths to expect while the incorporation is incomplete.
+The requirements response is the form contract for one incorporation type. Use it to decide which fields to render, which participant roles to collect, which Commenda OS records must be completed, and which document uploads are required.
 
-Think of the requirements response as a routing guide, not as a payload you send back unchanged.
+Do not send the requirements response back unchanged. Render from requirements, save values through the endpoint family that owns each requirement, and use `incorporationValidation` to decide whether the incorporation is ready to submit.
 
 | Question | Where to look | What your integration should do |
 | --- | --- | --- |
-| What incorporation-level fields do I ask the customer for? | `blocks[].fields` | Render these as form fields and submit them through `PATCH /partner/incorporation/{incorporationId}/intake` under `requirements`. |
+| What incorporation-level fields do I ask for? | `blocks[].fields` | Render these fields and submit values through `PATCH /partner/incorporation/{incorporationId}/intake` under `requirements`. |
 | Who must be attached to the incorporation? | `participantRequirements` | Create or reuse Commenda OS people/business entities, then register them as participants. |
-| What data must exist on a person or business entity? | `resourceFieldsByParticipantType` | Update the referenced Commenda OS resource before submit. |
+| What data must exist on a participant's person or business entity? | `resourceFieldsByParticipantType` | Render these fields on the participant form and submit them through the relevant Commenda OS Partner API endpoint. |
 | What files must be attached to a participant? | `documentRequirements` | Upload a customer file, then upsert it into the participant's required document slot. |
-| Why is validation still incomplete? | `missingRequirements` and `invalidRequirements` on read/write responses | Follow the path back to the field, participant, resource field, or document slot that needs attention. |
+| Why is validation still incomplete? | `missingRequirements` and `invalidRequirements` | Follow each validation path back to the field, participant, resource field, or document slot that needs attention. |
 
-## Requirement areas
+## Renderer model
 
-| Requirement area | What it means | How to satisfy it |
+Build your renderer around each field's `kind`.
+
+| `kind` | Render as | Value shape | Submit through |
+| --- | --- | --- | --- |
+| `scalar` | One input control using `input.type` | Primitive string, number, or boolean | Parent destination. For `blocks[].fields`, send under `requirements.{key}`. |
+| `object` | A nested group of fields | Object keyed by child field keys | Parent destination. Object fields can appear anywhere a field is accepted; the current Singapore requirements use them as collection items. |
+| `collection` | Repeating items | Array of item objects or resource objects | Parent destination. Use `cardinality` and `constraints` to size and validate the list. |
+| `resource` | A resource picker or nested resource fields | Depends on location in the requirements response | For intake blocks, send a resource object. For participant resource fields, update the referenced Commenda OS resource. |
+
+For `blocks[].fields`, field keys become top-level keys in the intake `requirements` object. For nested `object` and `collection` fields, preserve the nested shape under the parent key.
+
+For `participantRequirements[].resourceFieldsByParticipantType`, field keys describe data that must exist on the registered participant's `resource`. Do not send those values to the intake endpoint. Update the referenced person or business entity through the Commenda OS Partner API.
+
+## Scalar input types
+
+`input.type` is the UI hint for scalar fields.
+
+| `input.type` | Suggested control | Submit value |
 | --- | --- | --- |
-| `blocks` | UI-friendly groupings of incorporation-level fields | Render these groups in your intake UI if useful. |
-| `fields` | Data submitted through `PATCH /partner/incorporation/{incorporationId}/intake` | Send values under `requirements` using each field key. |
-| `required.when` / `appliesWhen` | Rules that make fields required or applicable only when another value is selected | Recompute visible/required fields when users change controlling values. Fields whose `appliesWhen` rule is not satisfied are ignored by validation. |
-| `participantRequirements` | Required participant roles such as director or shareholder | Register reusable Commenda OS resources with `POST /partner/incorporation/{incorporationId}/participants`. |
-| `resourceFieldsByParticipantType` | Required fields on the registered participant's reusable Commenda OS resource | Complete those fields on the referenced person or business entity before validation can pass. |
-| `documentRequirements` | Required typed documents for participant roles/types | Upsert a customer `fileId` into each participant document slot with `PUT /partner/incorporation/{incorporationId}/participants/{participantId}/documents/{documentKind}`. |
-| Version fields | Requirements version metadata | Store these in logs for debugging. Do not send them back to Commenda. |
+| `text`, `textarea`, `email`, `phone`, `date`, `country` | Text-like input, date picker, or country picker | String |
+| `select` | Select, radio group, or segmented control | The selected option `value` |
+| `number`, `percent` | Numeric input | Number |
 
-## Commenda OS hints
+For `select`, render from `input.options`. Treat option `value` as the exact API value and option `name`/`description` as display copy. The API validates option values as sent; do not normalize, uppercase, or otherwise change casing.
 
-The `commendaOs` hint on a field identifies the Commenda OS resource and field that should hold the value. For example, a field with:
+Use `input.placeholder` and `input.examples` as hints only. They are not defaults.
+
+## Required and applicable fields
+
+`required` and `appliesWhen` are separate concepts.
+
+| Property | Meaning | Renderer behavior | Validation behavior |
+| --- | --- | --- | --- |
+| `required: true` | The field is always required when applicable. | Mark required. | Missing value blocks submit. |
+| `required: false` | The field is optional. | Mark optional. | Missing value does not block submit. |
+| `required.when` | The field is conditionally required. | Recompute required state when the controlling field changes. | Missing value blocks submit only when the condition matches. |
+| `appliesWhen` | The field only applies for a selected condition. | Hide or disable the field when the condition does not match. | Non-applicable fields are ignored by validation. |
+
+Because intake updates are merge-based, `currentState` is the merged history of accepted intake patches. It can contain values that are stale or no longer applicable after later choices. Treat `incorporationValidation` as the source of truth for readiness, not the presence of keys in `currentState`.
+
+## Cardinality and constraints
+
+Collections and participant requirements can define `cardinality`.
+
+| Property | Meaning | Example renderer behavior |
+| --- | --- | --- |
+| `cardinality.exact` | The list must contain exactly this many items. | Render a fixed number of rows. |
+| `cardinality.min` | The list must contain at least this many items. | Render one row and allow adding more. |
+| `cardinality.max` | The list must contain at most this many items. | Disable add after the maximum. |
+
+Collections can also define `constraints`.
+
+| Constraint | Meaning | Example renderer behavior |
+| --- | --- | --- |
+| `uniqueItems` | Items must be unique by the listed fields. | Warn before submit when two rows share the same field values. |
+| `sumEquals` | Numeric values across all items must total a specific number. | Show a running total and block submit when the total is off. |
+
+Scalar fields can define `validation`, such as `minLength`, `maxLength`, `min`, `max`, or `pattern`. Use these to provide inline validation, but still handle server-side `invalidRequirements`.
+
+## Resource fields
+
+Resource fields have different submission shapes depending on where they appear.
+
+### Intake resource fields
+
+When a resource field appears under `blocks[].fields`, submit a resource object through the intake endpoint.
+
+| Resource object field | Required | Description |
+| --- | --- | --- |
+| `mode` | Yes | Must be `existingResource` or `inlineData`. |
+| `resourceId` | When `mode` is `existingResource` | ID of an accessible Commenda OS resource of the type named by `commendaOsResource.entity`. |
+| `data` | When `mode` is `inlineData`; optional for `existingResource` | Field values for this resource requirement. |
+
+When a resource field includes a `fields` array, those child fields describe the keys accepted under `data`. For `existingResource`, `data` supplements the saved resource values for incorporation validation. For `inlineData`, `data` is the full submitted resource value.
+
+Use `existingResource` when the customer already has a Commenda OS resource:
 
 ```json
 {
-  "commendaOs": {
-    "entity": "keyPerson",
-    "field": "residentialAddress"
+  "requirements": {
+    "registeredOfficeAddressSource": "partnerProvidedLocation",
+    "registeredOfficeAddressLocation": {
+      "mode": "existingResource",
+      "resourceId": "location_001"
+    }
   }
 }
 ```
 
-is satisfied by updating the referenced person with a top-level `residentialAddress` field.
-
-`commendaOsResource` means something different: it indicates a reusable Commenda OS resource reference. For example, a registered office address can point at an existing Commenda OS Location. A participant's residential address is not a reusable Location; it is stored directly on the person.
-
-## Route requirements to endpoints
-
-Most integrations can route requirements with this mapping:
-
-| Requirement shape | Example key | Endpoint family |
-| --- | --- | --- |
-| `blocks[].fields[]` | `companyNameOptions`, `registeredOfficeAddressSource` | `PATCH /partner/incorporation/{incorporationId}/intake` |
-| `participantRequirements[]` | `directors`, `shareholders` | `POST /partner/incorporation/{incorporationId}/participants` |
-| `resourceFieldsByParticipantType.INDIVIDUAL[]` | `firstName`, `dateOfBirth`, `residentialAddress` | `POST` or `PATCH /partner/commenda-os/customers/{customerId}/persons` |
-| `resourceFieldsByParticipantType.CORPORATE[]` | `legalName`, `jurisdiction`, `registrationNumber` | Commenda OS business entity endpoints |
-| `documentRequirements[]` | `PASSPORT_SCAN`, `UTILITY_BILL` | Upload a customer file, then `PUT /partner/incorporation/{incorporationId}/participants/{participantId}/documents/{documentKind}` |
-
-Use validation responses to resolve a requirement to a specific incorporation record. For participant resource fields, the path includes the concrete `participantId`. Look up that participant in the incorporation response, read its `resource.resourceType` and `resource.resourceId`, then update the matching Commenda OS resource.
-
-## Example: residential address
-
-For a Singapore private limited company, the requirements response may say an individual director must have a residential address:
+You can include `data` when the existing resource is missing supplemental fields required for this incorporation:
 
 ```json
 {
-  "participantRequirements": [
+  "requirements": {
+    "registeredOfficeAddressSource": "partnerProvidedLocation",
+    "registeredOfficeAddressLocation": {
+      "mode": "existingResource",
+      "resourceId": "location_001",
+      "data": {
+        "addressLine1": "1 Raffles Place",
+        "postalCode": "048616",
+        "country": "SG"
+      }
+    }
+  }
+}
+```
+
+Use `inlineData` when the incorporation should store the resource data only for this intake value:
+
+```json
+{
+  "requirements": {
+    "registeredOfficeAddressSource": "partnerProvidedLocation",
+    "registeredOfficeAddressLocation": {
+      "mode": "inlineData",
+      "data": {
+        "addressLine1": "1 Raffles Place",
+        "postalCode": "048616",
+        "country": "SG"
+      }
+    }
+  }
+}
+```
+
+`commendaOsResource.entity` tells you what kind of Commenda OS resource an `existingResource` value should reference. It does not create the resource automatically.
+
+### Participant resource fields
+
+When a resource field appears under `participantRequirements[].resourceFieldsByParticipantType`, it describes data that must exist on the registered participant's Commenda OS resource.
+
+For Singapore individual directors and shareholders, `residentialAddress` is a required resource field on the `KEY_PERSON` resource. Satisfy it by updating the referenced person:
+
+```json
+{
+  "residentialAddress": {
+    "addressLine1": "1 Raffles Place",
+    "city": "Singapore",
+    "postalCode": "048616",
+    "country": "SG"
+  }
+}
+```
+
+This is not an intake value and it is not the registered office address location. Submit it through `POST /partner/commenda-os/customers/{customerId}/persons` or `PATCH /partner/commenda-os/customers/{customerId}/persons/{personId}`.
+
+The Partner API person endpoints accept `residentialAddress` directly. They do not accept a person `locations` array.
+
+## Worked example: Singapore Pte. Ltd.
+
+This requirements snippet says to collect exactly three unique company names:
+
+```json
+{
+  "key": "companyNames",
+  "fields": [
     {
-      "key": "directors",
-      "role": "DIRECTOR",
-      "allowedParticipantTypes": ["INDIVIDUAL"],
-      "allowedResourceTypes": ["KEY_PERSON"],
-      "resourceFieldsByParticipantType": {
-        "INDIVIDUAL": [
+      "kind": "collection",
+      "key": "companyNameOptions",
+      "name": "Company name options",
+      "cardinality": { "exact": 3 },
+      "constraints": [{ "kind": "uniqueItems", "fields": ["name"] }],
+      "item": {
+        "kind": "object",
+        "fields": [
           {
-            "kind": "resource",
-            "key": "residentialAddress",
-            "required": true,
-            "commendaOs": {
-              "entity": "keyPerson",
-              "field": "residentialAddress"
-            }
+            "kind": "scalar",
+            "key": "name",
+            "name": "Proposed company name",
+            "input": { "type": "text" },
+            "validation": { "minLength": 1, "maxLength": 120 }
           }
         ]
       }
@@ -88,7 +197,123 @@ For a Singapore private limited company, the requirements response may say an in
 }
 ```
 
-If validation later returns:
+A renderer should show three text inputs, validate each `name`, and prevent duplicate names before submit.
+
+Submit the values through intake:
+
+```json
+{
+  "requirements": {
+    "companyNameOptions": [
+      { "name": "Acme SG Pte Ltd" },
+      { "name": "Acme Asia Pte Ltd" },
+      { "name": "Acme Global Pte Ltd" }
+    ]
+  }
+}
+```
+
+This requirements snippet says to render a select for registered office address source. The location field is only visible and required when the user chooses `partnerProvidedLocation`:
+
+```json
+{
+  "key": "registeredOfficeAddress",
+  "fields": [
+    {
+      "kind": "scalar",
+      "key": "registeredOfficeAddressSource",
+      "name": "Registered office address source",
+      "required": true,
+      "input": {
+        "type": "select",
+        "options": [
+          { "value": "commendaService", "name": "Use Commenda service" },
+          { "value": "partnerProvidedLocation", "name": "Use partner-provided location" }
+        ]
+      }
+    },
+    {
+      "kind": "resource",
+      "key": "registeredOfficeAddressLocation",
+      "required": {
+        "when": {
+          "fieldKey": "registeredOfficeAddressSource",
+          "equals": "partnerProvidedLocation"
+        }
+      },
+      "appliesWhen": {
+        "fieldKey": "registeredOfficeAddressSource",
+        "equals": "partnerProvidedLocation"
+      },
+      "commendaOsResource": { "entity": "location" },
+      "fields": [
+        { "kind": "scalar", "key": "addressLine1", "input": { "type": "text" } },
+        { "kind": "scalar", "key": "city", "input": { "type": "text" } },
+        { "kind": "scalar", "key": "postalCode", "input": { "type": "text" } },
+        { "kind": "scalar", "key": "country", "input": { "type": "country" } }
+      ]
+    }
+  ]
+}
+```
+
+If the user chooses Commenda's registered office service, submit only the selected option:
+
+```json
+{
+  "requirements": {
+    "registeredOfficeAddressSource": "commendaService"
+  }
+}
+```
+
+If the user chooses a partner-provided location, submit the selected source plus the resource object:
+
+```json
+{
+  "requirements": {
+    "registeredOfficeAddressSource": "partnerProvidedLocation",
+    "registeredOfficeAddressLocation": {
+      "mode": "existingResource",
+      "resourceId": "location_001"
+    }
+  }
+}
+```
+
+If the user chooses `inlineData` for that location field, use the same child `fields` keys under `data`:
+
+```json
+{
+  "requirements": {
+    "registeredOfficeAddressSource": "partnerProvidedLocation",
+    "registeredOfficeAddressLocation": {
+      "mode": "inlineData",
+      "data": {
+        "addressLine1": "1 Raffles Place",
+        "city": "Singapore",
+        "postalCode": "048616",
+        "country": "SG"
+      }
+    }
+  }
+}
+```
+
+Participant requirements are rendered separately from intake fields. For an individual director, create or update a person, register that person as a participant, and attach required documents:
+
+```json
+{
+  "participantType": "INDIVIDUAL",
+  "resource": {
+    "resourceType": "KEY_PERSON",
+    "resourceId": 12
+  },
+  "roles": [{ "role": "DIRECTOR" }]
+}
+```
+
+If validation returns:
 
 ```json
 {
@@ -97,19 +322,7 @@ If validation later returns:
 }
 ```
 
-Find `participant_123` in the incorporation response:
-
-```json
-{
-  "participantId": "participant_123",
-  "resource": {
-    "resourceType": "KEY_PERSON",
-    "resourceId": "12"
-  }
-}
-```
-
-Then update person `12`:
+Find `participant_123` in the incorporation response, read `participant.resource.resourceId`, then update that person:
 
 ```json
 {
@@ -129,9 +342,22 @@ Validation paths in `missingRequirements` and `invalidRequirements` point to the
 | Example path | Meaning | Fix |
 | --- | --- | --- |
 | `companyNames.companyNameOptions` | Company name options are missing or invalid | Submit valid names through the intake endpoint as `requirements.companyNameOptions`. |
-| `registeredOfficeAddress.registeredOfficeAddressLocation` | A partner-provided registered office address location is required | Submit a Commenda OS location reference as `requirements.registeredOfficeAddressLocation` or choose `COMMENDA_SERVICE`. |
+| `registeredOfficeAddress.registeredOfficeAddressLocation` | A partner-provided registered office address location is required | Submit `requirements.registeredOfficeAddressLocation` or choose `commendaService`. |
 | `participants.directors` | A required director participant is missing | Register a person or business entity as a director. |
 | `participants.participant_123.resource.residentialAddress` | A registered participant's referenced person is missing a residential address | Update that Commenda OS person with `residentialAddress`. |
 | `participants.participant_123.documents.PASSPORT_SCAN` | A participant is missing a passport scan | Upload a customer file, then upsert it as `PASSPORT_SCAN` for that participant. |
 
-Render your UI from the requirements response, but decide readiness from validation returned by write/read calls because Commenda may update requirements over time.
+Your renderer can prevent many invalid values before submit, but Commenda validation is authoritative. After every write, read `incorporationValidation`; the incorporation is ready to submit when `incorporationValidation.isComplete` is `true`.
+
+## Renderer helpers
+
+Most renderers need only a small set of pure helpers:
+
+| Helper | Purpose |
+| --- | --- |
+| `evalAppliesWhen(rule, values)` | Returns whether a field applies for the current sibling values. |
+| `evalRequired(required, values)` | Handles boolean `required` and `required.when`. |
+| `padToCardinality(items, cardinality)` | Initializes fixed or minimum collection rows. |
+| `findUniqueItemsViolation(items, constraint)` | Checks `uniqueItems` constraints before submit. |
+
+Keep client-side validation helpful but non-authoritative. The server may add or change requirements, and `incorporationValidation` remains the final contract for submit readiness.

@@ -332,7 +332,7 @@ Use this response for customer-facing progress. It includes the top-level `incor
 | `documentRequirements` | Required typed documents for a participant role/type | Satisfy these by upserting customer files as participant documents. |
 | Version fields | Requirements version metadata | Store these in logs for debugging. Do not send them back or gate UI behavior on exact values. |
 
-Only `blocks[].fields[]` keys are valid intake keys. Participant resource fields such as `residentialAddress` must be written to the referenced Commenda OS resource, not to nested intake paths such as `requirements.participants.directors[]` or `requirements.directors[]`.
+Only `blocks[].fields[]` keys are valid intake keys. Participant resource fields from `resourceFieldsByParticipantType` must be written to the referenced Commenda OS resource.
 
 Validation issues use paths that point to the missing or invalid requirement.
 

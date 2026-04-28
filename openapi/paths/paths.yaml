@@ -2720,7 +2720,7 @@
 "/partner/incorporation/{incorporationId}/intake":
   patch:
     summary: Update incorporation intake
-    description: Partially update incorporation-level intake details. Each write returns the updated intake state and incorporation validation summary. The `requirements` object only accepts keys listed in `requirements.blocks[].fields[]`; participant roles, participant resource fields such as residentialAddress, and participant documents must be completed through their participant, Commenda OS, or document endpoints.
+    description: Partially update incorporation intake details. Each write returns the updated intake state and incorporation validation summary.
     operationId: updatePartnerIncorporationIntake
     servers:
       - url: https://api.prod.commenda.io/api/v1

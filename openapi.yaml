@@ -2638,7 +2638,7 @@ paths:
   /partner/incorporation/{incorporationId}/intake:
     patch:
       summary: Update incorporation intake
-      description: Partially update incorporation-level intake details. Each write returns the updated intake state and incorporation validation summary. The `requirements` object only accepts keys listed in `requirements.blocks[].fields[]`; participant roles, participant resource fields such as residentialAddress, and participant documents must be completed through their participant, Commenda OS, or document endpoints.
+      description: Partially update incorporation intake details. Each write returns the updated intake state and incorporation validation summary.
       operationId: updatePartnerIncorporationIntake
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -7684,7 +7684,6 @@ components:
           example: 0f9a8f5e-7f7c-4c1b-a60a-b1022f9d8c91
         currentState:
           $ref: '#/components/schemas/PartnerIncorporationRequirementValues'
-          description: Latest partner-submitted incorporation-level intake values. Participant resource fields such as a person's residentialAddress are not stored here; update the referenced Commenda OS resource instead.
         createdAt:
           type: string
           format: date-time
@@ -7961,7 +7960,6 @@ components:
           $ref: '#/components/schemas/PartnerIncorporationValidationSummary'
     PartnerUpdateIntakeRequest:
       type: object
-      description: Request to update incorporation-level intake values. `requirements` only accepts keys listed in `requirements.blocks[].fields[]`; participant roles, participant resource fields, and participant documents are stored through their own endpoints.
       required:
         - requirements
       properties:
@@ -9179,7 +9177,7 @@ components:
           example: '+14155550123'
         residentialAddress:
           $ref: '#/components/schemas/CommendaOsPersonAddress'
-          description: Person residential address. This is the only supported write interface for participant resource requirements such as `participants.{participantId}.resource.residentialAddress`; do not use person locations, locationTypes, CONTACT_ADDRESS, or resource.residentialAddress for this requirement.
+          description: Person residential address. Use this for participant resource requirements such as `participants.{participantId}.resource.residentialAddress`.
         employmentStartDate:
           type: string
           format: date
@@ -9228,7 +9226,7 @@ components:
           example: '+14155550123'
         residentialAddress:
           $ref: '#/components/schemas/CommendaOsPersonAddress'
-          description: Person residential address. This is the only supported write interface for participant resource requirements such as `participants.{participantId}.resource.residentialAddress`; do not use person locations, locationTypes, CONTACT_ADDRESS, or resource.residentialAddress for this requirement.
+          description: Person residential address. Use this for participant resource requirements such as `participants.{participantId}.resource.residentialAddress`.
         employmentStartDate:
           type: string
           format: date

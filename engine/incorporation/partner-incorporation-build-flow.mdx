@@ -40,7 +40,7 @@ This guide shows the recommended implementation sequence for a customer incorpor
 | `businessEntityId` | Create/list/get incorporation | Commenda OS business-entity endpoints for the entity being incorporated | Target business entity id for the entity being incorporated. For new Partner API incorporations, this is returned on create. It is different from corporate shareholder `businessEntity.id` values. |
 | Person `id` | `POST /partner/commenda-os/customers/{customerId}/persons` | Participant `resource.resourceId` | Send as a number, for example `12`. |
 | Business entity `id` | `POST /partner/commenda-os/customers/{customerId}/business-entities` | Corporate participant `resource.resourceId` | Send as a number, for example `44`. |
-| `participantId` | Register participant | Update participant roles; upsert participant documents | Incorporation-scoped participant id. |
+| Participant `id` | Register participant | Update participant roles; upsert participant documents | Incorporation-scoped participant id. |
 | `fileId` | `POST /partner/commenda-os/customers/{customerId}/files` | Upsert participant document | Customer-scoped file id returned after multipart upload. |
 | `documentId` | Upsert participant document | Read/list participant state | Incorporation-scoped typed document link. |
 | `statusWorkflow.stages[].id` | Status workflow or incorporation status | Progress UI and issue-stage correlation | Stage ids come from the active workflow definition. |
@@ -331,8 +331,6 @@ Use this response for customer-facing progress. It includes the top-level `incor
 | `resourceFieldsByParticipantType` | Required fields on a participant's referenced Commenda OS resource | Complete these fields on the person or business entity before submitting. |
 | `documentRequirements` | Required typed documents for a participant role/type | Satisfy these by upserting customer files as participant documents. |
 | Version fields | Requirements version metadata | Store these in logs for debugging. Do not send them back or gate UI behavior on exact values. |
-
-Only `blocks[].fields[]` keys are valid intake keys. Participant resource fields from `resourceFieldsByParticipantType` must be written to the referenced Commenda OS resource.
 
 Validation issues use paths that point to the missing or invalid requirement.
 

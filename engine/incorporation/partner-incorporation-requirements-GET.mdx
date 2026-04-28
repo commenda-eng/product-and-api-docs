@@ -17,7 +17,7 @@ Use the returned requirements to render your intake UI and to understand require
 
 Rule of thumb: render from the requirements response, but validate from write/read responses. Intake updates are always validated against the current server-side requirements, so clients should handle `missingRequirements` and `invalidRequirements` from intake responses.
 
-For a customer-facing explanation of how to route requirements to endpoints, see [Requirements guide](/engine/incorporation/partner-incorporation-requirements-guide).
+For a renderer-oriented explanation of field kinds, input types, conditions, cardinality, constraints, and endpoint routing, see [Requirements guide](/engine/incorporation/partner-incorporation-requirements-guide).
 
 ## Participant role/resource combinations
 
@@ -75,10 +75,10 @@ Find `participant_123` in the incorporation response:
 
 ```json
 {
-  "participantId": "participant_123",
+  "id": "participant_123",
   "resource": {
     "resourceType": "KEY_PERSON",
-    "resourceId": "12"
+    "resourceId": 12
   }
 }
 ```

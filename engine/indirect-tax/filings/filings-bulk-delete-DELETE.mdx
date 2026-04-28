@@ -6,20 +6,26 @@ description: "Delete filings by registration, status filters, or explicit filing
 
 Delete filings that are no longer needed. This endpoint supports three input modes:
 
-- **By filing IDs** — pass an array of specific filing UUIDs to delete
-- **V2 filter** — pass `registration_tax_type_id` with `statuses` and optional `due_after` to delete matching filings
+- **By filing IDs** — pass an array of specific filing UUIDs to delete (works on both the legacy and V2 paths)
+- **V2 filter** — pass `registration_tax_type_id` with `statuses` and optional `due_after` to delete matching filings (requires `?v2=true`)
 - **V1 filter** — pass `corporation_id` and `state` for legacy filings
 
 <Warning>
   Filings with status `FILED` cannot be deleted. Include only non-filed statuses in the `statuses` filter.
 </Warning>
 
+## Query parameters
+
+<ParamField query="v2" type="boolean">
+  Set to `true` to use the V2 deletion path. Required when filtering with `registration_tax_type_id`. Optional when deleting by `filing_ids`.
+</ParamField>
+
 ## Request body
 
 ### Option 1: delete by filing IDs
 
 <ParamField body="filing_ids" type="array">
-  Array of filing UUIDs to delete. Maximum 100 items.
+  Array of filing UUIDs to delete. Each value must be a valid UUID. Minimum 1 entry, maximum 100 entries.
 
   Example: `["a1b2c3d4-...", "e5f6a7b8-..."]`
 </ParamField>
@@ -27,7 +33,7 @@ Delete filings that are no longer needed. This endpoint supports three input mod
 ### Option 2: V2 filter by registration
 
 <ParamField body="registration_tax_type_id" type="string">
-  The V2 registration content ID. Deletes all filings matching the filters for this registration.
+  The V2 registration content ID. Deletes all filings matching the filters for this registration. Requires `?v2=true`. When supplied, `corporation_id` is also required.
 </ParamField>
 
 <ParamField body="statuses" type="array">
@@ -68,10 +74,11 @@ curl --request DELETE \
 
 ```bash cURL - V2 filter
 curl --request DELETE \
-  --url 'https://transaction-tax.api.in.commenda.io/api/v1/internal/filings/bulk/delete' \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/internal/filings/bulk/delete?v2=true' \
   --header 'Authorization: Bearer <admin_token>' \
   --header 'Content-Type: application/json' \
   --data '{
+    "corporation_id": "c1d2e3f4-a5b6-7890-abcd-ef1234567890",
     "registration_tax_type_id": "REG_STATE_CEN_06_RST",
     "statuses": ["SCHEDULED", "UPCOMING"],
     "due_after": "2025-06-01"
@@ -89,6 +96,7 @@ curl --request DELETE \
 
 ```json V2 filter
 {
+  "corporation_id": "c1d2e3f4-a5b6-7890-abcd-ef1234567890",
   "registration_tax_type_id": "REG_STATE_CEN_06_RST",
   "statuses": ["SCHEDULED", "UPCOMING"],
   "due_after": "2025-06-01"

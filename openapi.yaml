@@ -7769,9 +7769,10 @@ components:
     PartnerIncorporationResponse:
       type: object
       required:
-        - INCORPORATION
+        - incorporation
         - incorporationValidation
         - intakeState
+        - participants
       properties:
         incorporation:
           $ref: '#/components/schemas/PartnerIncorporation'
@@ -7780,6 +7781,7 @@ components:
         requirements:
           $ref: '#/components/schemas/PartnerIncorporationRequirements'
         intakeState:
+          description: Current intake state for the incorporation. Always returned; an empty intake state is initialized automatically when one does not yet exist.
           $ref: '#/components/schemas/PartnerIncorporationIntakeState'
         participants:
           type: array

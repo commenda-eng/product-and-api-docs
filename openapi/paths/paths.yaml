@@ -2913,7 +2913,14 @@
 "/partner/incorporation/{incorporationId}/participants/{participantId}":
   patch:
     summary: Update an incorporation participant
-    description: Update an existing incorporation participant. Use this endpoint to correct director/shareholder roles or shareholder ownership percentages without modifying the underlying Commenda OS person or business entity.
+    description: |
+      Partially update an existing incorporation participant. The request body must include at least one of `roles` or `resource`; any field that is omitted is left unchanged.
+
+      Use this endpoint to:
+      - Correct director or shareholder roles, or update shareholder ownership percentages, by sending `roles`.
+      - Repoint the participant to a different Commenda OS person or business entity by sending `resource`.
+
+      Sending `roles` fully replaces the existing roles on the participant; omitted roles are removed.
     operationId: updatePartnerIncorporationParticipant
     servers:
       - url: https://api.prod.commenda.io/api/v1
@@ -2946,7 +2953,7 @@
             schema:
               "$ref": "../components/components.yaml#/components/schemas/PartnerIncorporationParticipantMutationResponse"
       "400":
-        description: Malformed participant update payload, invalid role combination, missing shareholder ownership percentage, or shareholder ownership exceeding the selected requirements total
+        description: Malformed participant update payload, missing both `roles` and `resource`, invalid role combination, missing shareholder ownership percentage, or shareholder ownership exceeding the selected requirements total
         content:
           application/json:
             schema:

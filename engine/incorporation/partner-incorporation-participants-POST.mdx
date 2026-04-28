@@ -48,7 +48,7 @@ Create individual resources with `POST /partner/commenda-os/customers/{customerI
 
 For Singapore private limited companies, writes that would make shareholder ownership exceed 100 are rejected. Ownership below 100 is accepted while the customer is still entering shareholders, but incorporation validation remains incomplete until the total equals 100.
 
-Use `PATCH /partner/incorporation/{incorporationId}/participants/{participantId}` to replace an existing participant's roles or correct ownership percentages.
+Use `PATCH /partner/incorporation/{incorporationId}/participants/{participantId}` to update an existing participant's roles, correct ownership percentages, or repoint the participant to a different Commenda OS person or business entity. The PATCH endpoint accepts partial updates: send only the fields you want to change.
 
 ## Role examples
 

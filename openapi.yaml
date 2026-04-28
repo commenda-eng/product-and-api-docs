@@ -2831,7 +2831,14 @@ paths:
   /partner/incorporation/{incorporationId}/participants/{participantId}:
     patch:
       summary: Update an incorporation participant
-      description: Update an existing incorporation participant. Use this endpoint to correct director/shareholder roles or shareholder ownership percentages without modifying the underlying Commenda OS person or business entity.
+      description: |
+        Partially update an existing incorporation participant. The request body must include at least one of `roles` or `resource`; any field that is omitted is left unchanged.
+
+        Use this endpoint to:
+        - Correct director or shareholder roles, or update shareholder ownership percentages, by sending `roles`.
+        - Repoint the participant to a different Commenda OS person or business entity by sending `resource`.
+
+        Sending `roles` fully replaces the existing roles on the participant; omitted roles are removed.
       operationId: updatePartnerIncorporationParticipant
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -2864,7 +2871,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/PartnerIncorporationParticipantMutationResponse'
         '400':
-          description: Malformed participant update payload, invalid role combination, missing shareholder ownership percentage, or shareholder ownership exceeding the selected requirements total
+          description: Malformed participant update payload, missing both `roles` and `resource`, invalid role combination, missing shareholder ownership percentage, or shareholder ownership exceeding the selected requirements total
           content:
             application/json:
               schema:
@@ -8060,15 +8067,21 @@ components:
           $ref: '#/components/schemas/PartnerIncorporationValidationSummary'
     PartnerPatchParticipantRequest:
       type: object
-      description: Replaces the roles on an existing incorporation participant. Omitted roles are removed.
-      required:
-        - roles
+      description: |
+        Partially updates an existing incorporation participant. At least one of `roles` or `resource` must be provided.
+
+        - When `roles` is provided, it fully replaces the participant's existing roles. Omitted roles are removed.
+        - When `resource` is provided, it replaces the underlying Commenda OS person or business entity the participant points to.
+        - Fields that are omitted from the request are left unchanged.
       properties:
         roles:
           type: array
           minItems: 1
+          description: Replacement set of roles for the participant. When provided, fully replaces the existing roles.
           items:
             $ref: '#/components/schemas/PartnerIncorporationParticipantRole'
+        resource:
+          $ref: '#/components/schemas/PartnerIncorporationParticipantResource'
       example:
         roles:
           - role: DIRECTOR

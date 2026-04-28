@@ -3,11 +3,27 @@ title: "Update an incorporation participant"
 openapi: "PATCH /partner/incorporation/{incorporationId}/participants/{participantId}"
 ---
 
-Replaces the roles for an existing incorporation participant.
+Partially updates an existing incorporation participant.
 
-Use this endpoint when a customer needs to correct director/shareholder roles or shareholder percentages after the participant has already been registered. The underlying Commenda OS resource does not change; this endpoint only updates the participant's incorporation-specific `roles` array.
+Use this endpoint when a customer needs to:
 
-Send the full desired `roles` array. Omitted roles are removed.
+- Correct a participant's director/shareholder roles or shareholder ownership percentages after registration.
+- Repoint a participant to a different Commenda OS person or business entity (for example, after fixing a wrong `resourceId` was used during registration).
+
+The request body must include at least one of `roles` or `resource`. Any field that is omitted is left unchanged on the participant.
+
+## Request fields
+
+| Field | Behavior |
+| --- | --- |
+| `roles` | Optional. When provided, fully replaces the participant's existing roles. Send the complete desired set; omitted roles are removed. |
+| `resource` | Optional. When provided, replaces the underlying Commenda OS person or business entity the participant points to. Includes `resourceType` (`KEY_PERSON` or `BUSINESS_ENTITY`) and `resourceId`. |
+
+A request that omits both fields is rejected with a `400` error.
+
+## Update roles only
+
+Send a `roles`-only payload to fix director/shareholder configuration without changing the underlying resource:
 
 ```json
 {
@@ -23,6 +39,43 @@ Send the full desired `roles` array. Omitted roles are removed.
 }
 ```
 
+## Update the underlying resource only
+
+Send a `resource`-only payload to repoint the participant to a different Commenda OS person or business entity, keeping the existing roles intact:
+
+```json
+{
+  "resource": {
+    "resourceType": "KEY_PERSON",
+    "resourceId": 18
+  }
+}
+```
+
+## Update both fields
+
+Send both fields when you need to swap the underlying resource and adjust roles in the same request:
+
+```json
+{
+  "resource": {
+    "resourceType": "KEY_PERSON",
+    "resourceId": 18
+  },
+  "roles": [
+    {
+      "role": "DIRECTOR"
+    },
+    {
+      "role": "SHAREHOLDER",
+      "ownershipPercentage": 50
+    }
+  ]
+}
+```
+
+## Response
+
 The response returns the updated participant and the refreshed `incorporationValidation` for the incorporation.
 
 ```json
@@ -32,7 +85,7 @@ The response returns the updated participant and the refreshed `incorporationVal
     "participantType": "INDIVIDUAL",
     "resource": {
       "resourceType": "KEY_PERSON",
-      "resourceId": 12
+      "resourceId": 18
     },
     "roles": [
       {
@@ -40,7 +93,7 @@ The response returns the updated participant and the refreshed `incorporationVal
       },
       {
         "role": "SHAREHOLDER",
-        "ownershipPercentage": 40
+        "ownershipPercentage": 50
       }
     ],
     "documents": []
@@ -60,5 +113,3 @@ The response returns the updated participant and the refreshed `incorporationVal
 ```
 
 For Singapore private limited companies, shareholder ownership may not exceed 100 across registered shareholder participants. Updates below 100 are accepted, but incorporation validation remains incomplete until the shareholder total equals 100.
-
-If the participant references the wrong person or business entity, register the correct Commenda OS resource as a new participant instead.

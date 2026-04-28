@@ -13,6 +13,20 @@ The incorporation is ready to submit when `incorporationValidation.isComplete` i
 
 Participant roles, participant resource fields, and participant documents are managed outside this intake payload. Register participant roles with the participant endpoints, complete required person or business entity fields through the Commenda OS Partner API, and upsert participant documents through the document endpoint.
 
+## Accepted requirement keys
+
+`requirements` only accepts incorporation-level requirement keys defined under `blocks[].fields` in the [requirements response](/engine/incorporation/partner-incorporation-requirements-GET) for the current incorporation type.
+
+If you send a key that is not declared at the incorporation level, the request returns `400 Bad Request` with an `Unknown intake requirement key(s)` message and the intake state is not updated. This includes participant-shaped payloads such as `participants`, `directors`, `shareholders`, top-level `residentialAddress`, or a nested `resource` object. Submit those values through the appropriate endpoint instead:
+
+| Payload shape | Where to submit |
+| --- | --- |
+| Participant roles such as `directors` or `shareholders` | [Register an incorporation participant](/engine/incorporation/partner-incorporation-participants-POST) or [Update an incorporation participant](/engine/incorporation/partner-incorporation-participants-id-PATCH) |
+| Person resource fields such as `residentialAddress` | [Update a partner person](/engine/partner-api/conventions) using `PATCH /partner/commenda-os/customers/{customerId}/persons/{personId}` |
+| Participant documents such as `PASSPORT_SCAN` | [Upsert a participant document](/engine/incorporation/partner-incorporation-participant-documents-PUT) |
+
+This validation runs before the intake state is merged, so rejected payloads cannot leave stale participant-shaped values behind in `currentState`.
+
 ## Intake fields
 
 Use this endpoint for incorporation-level requirements such as company name options and registered office address choice.

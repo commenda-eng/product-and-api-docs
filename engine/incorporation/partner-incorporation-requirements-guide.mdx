@@ -30,6 +30,8 @@ For `blocks[].fields`, field keys become top-level keys in the intake `requireme
 
 For `participantRequirements[].resourceFieldsByParticipantType`, field keys describe data that must exist on the registered participant's `resource`. Do not send those values to the intake endpoint. Update the referenced person or business entity through the Commenda OS Partner API.
 
+The intake endpoint rejects unknown keys with `400 Bad Request`. Sending participant-shaped values such as `participants`, `directors`, top-level `residentialAddress`, or a nested `resource` object under `requirements` fails validation before any state is stored. See [Update incorporation intake](/engine/incorporation/partner-incorporation-intake-PATCH) for the full list of routing rules.
+
 ## Scalar input types
 
 `input.type` is the UI hint for scalar fields.

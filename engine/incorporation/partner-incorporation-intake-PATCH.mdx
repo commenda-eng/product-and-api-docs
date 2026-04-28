@@ -13,6 +13,10 @@ The incorporation is ready to submit when `incorporationValidation.isComplete` i
 
 Participant roles, participant resource fields, and participant documents are managed outside this intake payload. Register participant roles with the participant endpoints, complete required person or business entity fields through the Commenda OS Partner API, and upsert participant documents through the document endpoint.
 
+<Warning>
+  `requirements` only accepts incorporation-level keys defined by the current requirements DSL (for example, `companyNameOptions`, `registeredOfficeAddressSource`, `registeredOfficeAddressLocation`). Payloads that nest participant resource fields under `requirements` — such as `participants`, `directors`, `shareholders`, or a top-level `residentialAddress` — are rejected with `400 Bad Request` before any state is stored. This protects against stale client payloads written against older requirement shapes. Always fetch the active intake fields with `GET /partner/incorporation/{incorporationId}/requirements` and submit only the keys it lists. Update participant resource fields like `residentialAddress` through `POST` or `PATCH /partner/commenda-os/customers/{customerId}/persons/{personId}` instead.
+</Warning>
+
 ## Intake fields
 
 Use this endpoint for incorporation-level requirements such as company name options and registered office address choice.
@@ -105,3 +109,12 @@ For participant-specific requirements, register participants with roles and upse
 - Use `POST /partner/incorporation/{incorporationId}/participants` for director/shareholder roles.
 - Use `POST /partner/commenda-os/customers/{customerId}/persons` or `PATCH /partner/commenda-os/customers/{customerId}/persons/{personId}` for required person fields such as `residentialAddress`.
 - Use `PUT /partner/incorporation/{incorporationId}/participants/{participantId}/documents/{documentKind}` for participant document requirements.
+
+## Errors
+
+| Status | When |
+| --- | --- |
+| `400 Bad Request` | The `requirements` body contains keys that are not part of the current incorporation requirements DSL. The error message lists the unknown keys, for example: `Unknown intake requirement key(s): participants, directors. Intake only accepts incorporation-level requirement keys. Complete participant roles, participant resource fields, and participant documents through the participant, Commenda OS, and document endpoints.` No intake state is stored when this error is returned. |
+| `401 Unauthorized` | The partner API key is missing or invalid. |
+| `403 Forbidden` | The incorporation is not accessible to the partner. |
+| `404 Not Found` | The `incorporationId` does not exist. |

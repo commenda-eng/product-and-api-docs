@@ -2720,7 +2720,10 @@
 "/partner/incorporation/{incorporationId}/intake":
   patch:
     summary: Update incorporation intake
-    description: Partially update incorporation intake details. Each write returns the updated intake state and incorporation validation summary.
+    description: |
+      Partially update incorporation intake details. Each write returns the updated intake state and incorporation validation summary.
+
+      The `requirements` body must only contain incorporation-level keys exposed by the current requirements DSL (such as `companyNameOptions`, `registeredOfficeAddressSource`, and `registeredOfficeAddressLocation`). Payloads that include participant resource keys at the top level — for example `participants`, `directors`, `shareholders`, or `residentialAddress` — are rejected with `400 Bad Request` before any state is stored. Update participant resource fields through the participant and Commenda OS endpoints instead.
     operationId: updatePartnerIncorporationIntake
     servers:
       - url: https://api.prod.commenda.io/api/v1
@@ -2747,7 +2750,8 @@
             schema:
               "$ref": "../components/components.yaml#/components/schemas/PartnerIncorporationIntakeResponse"
       "400":
-        description: Malformed intake payload
+        description: |
+          Malformed intake payload. Returned when `requirements` contains keys that are not part of the current incorporation requirements DSL — for example, participant resource fields such as `participants`, `directors`, `shareholders`, or `residentialAddress` nested directly under `requirements`. The response message lists the unknown keys and no intake state is stored.
         content:
           application/json:
             schema:

@@ -767,7 +767,10 @@ schemas:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationValidationSummary"
   PartnerIncorporationRequirementValues:
     type: object
-    description: Partner-submitted requirement values keyed by requirements field keys.
+    description: |
+      Partner-submitted requirement values keyed by requirements field keys.
+
+      Only incorporation-level keys exposed by the current incorporation requirements DSL (returned by `GET /partner/incorporation/{incorporationId}/requirements`) are accepted. Participant resource keys such as `participants`, `directors`, `shareholders`, or `residentialAddress` must not appear at this level — intake requests that include them are rejected with `400 Bad Request`. Update participant resource fields via the participant and Commenda OS endpoints.
     additionalProperties: true
     example:
       companyNameOptions:

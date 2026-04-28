@@ -7629,11 +7629,11 @@ components:
       properties:
         code:
           type: string
-          description: Stable machine-readable validation issue code.
+          description: Stable machine-readable validation issue code. Current values include `REQUIREMENT_MISSING`, `REQUIREMENT_INVALID`, `PARTICIPANT_REQUIREMENT_INVALID`, `PARTICIPANT_DOCUMENT_REQUIRED`, `SHAREHOLDER_REQUIREMENT_INVALID`, and `SHAREHOLDER_OWNERSHIP_INVALID`. Treat this list as extensible.
           example: PARTICIPANT_DOCUMENT_REQUIRED
         path:
           type: string
-          description: Dot/bracket path for the missing or invalid requirement.
+          description: Dot/bracket path for the missing or invalid requirement. Use structured fields such as `participantId` and `documentKind` when present instead of parsing this value.
           example: participants.participant_123.documents.PASSPORT_SCAN
         message:
           type: string
@@ -7643,7 +7643,9 @@ components:
           description: Included when the issue belongs to a participant.
           example: participant_123
         documentKind:
-          $ref: '#/components/schemas/PartnerIncorporationDocumentKind'
+          allOf:
+            - $ref: '#/components/schemas/PartnerIncorporationDocumentKind'
+          description: Included when the issue belongs to a participant document.
         displayName:
           type: string
           description: Included when available so UIs can render useful labels without joining across responses.
@@ -7661,10 +7663,12 @@ components:
           example: false
         missingRequirements:
           type: array
+          description: Required fields, participants, ownership totals, participant resource fields, or participant documents that have not been provided yet.
           items:
             $ref: '#/components/schemas/PartnerIncorporationValidationIssue'
         invalidRequirements:
           type: array
+          description: Submitted values that do not satisfy the current requirements.
           items:
             $ref: '#/components/schemas/PartnerIncorporationValidationIssue'
     PartnerIncorporationIntakeState:

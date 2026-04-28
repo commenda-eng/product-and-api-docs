@@ -208,8 +208,9 @@ Validation issues should include:
 | --- | --- |
 | `path` | Stable machine path to the missing or invalid value. |
 | `message` | Human-readable explanation. |
-| `code` | Stable machine-readable issue code. |
-| `participantId` | Included when the issue belongs to a participant. |
+| `code` | Stable machine-readable issue code. Treat code values as extensible. |
+| `participantId` | Included when the issue belongs to a participant. Use it before parsing `path`. |
+| `documentKind` | Included when the issue belongs to a participant document. Use it before parsing `path`. |
 | `displayName` | Included when available so UIs can render useful messages without joining across response objects. |
 
 Validation should dedupe issues by the field a partner must fix. If one missing file satisfies both a director and shareholder role, return one actionable issue rather than one issue per role.

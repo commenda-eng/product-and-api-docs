@@ -6,3 +6,5 @@ openapi: "GET /partner/commenda-os/customers/{customerId}/persons"
 List people for one of your customers across their business entities.
 
 If the person you need does not exist yet, create them with [Create a person](/engine/commendaos/partner-api/commenda-os-persons-POST).
+
+Person responses include `residentialAddress` as a top-level field. They do not include a person `locations` array; Location resources are business-entity addresses.

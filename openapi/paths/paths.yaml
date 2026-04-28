@@ -3803,7 +3803,7 @@
               "$ref": "../components/components.yaml#/components/schemas/CommendaOsPartnerError"
   post:
     summary: Create a person
-    description: Create a reusable Commenda OS person for one of your customers. Use the returned `person.id` as a `KEY_PERSON` resource id when registering incorporation participants.
+    description: Create a reusable Commenda OS person for one of your customers. Use the returned `person.id` as a `KEY_PERSON` resource id when registering incorporation participants. For Singapore residential address requirements, include `residentialAddress`.
     operationId: createPartnerCommendaOsPerson
     servers:
       - url: https://api.prod.commenda.io/api/v1
@@ -3830,6 +3830,11 @@
                 email: jane@acme.com
                 dateOfBirth: "1990-04-18"
                 countryOfCitizenship: SG
+                residentialAddress:
+                  addressLine1: 1 Raffles Place
+                  city: Singapore
+                  postalCode: "048616"
+                  country: SG
     responses:
       "201":
         description: Person created successfully
@@ -3858,7 +3863,7 @@
 "/partner/commenda-os/customers/{customerId}/persons/{personId}":
   patch:
     summary: Update a person
-    description: Partially update a reusable Commenda OS person. Omitted fields are left unchanged.
+    description: Partially update a reusable Commenda OS person. Omitted fields are left unchanged. For Singapore residential address requirements, include `residentialAddress`.
     operationId: updatePartnerCommendaOsPerson
     servers:
       - url: https://api.prod.commenda.io/api/v1
@@ -3891,6 +3896,11 @@
                 email: jane@acme.com
                 dateOfBirth: "1990-04-18"
                 countryOfCitizenship: SG
+                residentialAddress:
+                  addressLine1: 1 Raffles Place
+                  city: Singapore
+                  postalCode: "048616"
+                  country: SG
     responses:
       "200":
         description: Person updated successfully

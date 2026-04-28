@@ -4,3 +4,5 @@ openapi: "GET /partner/commenda-os/customers/{customerId}/business-entities/{bus
 ---
 
 List people associated with a customer's business entity.
+
+Person responses include `residentialAddress` as a top-level field. They do not include a person `locations` array; Location resources are business-entity addresses.

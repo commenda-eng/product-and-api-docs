@@ -183,11 +183,24 @@
               "engine/incorporation/partner-incorporation-core-concepts",
               "engine/incorporation/partner-incorporation-build-flow",
               {
-                "group": "Discovery",
+                "group": "Jurisdiction catalog",
                 "pages": [
-                  "engine/incorporation/partner-incorporation-jurisdiction-catalog-GET",
-                  "engine/incorporation/partner-incorporation-requirements-GET",
-                  "engine/incorporation/partner-incorporation-status-workflow-GET"
+                  "engine/incorporation/partner-incorporation-jurisdiction-catalog-guide",
+                  "engine/incorporation/partner-incorporation-jurisdiction-catalog-GET"
+                ]
+              },
+              {
+                "group": "Requirements",
+                "pages": [
+                  "engine/incorporation/partner-incorporation-requirements-guide",
+                  "engine/incorporation/partner-incorporation-requirements-GET"
+                ]
+              },
+              {
+                "group": "Progress",
+                "pages": [
+                  "engine/incorporation/partner-incorporation-status-workflow-GET",
+                  "engine/incorporation/partner-incorporation-status-GET"
                 ]
               },
               {
@@ -224,12 +237,6 @@
                   "engine/incorporation/partner-incorporation-intake-PATCH",
                   "engine/incorporation/partner-incorporation-validation-GET",
                   "engine/incorporation/partner-incorporation-submit-POST"
-                ]
-              },
-              {
-                "group": "Status",
-                "pages": [
-                  "engine/incorporation/partner-incorporation-status-GET"
                 ]
               },
               {

@@ -3721,7 +3721,7 @@ paths:
                 $ref: '#/components/schemas/CommendaOsPartnerError'
     post:
       summary: Create a person
-      description: Create a reusable Commenda OS person for one of your customers. Use the returned `person.id` as a `KEY_PERSON` resource id when registering incorporation participants.
+      description: Create a reusable Commenda OS person for one of your customers. Use the returned `person.id` as a `KEY_PERSON` resource id when registering incorporation participants. For Singapore residential address requirements, include `residentialAddress`.
       operationId: createPartnerCommendaOsPerson
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -3748,6 +3748,11 @@ paths:
                   email: jane@acme.com
                   dateOfBirth: '1990-04-18'
                   countryOfCitizenship: SG
+                  residentialAddress:
+                    addressLine1: 1 Raffles Place
+                    city: Singapore
+                    postalCode: '048616'
+                    country: SG
       responses:
         '201':
           description: Person created successfully
@@ -3776,7 +3781,7 @@ paths:
   /partner/commenda-os/customers/{customerId}/persons/{personId}:
     patch:
       summary: Update a person
-      description: Partially update a reusable Commenda OS person. Omitted fields are left unchanged.
+      description: Partially update a reusable Commenda OS person. Omitted fields are left unchanged. For Singapore residential address requirements, include `residentialAddress`.
       operationId: updatePartnerCommendaOsPerson
       servers:
         - url: https://api.prod.commenda.io/api/v1
@@ -3809,6 +3814,11 @@ paths:
                   email: jane@acme.com
                   dateOfBirth: '1990-04-18'
                   countryOfCitizenship: SG
+                  residentialAddress:
+                    addressLine1: 1 Raffles Place
+                    city: Singapore
+                    postalCode: '048616'
+                    country: SG
       responses:
         '200':
           description: Person updated successfully
@@ -7394,6 +7404,39 @@ components:
               - INDIVIDUAL
             allowedResourceTypes:
               - KEY_PERSON
+            resourceFieldsByParticipantType:
+              INDIVIDUAL:
+                - kind: resource
+                  key: residentialAddress
+                  name: Residential address
+                  description: The key person's current residential address. Store this on the Commenda OS person as residentialAddress.
+                  required: true
+                  resourceKind: address
+                  commendaOs:
+                    entity: KEY_PERSON
+                    field: residentialAddress
+                  fields:
+                    - kind: scalar
+                      key: addressLine1
+                      name: Address line 1
+                      required: true
+                      commendaOs:
+                        entity: KEY_PERSON
+                        field: residentialAddress.addressLine1
+                    - kind: scalar
+                      key: city
+                      name: City
+                      required: true
+                      commendaOs:
+                        entity: KEY_PERSON
+                        field: residentialAddress.city
+                    - kind: scalar
+                      key: country
+                      name: Country
+                      required: true
+                      commendaOs:
+                        entity: KEY_PERSON
+                        field: residentialAddress.country
             documentRequirements:
               - documentKind: PASSPORT_SCAN
                 name: Passport scan
@@ -8872,28 +8915,37 @@ components:
         decryptedValue:
           type: string
           nullable: true
-    CommendaOsPersonLocation:
+    CommendaOsPersonAddress:
       type: object
+      description: Address fields stored directly on a Commenda OS person.
       required:
-        - address
-        - isPrimary
-        - type
+        - addressLine1
+        - city
+        - country
       properties:
-        name:
+        addressLine1:
+          type: string
+          example: 1 Raffles Place
+        addressLine2:
           type: string
           nullable: true
-        address:
-          type: object
-          additionalProperties: true
-        isPrimary:
-          type: boolean
-          example: true
-        type:
-          type: array
-          items:
-            type: string
-          example:
-            - RESIDENTIAL
+          example: Suite 21045
+        addressLine3:
+          type: string
+          nullable: true
+        city:
+          type: string
+          example: Singapore
+        postalCode:
+          type: string
+          nullable: true
+          example: '048616'
+        state:
+          type: string
+          nullable: true
+        country:
+          type: string
+          example: SG
     CommendaOsBusinessEntityPerson:
       type: object
       required:
@@ -8903,7 +8955,7 @@ components:
         - dateOfBirth
         - email
         - kycIds
-        - locations
+        - residentialAddress
         - stakeholderId
         - phoneNumber
         - sharePercentage
@@ -8936,10 +8988,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CommendaOsKycId'
-        locations:
-          type: array
-          items:
-            $ref: '#/components/schemas/CommendaOsPersonLocation'
+        residentialAddress:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/CommendaOsPersonAddress'
+          nullable: true
+          description: Person residential address, used for participant resource requirements such as `participants.{participantId}.resource.residentialAddress`.
         onboardingInfo:
           type: object
           nullable: true
@@ -8998,7 +9052,7 @@ components:
         - dateOfBirth
         - email
         - kycIds
-        - locations
+        - residentialAddress
         - stakeholderId
         - phoneNumber
         - businessEntitiesInfo
@@ -9030,10 +9084,12 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/CommendaOsKycId'
-        locations:
-          type: array
-          items:
-            $ref: '#/components/schemas/CommendaOsPersonLocation'
+        residentialAddress:
+          type: object
+          allOf:
+            - $ref: '#/components/schemas/CommendaOsPersonAddress'
+          nullable: true
+          description: Person residential address, used for participant resource requirements such as `participants.{participantId}.resource.residentialAddress`.
         onboardingInfo:
           type: object
           nullable: true
@@ -9119,20 +9175,9 @@ components:
         phoneNumber:
           type: string
           example: '+14155550123'
-        locations:
-          type: array
-          description: Person addresses to create for this person.
-          items:
-            type: object
-            properties:
-              locationTypes:
-                type: array
-                items:
-                  type: string
-                example:
-                  - CONTACT_ADDRESS
-              address:
-                $ref: '#/components/schemas/CommendaOsLocationAddress'
+        residentialAddress:
+          $ref: '#/components/schemas/CommendaOsPersonAddress'
+          description: Person residential address. Use this for participant resource requirements such as `participants.{participantId}.resource.residentialAddress`.
         employmentStartDate:
           type: string
           format: date
@@ -9179,24 +9224,9 @@ components:
         phoneNumber:
           type: string
           example: '+14155550123'
-        locations:
-          type: array
-          description: Person addresses to create or update for this person.
-          items:
-            type: object
-            properties:
-              id:
-                type: string
-                nullable: true
-                description: Existing address identifier, when updating an existing address.
-              locationTypes:
-                type: array
-                items:
-                  type: string
-                example:
-                  - CONTACT_ADDRESS
-              address:
-                $ref: '#/components/schemas/CommendaOsLocationAddress'
+        residentialAddress:
+          $ref: '#/components/schemas/CommendaOsPersonAddress'
+          description: Person residential address. Use this for participant resource requirements such as `participants.{participantId}.resource.residentialAddress`.
         employmentStartDate:
           type: string
           format: date

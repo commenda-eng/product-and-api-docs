@@ -79,6 +79,37 @@ schemas:
       country:
         type: string
         example: US
+  CommendaOsPersonAddress:
+    type: object
+    description: Address fields stored directly on a Commenda OS person.
+    required:
+      - addressLine1
+      - city
+      - country
+    properties:
+      addressLine1:
+        type: string
+        example: 1 Raffles Place
+      addressLine2:
+        type: string
+        nullable: true
+        example: Suite 21045
+      addressLine3:
+        type: string
+        nullable: true
+      city:
+        type: string
+        example: Singapore
+      postalCode:
+        type: string
+        nullable: true
+        example: "048616"
+      state:
+        type: string
+        nullable: true
+      country:
+        type: string
+        example: SG
   CommendaOsLocation:
     type: object
     required:
@@ -540,28 +571,6 @@ schemas:
       legalName: Acme Holdings Pte. Ltd.
       businessDescription: Investment holding company.
       publicFacingWebsiteUrl: https://acme.example
-  CommendaOsPersonLocation:
-    type: object
-    required:
-      - address
-      - isPrimary
-      - type
-    properties:
-      name:
-        type: string
-        nullable: true
-      address:
-        type: object
-        additionalProperties: true
-      isPrimary:
-        type: boolean
-        example: true
-      type:
-        type: array
-        items:
-          type: string
-        example:
-          - RESIDENTIAL
   CommendaOsKycId:
     type: object
     required:
@@ -595,7 +604,7 @@ schemas:
       - dateOfBirth
       - email
       - kycIds
-      - locations
+      - residentialAddress
       - stakeholderId
       - phoneNumber
       - businessEntitiesInfo
@@ -627,10 +636,12 @@ schemas:
         type: array
         items:
           $ref: "./commenda-os.yaml#/schemas/CommendaOsKycId"
-      locations:
-        type: array
-        items:
-          $ref: "./commenda-os.yaml#/schemas/CommendaOsPersonLocation"
+      residentialAddress:
+        type: object
+        allOf:
+          - $ref: "./commenda-os.yaml#/schemas/CommendaOsPersonAddress"
+        nullable: true
+        description: Person residential address, used for participant resource requirements such as `participants.{participantId}.resource.residentialAddress`.
       onboardingInfo:
         type: object
         nullable: true
@@ -693,7 +704,7 @@ schemas:
       - dateOfBirth
       - email
       - kycIds
-      - locations
+      - residentialAddress
       - stakeholderId
       - phoneNumber
       - sharePercentage
@@ -726,10 +737,12 @@ schemas:
         type: array
         items:
           $ref: "./commenda-os.yaml#/schemas/CommendaOsKycId"
-      locations:
-        type: array
-        items:
-          $ref: "./commenda-os.yaml#/schemas/CommendaOsPersonLocation"
+      residentialAddress:
+        type: object
+        allOf:
+          - $ref: "./commenda-os.yaml#/schemas/CommendaOsPersonAddress"
+        nullable: true
+        description: Person residential address, used for participant resource requirements such as `participants.{participantId}.resource.residentialAddress`.
       onboardingInfo:
         type: object
         nullable: true
@@ -1198,20 +1211,9 @@ schemas:
       phoneNumber:
         type: string
         example: "+14155550123"
-      locations:
-        type: array
-        description: Person addresses to create for this person.
-        items:
-          type: object
-          properties:
-            locationTypes:
-              type: array
-              items:
-                type: string
-              example:
-                - CONTACT_ADDRESS
-            address:
-              $ref: "./commenda-os.yaml#/schemas/CommendaOsLocationAddress"
+      residentialAddress:
+        "$ref": "./commenda-os.yaml#/schemas/CommendaOsPersonAddress"
+        description: Person residential address. Use this for participant resource requirements such as `participants.{participantId}.resource.residentialAddress`.
       employmentStartDate:
         type: string
         format: date
@@ -1251,24 +1253,9 @@ schemas:
       phoneNumber:
         type: string
         example: "+14155550123"
-      locations:
-        type: array
-        description: Person addresses to create or update for this person.
-        items:
-          type: object
-          properties:
-            id:
-              type: string
-              nullable: true
-              description: Existing address identifier, when updating an existing address.
-            locationTypes:
-              type: array
-              items:
-                type: string
-              example:
-                - CONTACT_ADDRESS
-            address:
-              $ref: "./commenda-os.yaml#/schemas/CommendaOsLocationAddress"
+      residentialAddress:
+        "$ref": "./commenda-os.yaml#/schemas/CommendaOsPersonAddress"
+        description: Person residential address. Use this for participant resource requirements such as `participants.{participantId}.resource.residentialAddress`.
       employmentStartDate:
         type: string
         format: date

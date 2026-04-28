@@ -20,8 +20,9 @@ This guide shows the recommended implementation sequence for a customer incorpor
 | Phase | Developer question | What to do |
 | --- | --- | --- |
 | Setup | What record owns the work? | Create a customer and save `customerId`. |
-| Discovery | What can I incorporate and how will progress display? | Read the jurisdiction catalog, choose `country` plus `countryOptions`, and fetch the status workflow for the selected incorporation type. |
+| Jurisdiction catalog | What can I incorporate? | Read the jurisdiction catalog and choose `country` plus `countryOptions`. |
 | Requirements | What data do I need? | Fetch the requirements schema for the selected jurisdiction/type. |
+| Progress setup | How will progress display? | Fetch the status workflow for the selected incorporation type. |
 | Incorporation | How do I start the incorporation? | Create the incorporation and save `incorporation.id`. |
 | Add customer records | What reusable records must exist? | Create or reuse Commenda OS people, business entities, and locations. |
 | Participants | Who is involved? | Register reusable people/entities as directors and shareholders. |
@@ -327,8 +328,9 @@ Use this response for customer-facing progress. It includes the top-level `incor
 | `fields` | Incorporation-level data, such as company names or registered office address choice | Submit these keys under `requirements` in the intake endpoint. |
 | `required.when` / `appliesWhen` | Rules that make a field required or applicable only when another field has a value | Re-evaluate the UI when the controlling field changes. Non-applicable fields are ignored by validation. |
 | `participantRequirements` | Required roles such as director or shareholder | Satisfy these by registering participants, not by sending arrays in intake. |
+| `resourceFieldsByParticipantType` | Required fields on a participant's referenced Commenda OS resource | Complete these fields on the person or business entity before submitting. |
 | `documentRequirements` | Required typed documents for a participant role/type | Satisfy these by upserting customer files as participant documents. |
-| Version fields, such as `schemaVersion` and `dslVersion` | Requirements version metadata | Store these in logs for debugging. Do not send them back or gate UI behavior on exact values. |
+| Version fields | Requirements version metadata | Store these in logs for debugging. Do not send them back or gate UI behavior on exact values. |
 
 Validation issues use paths that point to the missing or invalid requirement.
 
@@ -339,6 +341,7 @@ Validation issues use paths that point to the missing or invalid requirement.
 | `registeredOfficeAddress.registeredOfficeAddressLocation.resourceId` | The referenced registered office address location is missing or inaccessible | Use a Commenda OS location for the same customer record as the incorporation, create or update the location through the Commenda OS Partner API, or choose `COMMENDA_SERVICE`. |
 | `participants.directors` | A required director participant is missing | Register a person or business entity as a director. |
 | `participants.participant_123.resource.lastName` | A referenced participant resource is missing a required field | Update the reusable Commenda OS person or business entity, then reread the incorporation validation. |
+| `participants.participant_123.resource.residentialAddress` | A Singapore individual director or shareholder is missing a residential address | Update the Commenda OS person with `residentialAddress: { ... }`. |
 | `participants.participant_123.documents.PASSPORT_SCAN` | A participant is missing a passport scan | Upload a customer file, then upsert it as `PASSPORT_SCAN` for that participant. |
 
 Fetch requirements after the user chooses a jurisdiction and corporation type. Render your UI from the requirements response, but decide readiness from validation returned by write/read calls because Commenda may update requirements over time.

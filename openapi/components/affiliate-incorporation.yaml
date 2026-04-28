@@ -1364,6 +1364,7 @@ schemas:
     required:
       - incorporation
       - incorporationValidation
+      - intakeState
       - participants
     properties:
       incorporation:
@@ -1373,6 +1374,7 @@ schemas:
       requirements:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationRequirements"
       intakeState:
+        description: Current intake state for the incorporation. Always returned; an empty intake state is initialized automatically when one does not yet exist.
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporationIntakeState"
       participants:
         type: array

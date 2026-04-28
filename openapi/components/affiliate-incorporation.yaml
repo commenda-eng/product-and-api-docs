@@ -1329,9 +1329,9 @@ schemas:
   PartnerIncorporationResponse:
     type: object
     required:
-      - INCORPORATION
+      - incorporation
       - incorporationValidation
-      - intakeState
+      - participants
     properties:
       incorporation:
         $ref: "./affiliate-incorporation.yaml#/schemas/PartnerIncorporation"

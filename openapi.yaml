@@ -1370,6 +1370,50 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+  /exposure/sync:
+    post:
+      summary: Sync registration threshold exposure
+      description: |-
+        Trigger an on-demand recompute of registration threshold exposure for a corporation. The exposure engine evaluates the corporation's transactions against jurisdiction-level exposure rules and updates the cached breached set used by `GET /nexus?v2=true`.
+
+        As part of every successful run, the engine emits an `INDIRECT_TAX.EXPOSURE.COMPUTED` webhook containing the corporation's full current set of exposed jurisdictions (see [Topics and Events](/engine/indirect-tax/webhooks/event)). Use this endpoint when you need fresh exposure data without waiting for the daily background recompute — for example, immediately after ingesting a backfill of historical transactions, or after a registration is created or archived.
+      operationId: syncExposure
+      parameters:
+        - name: corporation_id
+          in: query
+          description: The unique identifier for the corporation to recompute exposure for.
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Exposure recomputed successfully. The `INDIRECT_TAX.EXPOSURE.COMPUTED` webhook has been dispatched to any subscribers.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Exposure engine ran; IndirectTaxExposureComputed webhook dispatched.
+        '400':
+          description: Missing or invalid `corporation_id`.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Caller is not authorized to access the corporation.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Exposure engine failed to run.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
   /filings:
     get:
       summary: List filings

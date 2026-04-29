@@ -185,16 +185,14 @@ A single jurisdiction may appear multiple times in the response if multiple expo
 
 ## Triggering a sync
 
-The exposure engine runs automatically on a schedule. You can also trigger a manual sync for a specific corporation:
+The exposure engine runs automatically on a daily schedule and lazily on read. You can also trigger an on-demand recompute for a specific corporation via the public [Sync exposure](/engine/indirect-tax/nexus/exposure-sync-POST) endpoint:
 
 ```bash
-curl -X POST "https://transaction-tax.api.in.commenda.io/api/v1/internal/nexus/sync/corporation/{corporation_id}?v2=true" \
+curl -X POST "https://transaction-tax.api.in.commenda.io/api/v1/exposure/sync?corporation_id={corporation_id}" \
   -H "Authorization: Bearer <your_token>"
 ```
 
-<Warning>
-Pass `v2=true` to run the global exposure engine. Without this parameter, only the legacy US-focused sync runs.
-</Warning>
+Every successful run emits an [`INDIRECT_TAX.EXPOSURE.COMPUTED`](/engine/indirect-tax/webhooks/event#indirect-tax-exposure) webhook with the corporation's full current set of exposed jurisdictions, so any subscribers stay in sync without polling.
 
 ## Physical presence
 

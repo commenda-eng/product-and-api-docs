@@ -19,6 +19,7 @@ Retrieve the full details of a V2 registration, including its current status, ju
 | `id` | string | Unique identifier for the registration |
 | `corporation_id` | string | The corporation this registration belongs to |
 | `registration_tax_type_id` | string | Content ID identifying the jurisdiction and tax type |
+| `registration_content_id` | string | Bare registration content ID for the jurisdiction (e.g., `REG_COUNTRY_DE_3001_VAT`). Use this for exact-match comparisons against the `recommended_registration_content_ids` returned by exposure webhooks and nexus rules. May be empty for legacy registrations. |
 | `tax_types` | array | Tax types registered for (e.g., `["RST", "DTT"]`) |
 | `frequencies` | array | Filing frequencies (e.g., `["QUARTERLY"]`) |
 | `jurisdiction_id` | string | Unique identifier for the jurisdiction |
@@ -54,6 +55,7 @@ curl --request GET \
     "id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
     "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
     "registration_tax_type_id": "REG_STATE_CEN_06_RST",
+    "registration_content_id": "REG_STATE_CEN_06_RST",
     "tax_types": ["RST", "DTT"],
     "frequencies": ["QUARTERLY"],
     "jurisdiction_id": "JUR_US_STATE_CA",

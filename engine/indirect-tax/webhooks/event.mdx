@@ -34,8 +34,10 @@ Commenda provides webhook notifications for events related to the following obje
 1. Existing Registrations
 2. New Registrations
 3. Registration Thresholds
-4. Exemption Certificates
-5. Customs Duty
+4. Indirect Tax Exposure
+5. Filings
+6. Exemption Certificates
+7. Customs Duty
 
 ## Existing Registrations
 
@@ -197,6 +199,71 @@ Commenda provides webhook notifications for events related to the following obje
      "api_version": "v1.0"
    }
    ```
+
+## Indirect Tax Exposure
+
+1. #### `INDIRECT_TAX.EXPOSURE.COMPUTED`
+
+   Commenda continuously evaluates a corporation's transactions against jurisdiction-level nexus rules. When the set of jurisdictions where the corporation is exposed (i.e., has breached a registration threshold but does not yet have a covering active registration) changes, this webhook fires with the current full snapshot of exposed jurisdictions.
+
+   Each item in `data.exposed[]` represents one jurisdiction that requires action. Use `recommended_registration_content_ids` to look up the corresponding V2 registration content via the [Available Registrations](/engine/indirect-tax/registrations/v2/content/available-registrations-POST) endpoint, then create a registration with [Create Registration V2](/engine/indirect-tax/registrations/v2/registrations-v2-POST) to clear the exposure.
+
+   The payload contains the full current exposure set — treat each delivery as a snapshot rather than a delta. Jurisdictions that previously appeared but are absent from a later payload are no longer exposed.
+
+   | Field | Type | Description |
+   |-------|------|-------------|
+   | `data.corporation_id` | string | Corporation whose exposure was recomputed. |
+   | `data.exposed[]` | array | Full snapshot of currently-exposed jurisdictions. May be empty. |
+   | `data.exposed[].region_id` | string | Stable identifier for the exposed jurisdiction. |
+   | `data.exposed[].jurisdiction_iso_code` | string | ISO code for the exposed jurisdiction (e.g., country or sub-jurisdiction code). |
+   | `data.exposed[].jurisdiction_name` | string | Human-readable jurisdiction name (e.g., `"Germany"`, `"California"`). |
+   | `data.exposed[].parent_jurisdiction_name` | string | Optional parent jurisdiction name (e.g., a trade bloc such as `"European Union"` for a member state). |
+   | `data.exposed[].recommended_registration_content_ids` | array | Content IDs that, if registered for, would cover this exposure. Compare against active registrations' `registration_content_id` to determine coverage. |
+
+   ```json
+   {
+     "id": "b252d757-a286-4508-b538-41ad676e8305",
+     "topic": "INDIRECT_TAX.EXPOSURE.COMPUTED",
+     "triggered_at": 1727284490,
+     "webhook_id": "2535af08-a139-4d0c-9827-1651e46dfbcf",
+     "organization_id": "c2710df6-c6cf-4cd0-aa38-63faa44f16bc",
+     "data": {
+       "corporation_id": "a093d086-19e8-48c8-82d6-aba51f82eafc",
+       "exposed": [
+         {
+           "region_id": "REGION_DE",
+           "jurisdiction_iso_code": "DE",
+           "jurisdiction_name": "Germany",
+           "parent_jurisdiction_name": "European Union",
+           "recommended_registration_content_ids": [
+             "REG_COUNTRY_DE_3001_VAT",
+             "REG_TRADEBLOC_EU_3000_UOSS_VAT"
+           ]
+         },
+         {
+           "region_id": "REGION_US_CA",
+           "jurisdiction_iso_code": "US-CA",
+           "jurisdiction_name": "California",
+           "parent_jurisdiction_name": "United States",
+           "recommended_registration_content_ids": [
+             "REG_STATE_CEN_06_RST"
+           ]
+         }
+       ]
+     },
+     "api_version": "v1.0"
+   }
+   ```
+
+## Filings
+
+1. #### `FILINGS.CREATED`
+
+   Fires when one or more new sales tax filings are generated for the corporation (for example, when a new period opens). The payload includes the list of newly-created filings under `data.added_filings`.
+
+2. #### `FILINGS.UPDATED`
+
+   Fires when an existing filing is updated (for example, when its status changes, totals are recomputed, or it is filed). The payload includes the updated filings under `data.updated_filings`. Filings that have been removed are reported under `data.removed_filings`.
 
 ## Exemptions Certificates
 

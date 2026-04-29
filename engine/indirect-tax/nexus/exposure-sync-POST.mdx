@@ -1,0 +1,25 @@
+---
+title: "Sync exposure"
+openapi: "POST /exposure/sync"
+---
+
+## Overview
+
+Trigger an on-demand recompute of registration threshold exposure for a corporation. The exposure engine evaluates the corporation's transactions against jurisdiction-level exposure rules and updates the cached breached set returned by [GET /nexus?v2=true](/engine/indirect-tax/nexus/nexus-GET).
+
+Every successful run emits an [`INDIRECT_TAX.EXPOSURE.COMPUTED`](/engine/indirect-tax/webhooks/event#indirect-tax-exposure) webhook with the corporation's full current set of exposed jurisdictions. The webhook is only dispatched when at least one subscriber is registered for the topic.
+
+## When to use this endpoint
+
+By default, exposure is recomputed automatically — both lazily on read and via a daily background job. Call this endpoint only when you need fresh exposure data immediately, for example:
+
+- After ingesting a large backfill of historical transactions and you want exposure (and any downstream consumers listening on the webhook) to reflect the new totals right away.
+- After creating or archiving a registration, when you want exposure recomputed without waiting for the next scheduled run.
+- When wiring up a new webhook subscriber and you want to deliver an initial snapshot of the corporation's current exposure.
+
+## Behavior
+
+- The full exposure engine runs synchronously. Large corporations may see latency proportional to their transaction volume.
+- The response returns once the engine has finished and the webhook has been dispatched (or skipped, if no subscribers exist for the topic).
+- The webhook payload contains the corporation's full current breached set — treat each delivery as a snapshot, not a delta. See [Topics and Events](/engine/indirect-tax/webhooks/event) for the payload shape.
+- The caller must be authorized to access the corporation; otherwise a `401` is returned.

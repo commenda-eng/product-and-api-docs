@@ -10,6 +10,8 @@ List all V2 registrations for a corporation. Supports filtering by country, stat
   This endpoint uses POST (not GET) to support complex filtering via the request body.
 </Note>
 
+Each registration in the response includes both `registration_tax_type_id` (the suffixed content ID stored on the registration, e.g., `REG_COUNTRY_AT_3007_VAT`) and `registration_content_id` (the bare content ID, e.g., `REG_COUNTRY_AT_3007`). Use `registration_content_id` for exact-match comparisons against the `recommended_registration_content_ids` returned by the [`INDIRECT_TAX.EXPOSURE.COMPUTED`](/engine/indirect-tax/webhooks/event#indirect-tax-exposure) webhook and nexus rules. The field may be empty for legacy registrations.
+
 ## Request body
 
 <ParamField body="corporation_id" type="string" required>

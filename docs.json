@@ -447,7 +447,8 @@
           {
             "group": "Registration Thresholds",
             "pages": [
-              "engine/indirect-tax/nexus/nexus-GET"
+              "engine/indirect-tax/nexus/nexus-GET",
+              "engine/indirect-tax/nexus/exposure-sync-POST"
             ]
           },
           {

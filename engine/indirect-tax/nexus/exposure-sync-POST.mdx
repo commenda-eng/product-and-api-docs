@@ -1,0 +1,27 @@
+---
+title: "Sync indirect tax exposure"
+openapi: "POST /exposure/sync"
+---
+
+Recompute indirect tax exposure for a corporation on demand.
+
+Calling this endpoint runs Commenda's exposure engine for the specified corporation and dispatches an [`INDIRECT_TAX.EXPOSURE.COMPUTED`](/engine/indirect-tax/webhooks/event#indirect-tax-exposure) webhook with the corporation's current breached jurisdictions. Use this to refresh exposure state immediately, for example after creating new transactions or registrations, without waiting for the daily background recompute.
+
+## When to use this endpoint
+
+- After importing or correcting historical transactions, to re-evaluate which jurisdictions the corporation is exposed in.
+- After creating, closing, or archiving a registration, to refresh the exposed-set delivered to downstream consumers.
+- From a UI flow where the user wants to force a fresh exposure snapshot before viewing or acting on it.
+
+## Behavior
+
+- The endpoint authorizes the caller via the standard organization-membership check on `corporation_id`.
+- The exposure engine recomputes the corporation's full breached set.
+- An `INDIRECT_TAX.EXPOSURE.COMPUTED` webhook is dispatched only if there is at least one active subscriber for the topic. The webhook payload is a full snapshot of currently-exposed jurisdictions; treat each delivery as a snapshot rather than a delta.
+- If no consumers are subscribed, the engine still runs and updates exposure state — only the webhook side effect is skipped.
+
+## Related
+
+- [`INDIRECT_TAX.EXPOSURE.COMPUTED` webhook payload](/engine/indirect-tax/webhooks/event#indirect-tax-exposure)
+- [Get registration thresholds](/engine/indirect-tax/nexus/nexus-GET) — read the current exposure state
+- [Available Registrations](/engine/indirect-tax/registrations/v2/content/available-registrations-POST) — look up registrations that cover an exposed jurisdiction

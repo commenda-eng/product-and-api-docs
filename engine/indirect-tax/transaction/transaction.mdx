@@ -104,6 +104,36 @@ The `tax_remitter_type` field indicates which party is responsible for remitting
 
 When a transaction is marked with `BUYER` as the tax remitter type, it indicates a reverse-charge scenario where the buyer self-assesses and remits the tax. This is common in cross-border B2B transactions within VAT jurisdictions.
 
+### Intra-EU triangulation
+
+The `is_triangulation` field flags an invoice as the middle leg (party B) of an intra-EU triangulation chain. Triangulation is an EU VAT simplification that lets a VAT-registered intermediary buy from a supplier in one EU member state (party A) and sell to a customer in a third EU member state (party C) without having to register for VAT in either of the other two countries.
+
+Set `is_triangulation` to `true` only when **all** of the following conditions are met:
+
+- Three different EU member states are involved
+- All three parties are VAT-registered in their respective member states
+- The goods are shipped directly from party A to party C
+- You are acting as party B (the intermediary)
+
+The flag is invoice-level — it characterizes the entire transaction, not individual line items. It defaults to `false`.
+
+```json
+{
+  "transacted_at": "2026-04-15",
+  "invoice_currency": "EUR",
+  "transaction_type": "SALE",
+  "is_triangulation": true,
+  "customer_details": { "customer_id": "..." },
+  "line_items": { "items": [ /* ... */ ] }
+}
+```
+
+When set, the filing engine reports the transaction under the appropriate triangulation boxes (for example, on the EC Sales List) instead of the standard intra-community supply boxes.
+
+<Note>
+For bulk JSON upload, `is_triangulation` is accepted on each line item but must be the same across all line items of the same invoice. If line items disagree, the request is rejected with a `400` error (`SUB_TRANSACTIONS_TRIANGULATION_INCONSISTENT`).
+</Note>
+
 ### Bulk transactions
 
 See [Bulk Transactions](/engine/indirect-tax/transaction/bulk-transactions).

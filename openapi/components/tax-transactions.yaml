@@ -203,6 +203,15 @@ schemas:
       exemption_type:
         "$ref": "./primitives.yaml#/schemas/ExemptionType"
         description: If this field is present, this transaction will be considered exempt.
+      is_triangulation:
+        type: boolean
+        default: false
+        description: |-
+          Flags the invoice as the middle leg (party B) of an intra-EU triangulation chain — a simplification that lets a VAT-registered intermediary buy from a supplier in one EU member state and sell to a customer in a third EU member state without having to register for VAT in either of the other two countries.
+
+          Set this to `true` only when the invoice meets the legal conditions for the triangulation simplification (three different EU member states, three VAT-registered parties, goods shipped directly from A to C, and you are acting as B). The flag is invoice-level — it characterizes the entire transaction, not individual line items, and defaults to `false`.
+
+          When set, the filing engine reports the transaction under the appropriate triangulation boxes (for example, EC Sales List) instead of the standard intra-community supply boxes.
   TaxTransactionResponse:
     type: object
     properties:
@@ -298,6 +307,10 @@ schemas:
           - SELLER: The seller collects and remits tax (default).
           - MARKETPLACE_FACILITATOR: A marketplace facilitator collects and remits tax on behalf of the seller.
           - BUYER: The buyer is responsible for remitting tax (reverse-charge mechanism, common in B2B VAT transactions).
+      is_triangulation:
+        type: boolean
+        description: Whether this invoice is the middle leg (party B) of an intra-EU triangulation chain. Defaults to `false`.
+        example: false
       metadata:
         type: object
         nullable: true

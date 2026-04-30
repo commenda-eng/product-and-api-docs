@@ -131,6 +131,30 @@ During contribution processing, Commenda validates that each invoice has the dat
 Contributions are idempotent — each processing run replaces all previous contribution values for the filing. This means contributions always reflect the current state of your transaction data.
 </Info>
 
+### Tracking contribution status across filings
+
+Contribution computation runs as an asynchronous job per filing. To check whether contributions are still being computed, have completed, or failed for a set of filings, query the jobs endpoint with the `entity_ids` and `latest=true` filters.
+
+| Query parameter | Description |
+|---|---|
+| `entity_ids` | Comma-separated list of filing IDs to look up. Maximum 100 IDs per request. |
+| `latest` | Set to `true` to return only the most recent job per `(entity_id, operation)` pair, skipping retry history. Requires `entity_ids` to be set. |
+| `entity` | Set to `FILING_CONTRIBUTION` to scope results to contribution-computation jobs. |
+| `operation` | Optional. Set to `SYNC` to filter to the contribution-sync operation. |
+
+When `latest=true` is set, the endpoint bypasses cursor pagination and returns one row per filing per operation — sized by `len(entity_ids) × distinct operations` — so the response is bounded and pagination is unnecessary.
+
+```bash
+# Fetch the latest contribution-sync job for each of three filings
+GET /jobs?entity=FILING_CONTRIBUTION&operation=SYNC&latest=true&entity_ids=f1a2b3c4-...,f2b3c4d5-...,f3c4d5e6-...
+```
+
+Use this when rendering a multi-filing dashboard view: each filing's freshest job tells you whether contributions are `PENDING`, `IN_PROGRESS`, `COMPLETED`, or `FAILED` without walking through every retry attempt.
+
+<Info>
+`latest=true` requires `entity_ids` to be non-empty. Calling it without `entity_ids` returns an `INVALID_REQUEST` error.
+</Info>
+
 ## Liability report
 
 The liability report endpoints provide per-filing snapshots and bulk exports across multiple filings. The two read endpoints return distinct shapes — call them in parallel and merge by `filing_id` when you need both filing-level totals and box-level VAT detail.

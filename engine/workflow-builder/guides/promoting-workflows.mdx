@@ -1,0 +1,131 @@
+---
+title: 'Promoting workflows'
+description: 'Promote workflow templates from staging to production or demo environments'
+icon: 'rocket-launch'
+---
+
+The promote feature lets Commenda admins move a workflow template — along with all of its forms and sub-workflows — from the staging environment to production or demo in a single, transactional operation.
+
+Use this when you've finished building and testing a workflow on staging and want to ship it to a customer-facing environment without rebuilding it by hand.
+
+## How it works
+
+When you promote a workflow, the staging backend bundles up everything the workflow needs and ships it to the target environment over an authenticated, backend-to-backend call. The target environment runs every write inside a single database transaction — if any step fails, nothing is created.
+
+The bundle includes:
+
+- The workflow template and its **active version**
+- All **child sub-workflows** referenced by `SYS_SUB_WORKFLOW` steps (recursively)
+- All **forms** referenced by `HUMAN_FORM` steps
+- All **trigger subscriptions** attached to the workflow
+- All **workflow template links** (entity bindings)
+
+Sub-workflows are imported children-first so that parent workflows can reference them. Form IDs and child workflow version IDs inside the workflow definition are automatically rewritten to match the new IDs in the target environment.
+
+## Prerequisites
+
+Before promoting, make sure:
+
+- You are signed in as a Commenda admin (`MAIN_APP_ADMIN`).
+- The workflow template has an **active version**.
+- Every form referenced by the workflow has a **key** set and is in **LIVE** or **COMPLETED** status. Drafts cannot be promoted.
+- The workflow has no circular sub-workflow references.
+- For **production** promotes only: the workflow does not contain demo-only step types (`DEMO_EMAIL`, `DEMO_AI_FILLING_AGENT`).
+- The target environment does not already have a workflow or form with the same key, and none of the workflow's entity links are claimed by a different workflow.
+
+## Promoting from the admin portal
+
+1. Open the workflow template in the staging admin portal.
+2. Click **Promote** and choose the target environment — **Production** or **Demo**.
+3. Review the preflight summary, which lists every workflow and form that will be created in the target.
+4. Click **Confirm promote**.
+
+If the target environment rejects the promote (for example, due to a key conflict), no records are created in the target and you'll see the conflicting keys in the error response.
+
+## API reference
+
+The promote endpoints are admin-only. The first two are called by the staging admin UI; the third is a service-to-service endpoint that the staging backend uses to talk to the target environment.
+
+### Preview a promote
+
+Returns the list of workflows and forms that will be promoted, without making any changes.
+
+```http
+GET /workflow-template/{id}/promote/preflight
+Authorization: Bearer <admin-token>
+```
+
+**Response**
+
+```json
+{
+  "workflows": [
+    { "key": "invoice-approval", "name": "Invoice Approval", "version": "1.0.0" }
+  ],
+  "forms": [
+    { "key": "invoice-form", "name": "Invoice Form", "status": "LIVE" }
+  ]
+}
+```
+
+### Promote a workflow
+
+Builds the bundle and ships it to the target environment.
+
+```http
+POST /workflow-template/{id}/promote
+Authorization: Bearer <admin-token>
+Content-Type: application/json
+
+{
+  "targetEnvironment": "production"
+}
+```
+
+`targetEnvironment` must be either `"production"` or `"demo"`.
+
+**Response**
+
+```json
+{
+  "promotedWorkflows": ["invoice-approval"],
+  "promotedForms": ["invoice-form"]
+}
+```
+
+### Import bundle (service-to-service)
+
+Called by the staging backend on the target environment to write the bundle. Authenticated with a shared secret on the `X-Promote-Key` header — not callable by end users.
+
+```http
+POST /admin/workflow-promote/import
+X-Promote-Key: <shared-secret>
+Content-Type: application/json
+
+{ "workflows": [...], "forms": [...] }
+```
+
+The handler runs all writes inside a single transaction. If any workflow key, form key, or entity link already exists in the target, the request fails with a `409 Conflict` listing every conflicting resource — the database is not modified.
+
+## Configuration
+
+Three environment variables coordinate the promote flow:
+
+| Variable | Set on | Purpose |
+|----------|--------|---------|
+| `PROD_API_URL` | staging | Base URL of the production backend |
+| `DEMO_API_URL` | staging | Base URL of the demo backend |
+| `PROMOTE_SERVICE_API_KEY` | staging, prod, demo | Shared secret used as the `X-Promote-Key` header |
+
+`PROMOTE_SERVICE_API_KEY` must be identical on all three environments. If the values disagree, every promote will fail with `401 Unauthorized`.
+
+## Common errors
+
+| Error | Cause | Fix |
+|-------|-------|-----|
+| `Form "..." has no key` | A referenced form is missing a `key` | Set a key on the form template before promoting |
+| `Form "..." has status DRAFT` | A referenced form isn't published | Publish the form to `LIVE` or `COMPLETED` |
+| `Workflow "..." contains demo-only step types` | Promoting to production with `DEMO_EMAIL` or `DEMO_AI_FILLING_AGENT` steps | Remove demo steps or promote to demo instead |
+| `Circular sub-workflow reference detected` | A workflow indirectly references itself via `SYS_SUB_WORKFLOW` | Break the cycle before promoting |
+| `Promote blocked — the following resources already exist` | Conflicting workflow keys, form keys, or entity links in target | Rename or remove the conflicting resources in the target environment |
+| `Target environment rejected the promote` | Network or validation failure on the target | Check the wrapped error detail; nothing was written in the target |

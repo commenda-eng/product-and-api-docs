@@ -57,6 +57,14 @@ keywords: ["security", "privacy", "data protection", "encryption"]
         "@type": "Answer",
         "text": "Documents can be set as private (specific team members), shared (your team and your advisor), or restricted based on the entity they belong to. File-level access control lists give you fine-grained control over who can view each document."
       }
+    },
+    {
+      "@type": "Question",
+      "name": "How is Commenda admin access protected?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Commenda staff who access the internal admin console must complete authenticator-app two-factor authentication (TOTP, RFC 6238) on every sign-in. Time-based one-time codes are generated locally on the staff member's device using apps such as Google Authenticator, 1Password, or Authy — codes are not sent over SMS or email. The shared secret is encrypted at rest, each code can only be used once, and a senior administrator can revoke a staff member's enrollment instantly, which immediately invalidates any active session."
+      }
     }
   ]
 }
@@ -93,5 +101,14 @@ keywords: ["security", "privacy", "data protection", "encryption"]
 
   <Accordion title="How does document access control work?">
     Documents can be set as private (specific team members), shared (your team and your advisor), or restricted based on the entity they belong to. File-level access control lists give you fine-grained control over who can view each document.
+  </Accordion>
+
+  <Accordion title="How is Commenda admin access protected?">
+    Commenda staff who access the internal admin console must complete authenticator-app two-factor authentication (TOTP) on every sign-in:
+
+    - Codes follow the RFC 6238 standard and are generated locally on the staff member's device using apps such as Google Authenticator, 1Password, or Authy. Codes are never delivered over SMS or email.
+    - Each one-time code is valid for a single use within a short time window. Replays are rejected.
+    - The shared secret is encrypted at rest, and only the staff member's authenticator app can produce a valid code.
+    - A senior Commenda administrator can revoke a staff member's enrollment at any time. Revocation invalidates the staff member's active session immediately and forces them to re-enroll on their next sign-in.
   </Accordion>
 </AccordionGroup>

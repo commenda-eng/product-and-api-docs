@@ -650,6 +650,12 @@ paths:
                   message:
                     type: string
                     example: Successfully fetched registrations.
+        '400':
+          description: Bad request. Returned when the request body fails validation (for example, an invalid `corporation_id` or filter value).
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
         '404':
           description: Not Found
           content:

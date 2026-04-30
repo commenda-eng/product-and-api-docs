@@ -57,6 +57,14 @@ keywords: ["security", "privacy", "data protection", "encryption"]
         "@type": "Answer",
         "text": "Documents can be set as private (specific team members), shared (your team and your advisor), or restricted based on the entity they belong to. File-level access control lists give you fine-grained control over who can view each document."
       }
+    },
+    {
+      "@type": "Question",
+      "name": "How is internal Commenda staff access secured?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Commenda employees who access the internal admin console must complete two-factor authentication using a TOTP authenticator app (such as 1Password, Authy, or Google Authenticator) on every sign-in. The 2FA secret is encrypted at rest, codes are single-use within their time window, and a super-admin can reset any staff member's 2FA enrollment, which immediately invalidates that staff member's active session."
+      }
     }
   ]
 }
@@ -93,5 +101,15 @@ keywords: ["security", "privacy", "data protection", "encryption"]
 
   <Accordion title="How does document access control work?">
     Documents can be set as private (specific team members), shared (your team and your advisor), or restricted based on the entity they belong to. File-level access control lists give you fine-grained control over who can view each document.
+  </Accordion>
+
+  <Accordion title="How is internal Commenda staff access secured?">
+    Commenda employees who access the internal admin console must complete two-factor authentication on every sign-in:
+
+    - **TOTP authenticator apps** — staff use a time-based code from an app such as 1Password, Authy, or Google Authenticator. SMS-based 2FA is not used.
+    - **Encrypted at rest** — each staff member's 2FA secret is stored encrypted at the field level, so it is never readable from a database snapshot.
+    - **Replay protection** — each code can only be used once within its time window. Repeating a code, even seconds later, is rejected.
+    - **Rate limiting** — verification attempts are rate-limited per IP and per account to defend against brute-force attempts.
+    - **Session revocation** — a Commenda super-admin can reset another staff member's 2FA enrollment at any time. The reset immediately invalidates that staff member's active session and forces them to re-enroll a new authenticator on next sign-in.
   </Accordion>
 </AccordionGroup>

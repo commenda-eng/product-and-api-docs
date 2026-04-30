@@ -183,6 +183,12 @@ schemas:
                 exemption_certificate_id:
                   type: string
                   description: ID of exemption certificate, if applicable.
+                is_triangulation:
+                  type: boolean
+                  description: |-
+                    Optional intra-EU triangulation flag. Marks the line item as part of an invoice that is the middle leg of an intra-EU triangulation chain (A→B→C across three EU member states, where the seller acts as B).
+                    `is_triangulation` is a transaction-level legal characterization. All line items on the same invoice must carry the same value; if they disagree, the request is rejected with HTTP 400 (`SUB_TRANSACTIONS_TRIANGULATION_INCONSISTENT`).
+                    The resolved value is stored on the invoice and returned as `is_triangulation` on the transaction response.
       marketplace:
         type: string
         description: Marketplace name if the transaction originates from a marketplace.
@@ -203,6 +209,12 @@ schemas:
       exemption_type:
         "$ref": "./primitives.yaml#/schemas/ExemptionType"
         description: If this field is present, this transaction will be considered exempt.
+      is_triangulation:
+        type: boolean
+        description: |-
+          Optional invoice-level flag indicating that the transaction is the middle leg of an intra-EU triangulation chain (A→B→C across three EU member states, where the seller acts as B).
+          May also be passed per line item; if both invoice-level and per-line-item values are provided, all line items must agree with each other. Disagreement returns HTTP 400 with subtype `SUB_TRANSACTIONS_TRIANGULATION_INCONSISTENT`.
+          Defaults to `false`.
   TaxTransactionResponse:
     type: object
     properties:
@@ -302,6 +314,11 @@ schemas:
         type: object
         nullable: true
         description: Additional metadata associated with the transaction.
+      is_triangulation:
+        type: boolean
+        description: |-
+          Indicates whether the invoice is the middle leg of an intra-EU triangulation chain (A→B→C across three EU member states, where the seller acts as B). Resolved at create time from the request's invoice-level and/or per-line-item `is_triangulation` values. Defaults to `false`.
+        example: false
       customer_details:
         type: object
         properties:

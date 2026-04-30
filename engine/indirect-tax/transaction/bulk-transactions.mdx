@@ -69,6 +69,7 @@ Files must be uploaded in CSV format, with the headers specified in our bulk upl
 | customer_business_identification_number | false | string | The customer's tax or business registration number (e.g., VAT ID, EIN, GST number). Automatically populated when syncing from integrations that provide this data. |
 | marketplace | false | string | Marketplace name if the transaction is from a marketplace. |
 | tax_remitter_type | false | [Tax Remitter Type](#tax-remitter-type) | Indicates which party is responsible for remitting tax on the transaction. |
+| is_triangulation | false | boolean | Marks the row as part of an invoice that is the middle leg of an intra-EU triangulation chain (A→B→C across three EU member states, where the seller acts as B). All rows belonging to the same invoice (grouped by `invoice_number` / `external_id`) must carry the same value; rows whose values disagree cause the invoice to be rejected. |
 | metadata | false | string (JSON) | Additional metadata for the transaction in JSON format. |
 
 ### Transaction Type Code
@@ -105,6 +106,7 @@ When uploading RETURN or PURCHASE transactions via CSV, the following rules appl
 | ERR_INVALID_CORPORATION_ID | Corporation ID doesn't match | Ensure corporation_id matches the corporation specified in the upload |
 | ERR_INVALID_INVOICE_ID | Missing or invalid invoice_number | Provide a valid invoice_number for each row |
 | ERR_INVALID_LINE_ITEM_COUNT | Too many line items per invoice | Reduce the number of line items per invoice |
+| SUB_TRANSACTIONS_TRIANGULATION_INCONSISTENT | Rows belonging to the same invoice have disagreeing `is_triangulation` values | Ensure every row that shares the same `invoice_number` carries the same `is_triangulation` value |
 
 #### Process Code
 

@@ -1,0 +1,300 @@
+---
+title: "Compliance calendar preview"
+description: "Generate a stateless compliance calendar preview for a corporation profile, and discover which jurisdictions are supported."
+keywords: ["compliance calendar", "preview", "obligations", "filings", "jurisdictions"]
+---
+
+The Compliance Calendar Preview API generates a compliance calendar from a corporation profile without creating or persisting any records. It is intended for stateless preview experiences (for example, a marketing-site calculator or a pre-onboarding flow) where you want to show prospective customers which filings their entity would be subject to in a given fiscal year.
+
+Two endpoints are available:
+
+- **`POST /compliance/public/calendar`** — generate a preview calendar in memory.
+- **`GET /compliance/public/supported`** — enumerate the `(country, jurisdiction, corporationType)` combinations that the preview supports.
+
+<Info>
+These endpoints are server-to-server only. They are not intended to be called directly from a browser and are not part of the standard partner API surface. Contact the Commenda team to obtain an API key.
+</Info>
+
+## Authentication
+
+Pass your API key in the `x-api-key` header on every request.
+
+```bash
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/compliance/public/calendar' \
+  --header 'x-api-key: <your_api_key>' \
+  --header 'Content-Type: application/json' \
+  --data '{ ... }'
+```
+
+A missing or invalid key returns `401 Unauthorized`.
+
+## Generate a preview calendar
+
+`POST /compliance/public/calendar`
+
+Returns a list of compliance items (obligations) generated for the supplied corporation profile and target fiscal year. The response is computed in memory; no corporation, compliance, or filing records are created.
+
+Responses include `Cache-Control: no-store`.
+
+### Request body
+
+<ParamField body="incorporationCountry" type="string" required>
+  ISO 3166-1 alpha-2 country code where the corporation is incorporated (for example, `US`).
+</ParamField>
+
+<ParamField body="jurisdiction" type="string" required>
+  Sub-national jurisdiction code (for example, `JUR_US_DE` for Delaware). Use the [`/compliance/public/supported`](#enumerate-supported-jurisdictions) endpoint to discover supported values.
+</ParamField>
+
+<ParamField body="corporationType" type="string" required>
+  Corporation type for the entity (for example, `CCorp`, `LLC`, `SCorp`). Supported values vary by jurisdiction — see [`/compliance/public/supported`](#enumerate-supported-jurisdictions).
+</ParamField>
+
+<ParamField body="formationDate" type="string" required>
+  ISO 8601 date the entity was formed, for example `2024-03-15`. Must be a real calendar date with a year between `1900` and `currentYear + 10`.
+</ParamField>
+
+<ParamField body="fiscalYearStartDay" type="integer" required>
+  Day of the month the fiscal year begins (`1`–`31`). Must combine with `fiscalYearStartMonth` to form a real calendar date — for example, `(31, 4)` (April 31) is rejected.
+</ParamField>
+
+<ParamField body="fiscalYearStartMonth" type="integer" required>
+  Month the fiscal year begins (`1`–`12`).
+</ParamField>
+
+<ParamField body="fiscalYear" type="integer" required>
+  The target fiscal year to generate obligations for. Must be `>= 1900` and no more than 10 years in the future from the current UTC year.
+</ParamField>
+
+<ParamField body="taxElection" type="string">
+  Optional federal tax election that overrides how the entity is treated when generating obligations. Supported values:
+
+  - `C_CORPORATION`
+  - `S_CORPORATION`
+  - `PARTNERSHIP`
+  - `INDIVIDUAL_OR_SOLE_PROPRIETORSHIP`
+  - `DISREGARDED_ENTITY`
+  - `FOREIGN_CORPORATION`
+  - `FOREIGN_PARTNERSHIP`
+  - `NONPROFIT`
+  - `TAX_EXEMPT_ENTITY`
+  - `REIT`
+  - `TRUST`
+  - `COOPERATIVE`
+  - `ESTATE`
+  - `TAX_RESIDENT_COMPANY`
+  - `LISTED_COMPANY`
+
+  When set, the preview honors the elected classification (for example, an LLC with `taxElection: C_CORPORATION` returns the C-Corp obligation set).
+</ParamField>
+
+<ParamField body="complianceCategories" type="array">
+  Optional array of obligation categories to filter by. When omitted or empty, all applicable categories are returned. Maximum size: 15.
+</ParamField>
+
+### Request example
+
+```bash
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/compliance/public/calendar' \
+  --header 'x-api-key: <your_api_key>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "incorporationCountry": "US",
+    "jurisdiction": "JUR_US_DE",
+    "corporationType": "CCorp",
+    "formationDate": "2024-03-15",
+    "fiscalYearStartDay": 1,
+    "fiscalYearStartMonth": 1,
+    "fiscalYear": 2026
+  }'
+```
+
+### Response
+
+```json
+{
+  "compliances": [
+    {
+      "id": "5b2f6f1d-1c2a-4f0e-9c3a-3a3c1b8b9a3f",
+      "complianceType": "US-DE-CCorp-FORM-1120",
+      "title": "US Federal Income Tax Return (Form 1120)",
+      "description": "",
+      "category": "FEDERAL_INCOME_TAX",
+      "frequency": "ANNUAL",
+      "version": "FY2026",
+      "formNumber": "1120",
+      "state": "DE",
+      "dueDate": "2027-04-15",
+      "effectiveStartDate": "2026-01-01",
+      "effectiveEndDate": "2026-12-31",
+      "effectiveYear": 2026
+    }
+  ]
+}
+```
+
+<ResponseField name="compliances" type="array">
+  Array of preview compliance items generated for the supplied profile and fiscal year. The array is empty when no obligations apply.
+
+  <Expandable title="Compliance item">
+    <ResponseField name="id" type="string">
+      A synthetic UUID generated for this preview row. Not persisted; do not rely on it across calls.
+    </ResponseField>
+
+    <ResponseField name="complianceType" type="string">
+      Composite identifier of the underlying obligation rule, for example `US-DE-CCorp-FORM-1120`.
+    </ResponseField>
+
+    <ResponseField name="title" type="string">
+      Human-readable name of the obligation.
+    </ResponseField>
+
+    <ResponseField name="description" type="string">
+      Long-form description of the obligation. Currently always returns an empty string.
+    </ResponseField>
+
+    <ResponseField name="category" type="string">
+      Obligation category (for example, `FEDERAL_INCOME_TAX`, `STATE_INCOME_TAX`, `FRANCHISE_TAX`).
+    </ResponseField>
+
+    <ResponseField name="frequency" type="string">
+      How often the obligation recurs (for example, `ANNUAL`, `QUARTERLY`, `MONTHLY`).
+    </ResponseField>
+
+    <ResponseField name="version" type="string">
+      Version of the obligation as computed for the supplied fiscal year, for example `FY2026`.
+    </ResponseField>
+
+    <ResponseField name="formNumber" type="string">
+      Optional. Form number associated with the filing (for example, `1120`, `1065`).
+    </ResponseField>
+
+    <ResponseField name="state" type="string">
+      Optional. State or sub-jurisdiction code associated with the filing.
+    </ResponseField>
+
+    <ResponseField name="commendapediaId" type="string">
+      Optional. Identifier linking to the Commendapedia knowledge-base entry for this obligation.
+    </ResponseField>
+
+    <ResponseField name="dueDate" type="string">
+      ISO 8601 date the filing is due.
+    </ResponseField>
+
+    <ResponseField name="effectiveStartDate" type="string">
+      ISO 8601 date the obligation period starts.
+    </ResponseField>
+
+    <ResponseField name="effectiveEndDate" type="string">
+      ISO 8601 date the obligation period ends.
+    </ResponseField>
+
+    <ResponseField name="effectiveYear" type="integer">
+      The effective year for the obligation, typically equal to the requested `fiscalYear`.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Error responses
+
+| Status | Code | Description |
+|--------|------|-------------|
+| `400` | `UNSUPPORTED_JURISDICTION` | The `(incorporationCountry, jurisdiction, corporationType)` combination is not supported. The response body echoes the values you submitted. |
+| `400` | (validation) | One or more fields failed validation (missing field, invalid enum, out-of-range fiscal year, impossible `fiscalYearStartDay`/`fiscalYearStartMonth`, unknown field). |
+| `401` | — | Missing or invalid `x-api-key` header. |
+
+`UNSUPPORTED_JURISDICTION` example:
+
+```json
+{
+  "code": "UNSUPPORTED_JURISDICTION",
+  "message": "We don't yet generate compliance calendars for US / JUR_US_XX / CCorp."
+}
+```
+
+<Info>
+Unknown fields in the request body are rejected with `400`. Submit only the documented properties.
+</Info>
+
+## Enumerate supported jurisdictions
+
+`GET /compliance/public/supported`
+
+Returns the list of `(country, jurisdiction, corporationType)` tuples that produce a non-empty calendar from `POST /compliance/public/calendar`. Use it to constrain pickers and dropdowns in your UI rather than probing the calendar endpoint and handling `UNSUPPORTED_JURISDICTION` errors.
+
+Responses include `Cache-Control: max-age=3600, must-revalidate`. The set changes only when a jurisdiction is added or removed, so caching for an hour is safe.
+
+### Request example
+
+```bash
+curl --request GET \
+  --url 'https://api.prod.commenda.io/api/v1/compliance/public/supported' \
+  --header 'x-api-key: <your_api_key>'
+```
+
+### Response
+
+```json
+{
+  "supported": [
+    {
+      "country": "US",
+      "jurisdiction": "JUR_US_DE",
+      "corporationType": "CCorp",
+      "jurisdictionDisplayName": "Delaware",
+      "corporationTypeDisplayName": "C Corporation"
+    },
+    {
+      "country": "US",
+      "jurisdiction": "JUR_US_DE",
+      "corporationType": "LLC",
+      "jurisdictionDisplayName": "Delaware",
+      "corporationTypeDisplayName": "Limited Liability Company"
+    }
+  ]
+}
+```
+
+<ResponseField name="supported" type="array">
+  Array of supported tuples.
+
+  <Expandable title="Supported tuple">
+    <ResponseField name="country" type="string">
+      ISO 3166-1 alpha-2 country code.
+    </ResponseField>
+
+    <ResponseField name="jurisdiction" type="string">
+      Jurisdiction enum value. Country-level entries (where there is no sub-national jurisdiction) use `JUR_ZZ__UNKNOWN`.
+    </ResponseField>
+
+    <ResponseField name="corporationType" type="string">
+      Corporation type enum value (for example, `CCorp`, `LLC`, `SCorp`).
+    </ResponseField>
+
+    <ResponseField name="jurisdictionDisplayName" type="string">
+      Human-readable jurisdiction name suitable for use as a UI label.
+    </ResponseField>
+
+    <ResponseField name="corporationTypeDisplayName" type="string">
+      Human-readable corporation-type name suitable for use as a UI label.
+    </ResponseField>
+  </Expandable>
+</ResponseField>
+
+### Error responses
+
+| Status | Description |
+|--------|-------------|
+| `401` | Missing or invalid `x-api-key` header. |
+
+## When to use this API
+
+- **Marketing-site previews** — generate a quick "what would my compliance calendar look like?" preview for prospects without creating an entity.
+- **Pre-onboarding flows** — show new customers the obligations they would inherit before they commit to onboarding.
+- **Form constraint** — drive country, jurisdiction, and corporation-type pickers from `GET /compliance/public/supported` so callers cannot submit unsupported tuples.
+
+<Info>
+Preview results are computed from the same obligation rules that power the production compliance engine, but no compliance items, filings, or corporation records are created. To produce a persisted, trackable calendar, use the authenticated [`POST /compliance/calendar`](/engine/api-introduction) endpoint with a real corporation.
+</Info>

@@ -1,0 +1,185 @@
+---
+title: "Compliance calendar preview"
+description: "Generate a stateless preview of compliance filing obligations for a corporation profile, without persisting any data."
+keywords: ["compliance calendar", "preview", "filings", "due dates", "obligations", "marketing tool"]
+---
+
+The Compliance Calendar Preview API lets you generate a list of upcoming compliance filings for a hypothetical corporation profile — country, jurisdiction, corporation type, formation date, and fiscal-year start — without creating any records in Commenda. Use it to power preview tools, lead-capture experiences, and lightweight planning utilities that need a realistic obligation calendar before a customer is onboarded.
+
+The API is fully stateless: no entity, corporation, or compliance row is created, and no data is written to the database. Each request is evaluated in isolation against Commenda's obligation-rules engine.
+
+## How it works
+
+You submit a corporation profile (country, jurisdiction, corporation type, formation date, fiscal-year start day and month, and the target fiscal year) and receive back the list of compliance items that would be generated for that fiscal year if the entity were created in Commenda.
+
+Two endpoints are available:
+
+- `POST /compliance/public/calendar` — generate the preview calendar for a single corporation profile and fiscal year.
+- `GET /compliance/public/supported` — list the `(country, jurisdiction, corporationType)` tuples that produce a non-empty calendar. Use this to constrain dropdowns in your UI.
+
+## Authentication
+
+Both endpoints are guarded by an API key passed in the `x-api-key` header on every request. Contact the Commenda team if you do not have a key.
+
+These endpoints are intended for **server-to-server** calls (for example, from a Next.js or other backend proxy). Direct browser calls are not supported because there is no CORS allowlist entry.
+
+```bash
+curl --request POST \
+  --url 'https://api.prod.commenda.io/api/v1/compliance/public/calendar' \
+  --header 'x-api-key: <your_api_key>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "incorporationCountry": "US",
+    "jurisdiction": "JUR_US_DE",
+    "corporationType": "C_CORPORATION",
+    "formationDate": "2024-03-15",
+    "fiscalYearStartDay": 1,
+    "fiscalYearStartMonth": 1,
+    "fiscalYear": 2026
+  }'
+```
+
+## Generate a preview calendar
+
+`POST /compliance/public/calendar`
+
+Returns the compliance filings that would apply to the supplied corporation profile for the requested fiscal year. The response is annotated with `Cache-Control: no-store`, since results are deterministic only for the rule set at the moment of the request.
+
+### Request body
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `incorporationCountry` | string | Yes | ISO country enum (for example, `US`, `IN`, `GB`). |
+| `jurisdiction` | string | Yes | Sub-country jurisdiction enum (for example, `JUR_US_DE` for Delaware). |
+| `corporationType` | string | Yes | Entity type enum (for example, `C_CORPORATION`, `LIMITED_LIABILITY_COMPANY`). |
+| `formationDate` | string | Yes | ISO 8601 date (`YYYY-MM-DD`). The year must be between `1900` and the current year + 10. |
+| `fiscalYearStartDay` | integer | Yes | Day of the month the fiscal year begins (`1`–`31`). Combined with `fiscalYearStartMonth` it must form a real calendar date — for example, `day: 31, month: 2` is rejected. |
+| `fiscalYearStartMonth` | integer | Yes | Month the fiscal year begins (`1`–`12`). |
+| `fiscalYear` | integer | Yes | Target fiscal year to generate the preview for. Must be at least `1900` and no more than 10 years in the future of the current UTC year. |
+| `taxElection` | string | No | Tax classification override (for example, an LLC that has elected to be taxed as a C corporation). When supplied, the obligation set is computed against the effective entity type. |
+| `complianceCategories` | array of strings | No | Restrict the preview to one or more `ObligationRulesCategory` values. An empty array is treated as "no filter," equivalent to omitting the field. |
+
+Unknown fields are rejected with a `400 Bad Request` (the global validation pipe is configured with `forbidNonWhitelisted: true`).
+
+### Response
+
+A successful response returns an array of compliance preview items.
+
+```json
+{
+  "compliances": [
+    {
+      "id": "c2f8b9c1-9c5f-4e2b-9f6a-2a8b1c0d5e7f",
+      "complianceType": "US-DE-CCorp-FORM-1120",
+      "title": "Federal Form 1120 — U.S. Corporation Income Tax Return",
+      "description": "",
+      "category": "INCOME_TAX",
+      "frequency": "ANNUAL",
+      "version": "FY2026",
+      "formNumber": "1120",
+      "state": "DE",
+      "dueDate": "2027-04-15",
+      "effectiveStartDate": "2026-01-01",
+      "effectiveEndDate": "2026-12-31",
+      "effectiveYear": 2026
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `compliances[].id` | string | A synthetic UUID generated for this preview row. Never persisted; do not store or reuse it. |
+| `compliances[].complianceType` | string | Composite identifier of the underlying obligation rule (for example, `US-DE-CCorp-FORM-1120`). |
+| `compliances[].title` | string | Human-readable filing name. |
+| `compliances[].description` | string | Currently always returned as an empty string. |
+| `compliances[].category` | string | `ObligationRulesCategory` value (for example, `INCOME_TAX`, `ANNUAL_REPORT`). |
+| `compliances[].frequency` | string | `ObligationRulesFrequency` value (for example, `ANNUAL`, `QUARTERLY`). |
+| `compliances[].version` | string | Computed version label, for example `FY2026` for an annual obligation. |
+| `compliances[].formNumber` | string | Optional form number when one is associated with the obligation. |
+| `compliances[].state` | string | Optional state or sub-jurisdiction code. |
+| `compliances[].commendapediaId` | string | Optional reference to the Commendapedia entry for this filing. |
+| `compliances[].dueDate` | string | ISO 8601 date when the filing is due. |
+| `compliances[].effectiveStartDate` | string | ISO 8601 start date of the period the filing covers. |
+| `compliances[].effectiveEndDate` | string | ISO 8601 end date of the period the filing covers. |
+| `compliances[].effectiveYear` | integer | Effective fiscal year for the filing. |
+
+Optional fields are omitted from the response when not present.
+
+### Errors
+
+| Status | Code | Description |
+|--------|------|-------------|
+| `400` | `UNSUPPORTED_JURISDICTION` | The submitted `(incorporationCountry, jurisdiction, corporationType)` tuple is not yet supported by the calendar generator. The response body echoes only the values you submitted; the effective corporation type after `taxElection` resolution is not leaked. |
+| `400` | — | Validation failure (missing field, unknown field, invalid enum, invalid `fiscalYearStartDay`/`Month` combination, out-of-range `formationDate` or `fiscalYear`). |
+| `401` | — | Missing or invalid `x-api-key`. |
+
+Example unsupported-jurisdiction response:
+
+```json
+{
+  "code": "UNSUPPORTED_JURISDICTION",
+  "message": "We don't yet generate compliance calendars for US / JUR_US_ZZ / C_CORPORATION."
+}
+```
+
+## List supported jurisdictions
+
+`GET /compliance/public/supported`
+
+Returns every `(country, jurisdiction, corporationType)` tuple that resolves to a non-empty calendar. Use this to populate dropdowns in your preview UI instead of probing the calendar endpoint and handling `UNSUPPORTED_JURISDICTION` errors.
+
+The response carries `Cache-Control: max-age=3600, must-revalidate`. Supported tuples change only when a jurisdiction is added or removed in Commenda.
+
+```bash
+curl --request GET \
+  --url 'https://api.prod.commenda.io/api/v1/compliance/public/supported' \
+  --header 'x-api-key: <your_api_key>'
+```
+
+### Response
+
+```json
+{
+  "supported": [
+    {
+      "country": "US",
+      "jurisdiction": "JUR_US_DE",
+      "corporationType": "C_CORPORATION",
+      "jurisdictionDisplayName": "Delaware",
+      "corporationTypeDisplayName": "C Corporation"
+    },
+    {
+      "country": "US",
+      "jurisdiction": "JUR_US_DE",
+      "corporationType": "LIMITED_LIABILITY_COMPANY",
+      "jurisdictionDisplayName": "Delaware",
+      "corporationTypeDisplayName": "Limited Liability Company"
+    }
+  ]
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `supported[].country` | string | ISO country enum. |
+| `supported[].jurisdiction` | string | Jurisdiction enum. Country-wide rules surface as `JUR_ZZ__UNKNOWN`. |
+| `supported[].corporationType` | string | Corporation type enum. |
+| `supported[].jurisdictionDisplayName` | string | Human-readable jurisdiction label. |
+| `supported[].corporationTypeDisplayName` | string | Human-readable corporation-type label. |
+
+A tuple appears in this list only if a `BusinessEntityRule` exists for it **and** at least one mandatory obligation rule applies. Tuples that exist in the catalog but have no live obligation rules are excluded.
+
+## When to use this API
+
+- **Marketing or onboarding preview tools** — show prospects the obligation calendar they should expect before they create an account.
+- **Sales enablement** — build a quick "what filings will I owe?" calculator that runs without provisioning an entity.
+- **Planning utilities** — let advisors model an entity's first-year obligations under different fiscal-year starts or corporation types.
+
+<Info>
+This API does not create or persist any data. To generate the production compliance calendar for a real entity, use the authenticated `POST /compliance/calendar` endpoint after creating the corporation in Commenda.
+</Info>
+
+<Warning>
+The endpoints are intended for server-to-server calls. Do not embed the API key in client-side code or call them directly from a browser.
+</Warning>

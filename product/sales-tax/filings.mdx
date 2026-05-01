@@ -126,6 +126,22 @@ To view the computed contributions for a filing, click on the filing to open its
 Filing contributions are recomputed each time the automated processing cycle runs. If you add or update transactions after contributions have been generated, the next processing cycle updates the contributions to reflect the changes.
 </Info>
 
+### Re-running pipeline jobs from the status modal
+
+When a filing's pipeline jobs surface warnings or errors, the **Filing status** modal exposes banner actions to re-run the relevant stages without waiting for the next scheduled cycle. Each action is scoped to an explicit list of filings selected in the modal — not a date range — so you can target only the rows that need attention.
+
+Three banner actions are available:
+
+- **Re-run breakdown generation** — regenerates tax breakdowns for the selected filings. Use this when transactions were updated after the last breakdown ran, or when an earlier run failed before completing.
+- **Sync filing aggregates** — refreshes the aggregated totals (gross sales, taxable amount, tax collected) for the selected filings. Use this when filing totals look stale relative to the underlying transactions.
+- **Re-run contribution sync** — re-runs the per-filing invoice attachment and filing-contribution sync for EU and UK filings. Use this when contribution box values are missing, stale, or report errors after invoice or address corrections.
+
+Each action enqueues background jobs and returns immediately. The status modal then surfaces the new job IDs on its next poll so you can correlate progress with the action you triggered. For the contribution-sync action, results are returned per filing — successful filings show new attach and contribution job IDs, skipped filings include a skip reason, and failed filings include an error message so you can act on each row independently.
+
+<Info>
+Per-filing authorization still applies — you can only re-run jobs for filings on corporations you're scoped to, even when the underlying triggers are admin-only on the platform.
+</Info>
+
 <Warning>
 Always verify your filing amounts before submission. Once you file a return with the tax authority, corrections may require amended returns.
 </Warning>

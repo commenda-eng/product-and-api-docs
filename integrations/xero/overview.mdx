@@ -35,13 +35,58 @@ When you create or update an invoice in Xero, Commenda automatically:
 2. Fetches the full invoice and associated contact details
 3. Determines the shipping address from the contact's address records
 4. Calculates the applicable indirect tax
-5. Creates or updates Commenda-specific tax codes in your Xero account and applies them to the invoice
-
-Commenda dynamically creates tax codes in Xero for each effective tax rate, so your tax reporting stays accurate.
+5. Writes the calculated tax back to your Xero invoice as a dedicated **Commenda Tax** line item
 
 <Info>
 Tax calculation is supported for accounts receivable invoices (`ACCREC`), accounts receivable credit notes (`ACCRECCREDIT`), and cash refunds. Bills and bill credit notes are synced for data tracking but are not processed for tax calculation.
 </Info>
+
+## How tax appears on your Xero invoice
+
+Commenda writes the calculated tax to your Xero invoice as a separate line item rather than applying per-line tax codes. This keeps the Commenda-calculated amount clearly visible and avoids creating one tax rate per effective rate in your Xero chart of taxes.
+
+When Commenda processes an invoice, it:
+
+- Sets every existing line item to use the **Commenda Tax** account and an exempt line-level tax type, so Xero does not double-count tax
+- Appends a single Commenda-managed line item containing the total calculated tax. The line description is a Commenda-generated status message indicating success or failure
+- Recalculates the invoice `SubTotal` and `Total` so they match the sum of all line amounts. The header `TotalTax` is set to `0` because tax is represented as its own line, not as line-level VAT
+
+If tax calculation fails, Commenda removes any prior Commenda status line and appends an error line item with the failure reason in its description, then refreshes the invoice totals so Xero accepts the update.
+
+### The Commenda Tax account
+
+The first time Commenda writes tax back to a Xero organisation, it provisions a dedicated chart-of-accounts entry used exclusively for the tax line item:
+
+| Field | Value |
+|---|---|
+| Code | `COMMENDA` |
+| Name | `Commenda Tax` |
+| Type | `SALES` |
+| Description | `Commenda Tax Account` |
+
+If the account already exists but has been archived, Commenda automatically reactivates it before posting the invoice. Do not delete or rename this account — Commenda matches it by the `COMMENDA` nominal code on every calculation.
+
+### Line-level tax type by region
+
+Because tax is posted as its own line, the surrounding line items must be exempt from Xero's line-level VAT logic. Commenda chooses the exempt tax type based on your Xero organisation's country or version:
+
+| Xero organisation region | Line-level `TaxType` used |
+|---|---|
+| Australia (`AU`) | `BASEXCLUDED` |
+| All other regions (UK, NZ, US, Global, etc.) | `NONE` |
+
+This is applied to the Commenda Tax account itself and to every existing line on the invoice when Commenda writes back tax. UK organisations, for example, will see `NONE` on each invoice line and the calculated VAT shown as a single Commenda Tax line, rather than per-line VAT codes such as `OUTPUT2`.
+
+### When updates are skipped
+
+Commenda only re-posts an invoice when the calculated tax actually changes. An invoice is left untouched when **all** of the following hold:
+
+- Every non-zero line is already on the Commenda Tax account with the expected exempt tax type
+- A Commenda success status line already exists on the invoice
+- The existing tax line amount matches the freshly calculated total tax (within `0.01`)
+- The status line's account, tax type, and status code are unchanged
+
+This avoids unnecessary writes for invoices that have already been reconciled.
 
 ## Address resolution
 
@@ -92,7 +137,7 @@ When syncing invoices, Commenda also fetches the associated contact and includes
 - **Lock dates are respected** — Commenda skips invoices dated before your Xero organisation's period lock date or end-of-year lock date
 - Commenda skips invoices with **paid**, **voided**, or **deleted** status for tax calculation
 - Xero does not support shipping lines or shipping amounts on documents, so Commenda does not calculate shipping tax separately
-- Commenda creates tax codes dynamically in Xero as it encounters new tax rates
+- Commenda manages a single dedicated `COMMENDA` chart-of-accounts entry for tax write-back instead of creating per-rate tax codes in your Xero chart of taxes
 
 ## Next steps
 

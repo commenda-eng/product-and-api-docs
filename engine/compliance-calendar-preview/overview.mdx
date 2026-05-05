@@ -57,7 +57,7 @@ Returns the compliance filings that would apply to the supplied corporation prof
 | `fiscalYearStartMonth` | integer | Yes | Month the fiscal year begins (`1`–`12`). |
 | `fiscalYear` | integer | Yes | Target fiscal year to generate the preview for. Must be at least `1900` and no more than 10 years in the future of the current UTC year. |
 | `taxElection` | string | No | Tax classification override (for example, an LLC that has elected to be taxed as a C corporation). When supplied, the obligation set is computed against the effective entity type. |
-| `complianceCategories` | array of strings | No | Restrict the preview to one or more `ObligationRulesCategory` values. An empty array is treated as "no filter," equivalent to omitting the field. |
+| `complianceCategories` | array of strings | No | Restrict the preview to one or more `ObligationRulesCategory` values. Supported values: `DIRECT_TAX`, `INDIRECT_TAX`, `TRANSFER_PRICING`, `ENTITY_COMPLIANCE`, `PAYROLL_AND_EMPLOYMENT`, `CUSTOMS_AND_TRADE`. An empty array is treated as "no filter," equivalent to omitting the field. |
 
 Unknown fields are rejected with a `400 Bad Request` (the global validation pipe is configured with `forbidNonWhitelisted: true`).
 
@@ -73,7 +73,7 @@ A successful response returns an array of compliance preview items.
       "complianceType": "US-DE-CCorp-FORM-1120",
       "title": "Federal Form 1120 — U.S. Corporation Income Tax Return",
       "description": "",
-      "category": "INCOME_TAX",
+      "category": "DIRECT_TAX",
       "frequency": "ANNUAL",
       "version": "FY2026",
       "formNumber": "1120",
@@ -93,7 +93,7 @@ A successful response returns an array of compliance preview items.
 | `compliances[].complianceType` | string | Composite identifier of the underlying obligation rule (for example, `US-DE-CCorp-FORM-1120`). |
 | `compliances[].title` | string | Human-readable filing name. |
 | `compliances[].description` | string | Currently always returned as an empty string. |
-| `compliances[].category` | string | `ObligationRulesCategory` value (for example, `INCOME_TAX`, `ANNUAL_REPORT`). |
+| `compliances[].category` | string | `ObligationRulesCategory` value. One of: `DIRECT_TAX`, `INDIRECT_TAX`, `TRANSFER_PRICING`, `ENTITY_COMPLIANCE`, `PAYROLL_AND_EMPLOYMENT`, `CUSTOMS_AND_TRADE`. |
 | `compliances[].frequency` | string | `ObligationRulesFrequency` value (for example, `ANNUAL`, `QUARTERLY`). |
 | `compliances[].version` | string | Computed version label, for example `FY2026` for an annual obligation. |
 | `compliances[].formNumber` | string | Optional form number when one is associated with the obligation. |

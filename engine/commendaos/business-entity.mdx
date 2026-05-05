@@ -169,44 +169,7 @@ DELETE /business-entity/:businessEntityId/persons/:personId
 
 Returns `204 No Content` on success.
 
-## Bulk operations
-
-### Bulk assign
-
-Assign multiple business entities to companies.
-
-```http
-POST /business-entity/bulk/assign
-```
-
-**Request body**
-
-```json
-[
-  {
-    "businessEntityId": 123,
-    "companyId": 456
-  },
-  {
-    "businessEntityId": 124,
-    "companyId": 456
-  }
-]
-```
-
-**Response**
-
-```json
-{
-  "success": [
-    {
-      "businessEntityId": 123,
-      "companyId": 456
-    }
-  ],
-  "failed": []
-}
-```
+## Assignment
 
 ### Unassign business entity
 

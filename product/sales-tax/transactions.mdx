@@ -55,3 +55,34 @@ Click any transaction to view its full details, including:
 <Tip>
 For the most accurate and up-to-date transaction data, connect your accounting software rather than uploading manually.
 </Tip>
+
+## Transaction upload method
+
+Each entity has a **transaction upload method** that controls how Commenda expects to receive your transaction data. Your advisor sets this on the entity's indirect tax settings, and it drives the automated reminders described below.
+
+| Method | What it means |
+|---|---|
+| **Manual upload** | You upload transactions via CSV each filing period. Commenda will send you a monthly reminder with a service request to upload before the next filing deadline. |
+| **Manual and integration** | Transactions sync from your connected accounting software, but you may also upload top-up transactions via CSV. Monthly upload reminders are still sent so you can confirm or supplement the synced data. |
+| **Integration only** | Transactions sync exclusively from your connected accounting software. No monthly upload reminder is sent. |
+
+If you're not sure which method applies to an entity, check with your Commenda advisor. Switching methods (for example, after connecting a new integration) changes whether the monthly reminder is created for that entity going forward.
+
+## Monthly upload reminder
+
+For entities set to **Manual upload** or **Manual and integration**, Commenda automatically opens an **Upload transactions** service request on the 1st of each month so you have a clear, trackable place to deliver your data ahead of that month's filings.
+
+When the reminder runs, Commenda:
+
+1. Checks each entity's transaction upload method and only proceeds for entities that need a manual upload.
+2. Looks up the indirect tax filings due in the current calendar month that haven't been filed yet.
+3. Creates one service request per entity, scoped to the current month, and skips creation if a request for the same month already exists.
+4. Emails every company admin with the number of filings due, the earliest due date, and a direct link to the service request.
+
+The email recipients see a subject line like `3 filings due this month — upload your transactions` and a single **Upload transactions** call-to-action that opens the service request in Commenda.
+
+<Note>
+Only one monthly upload service request is created per entity per month. If your team archives the request and one is needed again in the same month, contact your advisor — the next reminder will be generated on the 1st of the following month.
+</Note>
+
+To respond to the reminder, open the service request and follow the steps in [Uploading transactions](#uploading-transactions). Your advisor uses the uploaded data to prepare the [filings](/product/sales-tax/filings) due that month.

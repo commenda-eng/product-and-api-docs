@@ -302,6 +302,41 @@ schemas:
         type: object
         nullable: true
         description: Additional metadata associated with the transaction.
+      filing_ids:
+        type: array
+        items:
+          type: string
+          format: uuid
+        description: |-
+          The set of filings this transaction is currently attached to. A
+          single transaction can be attached to multiple filings concurrently
+          (for example, a monthly prepay alongside a quarterly return, or an
+          EU OSS return coexisting with a local-country VAT return). Empty
+          when the transaction is not attached to any filing.
+
+          This is the authoritative replacement for `filing_id` and should be
+          used in all new integrations.
+        example:
+          - 1cb7c7b6-0000-0000-0000-000000000000
+          - 8d7865e0-0000-0000-0000-000000000000
+          - d51d1417-0000-0000-0000-000000000000
+      filing_id:
+        type: string
+        format: uuid
+        deprecated: true
+        description: |-
+          Deprecated. Legacy 1:1 transaction-to-filing pointer. Retained for
+          backward compatibility while consumers migrate to `filing_ids`.
+
+          Populated only for transactions that were attached to a filing
+          before the multi-filing-per-transaction change (or carried over by
+          backfill). Transactions attached after that change leave this field
+          empty even when they are attached to one or more filings — read
+          `filing_ids` for the authoritative set.
+
+          Will be removed in a future release once `filing_ids` adoption is
+          complete.
+        example: f1a2b3c4-d5e6-7890-abcd-ef1234567890
       customer_details:
         type: object
         properties:

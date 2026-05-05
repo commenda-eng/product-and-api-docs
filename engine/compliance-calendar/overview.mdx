@@ -91,6 +91,17 @@ Responses include `Cache-Control: no-store`.
 
 <ParamField body="complianceCategories" type="array">
   Optional array of obligation categories to filter by. When omitted or empty, all applicable categories are returned. Maximum size: 15.
+
+  Supported `ObligationRulesCategory` values:
+
+  - `DIRECT_TAX` — corporate income tax, withholding tax, estimated tax, and similar direct-tax filings.
+  - `INDIRECT_TAX` — VAT, GST, sales tax, and other indirect-tax returns.
+  - `TRANSFER_PRICING` — transfer-pricing reports, master files, local files, and CbC reports.
+  - `ENTITY_COMPLIANCE` — corporate-secretarial, statutory, and registration filings (annual reports, beneficial-ownership filings, license renewals).
+  - `PAYROLL_AND_EMPLOYMENT` — payroll tax returns, social-security filings, and employment-related obligations.
+  - `CUSTOMS_AND_TRADE` — customs, duty, and cross-border trade filings.
+
+  Submit unfiltered (omit the field) to receive every category that applies to the supplied profile.
 </ParamField>
 
 ### Request example
@@ -121,7 +132,7 @@ curl --request POST \
       "complianceType": "US-DE-CCorp-FORM-1120",
       "title": "US Federal Income Tax Return (Form 1120)",
       "description": "",
-      "category": "FEDERAL_INCOME_TAX",
+      "category": "DIRECT_TAX",
       "frequency": "ANNUAL",
       "version": "FY2026",
       "formNumber": "1120",
@@ -156,7 +167,7 @@ curl --request POST \
     </ResponseField>
 
     <ResponseField name="category" type="string">
-      Obligation category (for example, `FEDERAL_INCOME_TAX`, `STATE_INCOME_TAX`, `FRANCHISE_TAX`).
+      Obligation category. One of: `DIRECT_TAX`, `INDIRECT_TAX`, `TRANSFER_PRICING`, `ENTITY_COMPLIANCE`, `PAYROLL_AND_EMPLOYMENT`, `CUSTOMS_AND_TRADE`.
     </ResponseField>
 
     <ResponseField name="frequency" type="string">

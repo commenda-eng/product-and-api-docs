@@ -125,11 +125,43 @@ Use the [`GET /filings/{id}/contributions`](/engine/indirect-tax/filings/filings
 
 ### Invoice validation
 
-During contribution processing, Commenda validates that each invoice has the data required for accurate box computation. Invoices missing a ship-from address are flagged with the error code `TRANSACTION.ADDRESSES.SHIP_FROM.MISSING`. Flagged invoices are excluded from contribution calculations until the address data is provided and the next processing cycle runs.
+During contribution processing, Commenda validates that each invoice has the data required for accurate box computation. Invoices that fail validation are stamped with a per-invoice error code on `tax_breakdown_processing_error_code` and excluded from contribution calculations until the underlying issue is resolved and the next processing cycle runs.
+
+| Error code | Meaning |
+|---|---|
+| `TRANSACTION.ADDRESSES.SHIP_FROM.MISSING` | The invoice has no ship-from address. EU VAT contribution computation needs ship-from to determine intra-EU vs. extra-EU scope. |
+| `TRANSACTION.CURRENCY.FX_RATE_UNAVAILABLE` | The invoice's `(invoice_currency, transacted_at)` pair cannot be converted to the filing's reporting currency because no FX rate is published for that exact date. |
 
 <Info>
 Contributions are idempotent — each processing run replaces all previous contribution values for the filing. This means contributions always reflect the current state of your transaction data.
 </Info>
+
+### Reporting currency and FX conversion
+
+EU and UK V2 filings declare a `reporting_currency` on their content filing calendar entry (for example, EUR for German country-level returns, GBP for UK returns). When invoices attached to a filing span multiple currencies, the contribution engine converts each invoice's taxable, tax, and gross amounts from `invoice_currency` into the filing's reporting currency at aggregation time.
+
+Conversion uses the invoice's `transacted_at` date to look up the cross-rate. Same-currency invoices short-circuit to a rate of 1.0 — single-currency filings produce values byte-identical to filings computed before FX support was introduced.
+
+#### Exact-date matching
+
+The engine requires an FX rate published for the exact `transacted_at` date. There is no fallback to the nearest prior date. Filings are authoritative documents, so any gap in the FX rate table for a date that an invoice transacted on must be backfilled before that invoice can be included in a return.
+
+When any invoice on a filing cannot be converted, contribution processing fails the entire job:
+
+- The filing's contribution sync job is marked `FAILED` with reason `FX_RATE_UNAVAILABLE: N invoice(s) could not be converted to <CURRENCY>`.
+- The job's `failure_count` reflects the number of flagged invoices and `success_count` reflects the unaffected remainder.
+- Each flagged invoice is stamped with `TRANSACTION.CURRENCY.FX_RATE_UNAVAILABLE` on `tax_breakdown_processing_error_code` so the UI can highlight which transactions need attention.
+- No contribution rows are written. Any previously-correct contributions on the filing are left intact until the FX gap is filled and the sync re-runs.
+
+This fail-loud behavior prevents silently submitting a VAT return that omits legitimate revenue. To recover, backfill the missing FX rate and re-trigger contribution sync — the engine clears the per-invoice error codes and re-validates on each run.
+
+<Info>
+A filing without a `reporting_currency` populated on its content filing calendar entry fails contribution sync with `MISSING_FILING_CURRENCY`. This is a content configuration gap and must be fixed at the calendar level.
+</Info>
+
+#### US and Canadian filings
+
+US and Canadian filings are not affected by this conversion path. They use a separate calculation engine that bakes FX into invoice amounts at calc time, targeting USD or CAD respectively.
 
 ## Liability report
 

@@ -77,10 +77,11 @@ Commenda automatically computes VAT return box values for EU and UK filings. The
 
 Filing contributions are generated automatically as part of the regular tax breakdown processing cycle. When your transactions are processed, Commenda:
 
-1. **Validates invoices** — checks that all transactions attached to the filing have the required address data (for example, a ship-from address). Transactions with missing data are flagged with an error code so you can correct them.
-2. **Aggregates transaction data** — groups transactions by origin country, destination country, transaction type (sale, return, refund), tax rate, product type, customer type, and remitter type.
-3. **Evaluates box rules** — matches aggregated data against the content-defined rules for each box on the tax return. This includes netting sales and returns, and computing formula-based totals that reference other boxes.
-4. **Writes results** — stores the computed values as filing contributions. Each re-run replaces previous results, so contributions always reflect the latest transaction data.
+1. **Validates invoices** — checks that all transactions attached to the filing have the required address data (for example, a ship-from address) and that any non-reporting-currency invoices have an available FX rate for their transaction date. Transactions that fail validation are flagged with an error code so you can correct them.
+2. **Converts to reporting currency** — for multi-currency filings, converts each invoice's taxable, tax, and gross amounts from `invoice_currency` into the filing's reporting currency (for example, EUR for German returns, GBP for UK returns) using the invoice's transaction date.
+3. **Aggregates transaction data** — groups transactions by origin country, destination country, transaction type (sale, return, refund), tax rate, product type, customer type, and remitter type.
+4. **Evaluates box rules** — matches aggregated data against the content-defined rules for each box on the tax return. This includes netting sales and returns, and computing formula-based totals that reference other boxes.
+5. **Writes results** — stores the computed values as filing contributions. Each re-run replaces previous results, so contributions always reflect the latest transaction data.
 
 This process supports:
 
@@ -125,6 +126,18 @@ To view the computed contributions for a filing, click on the filing to open its
 <Info>
 Filing contributions are recomputed each time the automated processing cycle runs. If you add or update transactions after contributions have been generated, the next processing cycle updates the contributions to reflect the changes.
 </Info>
+
+#### Multi-currency filings
+
+When a filing's transactions are recorded in different currencies than the filing's reporting currency (for example, USD or GBP invoices on a German EUR return), Commenda converts each transaction's taxable amount, tax amount, and gross amount into the reporting currency using the FX rate published for the transaction's date.
+
+Single-currency filings — where every invoice is already in the reporting currency — are unaffected and produce the same numbers as before.
+
+If an FX rate is missing for any transaction's date, the contribution sync for that filing fails. Each affected invoice is flagged with `TRANSACTION.CURRENCY.FX_RATE_UNAVAILABLE`, and no contribution values are written until the rate is backfilled and processing re-runs. This prevents accidentally submitting a return that omits legitimate revenue. The job's success and failure counts reflect the number of affected versus unaffected invoices, so you can see at a glance how many transactions need attention.
+
+<Warning>
+The FX conversion behavior described above applies to EU and UK V2 filings. US and Canadian filings use a separate calculation flow and are not affected.
+</Warning>
 
 <Warning>
 Always verify your filing amounts before submission. Once you file a return with the tax authority, corrections may require amended returns.

@@ -91,6 +91,17 @@ Responses include `Cache-Control: no-store`.
 
 <ParamField body="complianceCategories" type="array">
   Optional array of obligation categories to filter by. When omitted or empty, all applicable categories are returned. Maximum size: 15.
+
+  Active values:
+
+  - `DIRECT_TAX`
+  - `INDIRECT_TAX`
+  - `TRANSFER_PRICING`
+  - `ENTITY_COMPLIANCE`
+  - `PAYROLL_AND_EMPLOYMENT`
+  - `CUSTOMS_AND_TRADE`
+
+  The following values are accepted for backwards compatibility but are deprecated and no longer surface in current obligation content: `HR_AND_PAYROLL`, `CORPORATE_SECRETARIAL`, `STATISTIC_AUTHORITY`, `CORPORATE_INCOME_TAX`, `OTHER`, `INDIRECT_TAX_COMPLIANCE`, `DIRECT_TAX_COMPLIANCE`, `PAYROLL_AND_EMPLOYMENT_COMPLIANCE`, `REGISTRATIONS_AND_IDENTIFIER`, `CORPORATE_COMPLIANCE_SECRETARIAL`, `FINANCIAL_REPORTING`, `LICENSES_AND_REGULATORY_COMPLIANCE`. Prefer the active values above for new integrations.
 </ParamField>
 
 ### Request example

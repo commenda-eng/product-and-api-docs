@@ -57,7 +57,7 @@ Returns the compliance filings that would apply to the supplied corporation prof
 | `fiscalYearStartMonth` | integer | Yes | Month the fiscal year begins (`1`–`12`). |
 | `fiscalYear` | integer | Yes | Target fiscal year to generate the preview for. Must be at least `1900` and no more than 10 years in the future of the current UTC year. |
 | `taxElection` | string | No | Tax classification override (for example, an LLC that has elected to be taxed as a C corporation). When supplied, the obligation set is computed against the effective entity type. |
-| `complianceCategories` | array of strings | No | Restrict the preview to one or more `ObligationRulesCategory` values. An empty array is treated as "no filter," equivalent to omitting the field. |
+| `complianceCategories` | array of strings | No | Restrict the preview to one or more `ObligationRulesCategory` values. An empty array is treated as "no filter," equivalent to omitting the field. Active values are `DIRECT_TAX`, `INDIRECT_TAX`, `TRANSFER_PRICING`, `ENTITY_COMPLIANCE`, `PAYROLL_AND_EMPLOYMENT`, and `CUSTOMS_AND_TRADE`. Older values such as `HR_AND_PAYROLL`, `CORPORATE_SECRETARIAL`, `CORPORATE_INCOME_TAX`, and `OTHER` remain accepted for backwards compatibility but are deprecated. |
 
 Unknown fields are rejected with a `400 Bad Request` (the global validation pipe is configured with `forbidNonWhitelisted: true`).
 

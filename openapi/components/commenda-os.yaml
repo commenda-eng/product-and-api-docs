@@ -140,10 +140,29 @@ schemas:
         example: 44
       locationTypes:
         type: array
+        description: One or more unified location types describing the location's role. See the [Locations API guide](/engine/commendaos/locations) for the full enum and descriptions.
         items:
           type: string
+          enum:
+            - PRINCIPAL_PLACE_OF_BUSINESS
+            - REGISTERED_OFFICE
+            - MAILING_ADDRESS
+            - HEADQUARTERS
+            - BRANCH_OFFICE
+            - FACTORY
+            - WAREHOUSE
+            - RETAIL_LOCATION
+            - NATURAL_RESOURCE_SITE
+            - REPRESENTATIVE_OFFICE
+            - CONSTRUCTION_SITE
+            - THIRD_PARTY_FULFILLMENT
+            - REMOTE_EMPLOYEE
+            - DEPENDENT_AGENT
+            - INDEPENDENT_AGENT
+            - REGISTRATION
+            - OTHER
         example:
-          - OPERATIONS
+          - PRINCIPAL_PLACE_OF_BUSINESS
       address:
         $ref: "./commenda-os.yaml#/schemas/CommendaOsLocationAddress"
       createdAt:
@@ -1120,7 +1139,7 @@ schemas:
     properties:
       locationName:
         type: string
-        description: Optional display name. Required by some location types such as registered office and mailing address.
+        description: Optional display name. Required when `locationTypes` includes `REGISTERED_OFFICE` or `MAILING_ADDRESS`.
         example: Singapore registered office
       startDate:
         type: string
@@ -1128,14 +1147,33 @@ schemas:
         example: "2026-04-27"
       employeeCount:
         type: integer
-        description: Employee count for employee work locations.
+        description: Number of employees at this location. Required when `locationTypes` includes `REMOTE_EMPLOYEE`.
         example: 12
       locationTypes:
         type: array
+        description: One or more unified location types. See the [Locations API guide](/engine/commendaos/locations) for the full enum and descriptions.
         items:
           type: string
+          enum:
+            - PRINCIPAL_PLACE_OF_BUSINESS
+            - REGISTERED_OFFICE
+            - MAILING_ADDRESS
+            - HEADQUARTERS
+            - BRANCH_OFFICE
+            - FACTORY
+            - WAREHOUSE
+            - RETAIL_LOCATION
+            - NATURAL_RESOURCE_SITE
+            - REPRESENTATIVE_OFFICE
+            - CONSTRUCTION_SITE
+            - THIRD_PARTY_FULFILLMENT
+            - REMOTE_EMPLOYEE
+            - DEPENDENT_AGENT
+            - INDEPENDENT_AGENT
+            - REGISTRATION
+            - OTHER
         example:
-          - REGISTERED_OFFICE_ADDRESS
+          - REGISTERED_OFFICE
       address:
         $ref: "./commenda-os.yaml#/schemas/CommendaOsLocationAddress"
   CommendaOsLocationUpdateRequest:
@@ -1147,7 +1185,7 @@ schemas:
     properties:
       locationName:
         type: string
-        description: Optional display name. Required by some location types such as registered office and mailing address.
+        description: Optional display name. Required when `locationTypes` includes `REGISTERED_OFFICE` or `MAILING_ADDRESS`.
         example: Singapore registered office
       startDate:
         type: string
@@ -1156,14 +1194,33 @@ schemas:
         example: "2026-04-27"
       employeeCount:
         type: integer
-        description: Employee count for employee work locations.
+        description: Number of employees at this location. Required when `locationTypes` includes `REMOTE_EMPLOYEE`.
         example: 12
       locationTypes:
         type: array
+        description: One or more unified location types. See the [Locations API guide](/engine/commendaos/locations) for the full enum and descriptions.
         items:
           type: string
+          enum:
+            - PRINCIPAL_PLACE_OF_BUSINESS
+            - REGISTERED_OFFICE
+            - MAILING_ADDRESS
+            - HEADQUARTERS
+            - BRANCH_OFFICE
+            - FACTORY
+            - WAREHOUSE
+            - RETAIL_LOCATION
+            - NATURAL_RESOURCE_SITE
+            - REPRESENTATIVE_OFFICE
+            - CONSTRUCTION_SITE
+            - THIRD_PARTY_FULFILLMENT
+            - REMOTE_EMPLOYEE
+            - DEPENDENT_AGENT
+            - INDEPENDENT_AGENT
+            - REGISTRATION
+            - OTHER
         example:
-          - REGISTERED_OFFICE_ADDRESS
+          - REGISTERED_OFFICE
       address:
         $ref: "./commenda-os.yaml#/schemas/CommendaOsLocationAddress"
   CommendaOsBusinessEntityPersonsResponse:

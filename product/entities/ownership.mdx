@@ -1,41 +1,137 @@
 ---
-title: "Ownership and cap table"
+title: "Ownership and beneficial owners"
 sidebarTitle: "Ownership"
-description: "Track stakeholders, share classes, and cap table information for your entities."
-keywords: ["ownership", "stakeholders", "cap table", "equity", "shares"]
+description: "Track shareholders, ultimate beneficial owners (UBOs), and stock classes for each entity."
+keywords: ["ownership", "shareholders", "UBO", "beneficial owners", "cap table", "equity", "shares", "stock class"]
 ---
 
-The **Ownership** tab lets you track who owns each entity, including individual stakeholders, parent companies, and share class details.
+The **Ownership** tab lets you track who owns each entity and who controls it. Commenda records both **shareholders** (individuals or corporate entities holding equity) and **ultimate beneficial owners (UBOs)** — the natural persons who ultimately own or control the entity, as required by KYC and beneficial ownership reporting rules in most jurisdictions.
+
+<Note>
+The redesigned Ownership experience is rolling out progressively. If you do not yet see the features described below, your workspace is still on the legacy cap table view — your account team will let you know when the new experience is enabled.
+</Note>
 
 ## Viewing ownership
 
 1. Go to **Entities** and select an entity.
 2. Click the **Ownership** tab.
 
-Here you can see all stakeholders and their ownership percentages.
+The Ownership tab is organized into three sections:
 
-## Adding stakeholders
+- **Shareholders** — every individual and corporate entity that holds equity in the entity, with their ownership percentage, relationship type, and stock class.
+- **Ultimate beneficial owners** — the natural persons who own or control the entity, either directly or indirectly through corporate shareholders. UBOs are computed automatically based on the shareholding tree and your jurisdiction's UBO threshold.
+- **Recent documents** — recently uploaded entity documents (incorporation certificates, share certificates, register extracts, etc.).
 
-Click **Add stakeholder** to record a new owner. For each stakeholder, you can track:
+The header shows the total ownership recorded against the entity. Commenda enforces a **100% ownership budget** — you cannot add or edit a shareholder if the resulting total would exceed 100%.
 
-- **Name** and contact information
+## Adding a shareholder
+
+Click **Add shareholder** and choose whether the new shareholder is an individual or another entity in your workspace.
+
+### Individual shareholder
+
+For an individual, provide:
+
+- **First and last name**
+- **Date of birth**
+- **Nationality**
+- **Ownership percentage** (0–100)
+- **Relationship type** — Founder, Investor, Employee, Board member, Advisor, or Other
+- **Stock class** (optional) — see [Stock classes](#stock-classes)
+- **Significant control** (optional) — mark the person as having significant control even if they are also a shareholder; you can then pick a [control type](#beneficial-owner-control-types)
+
+If the individual passes the UBO threshold for the entity's incorporation country, they are automatically recorded as a beneficial owner.
+
+### Corporate shareholder
+
+For a corporate shareholder, pick another entity from the same workspace and provide:
+
 - **Ownership percentage**
-- **Share class** (e.g., common, preferred)
-- **Number of shares**
+- **Relationship type** (typically **Parent**)
+- **Stock class** (optional)
+- **Inherited UBO mode** — controls how UBOs from the parent entity propagate down
 
-## Share classes
+#### Inherited UBO modes
 
-If your entity has multiple classes of stock, you can define each share class with details like:
+When a corporate entity becomes a shareholder, its own UBOs may also become indirect UBOs of the entity below. Pick how you want this handled:
 
-- Class name (Common, Preferred Series A, etc.)
-- Number of authorized shares
-- Par value
-- Voting rights
+| Mode | Behavior |
+|------|----------|
+| **Auto** | Inherit every UBO from the parent that meets the indirect-ownership threshold. This is the default and is recomputed whenever the parent's ownership changes. |
+| **Opt out** | Inherit no UBOs from the parent. Use this when the parent's UBOs are not relevant for this entity's reporting. |
+| **Opt in** | Inherit only the UBOs you explicitly select. You must select at least one person. |
 
-## Cap table
-
-For entities with equity transactions (issuances, transfers, etc.), Commenda maintains a cap table that tracks the history of ownership changes over time.
+For each inherited UBO you can override the [control type](#beneficial-owner-control-types) — for example, to mark a parent's founder as exercising "Other significant control" rather than "Indirect ownership" for this entity.
 
 <Info>
-The cap table feature is especially useful for startups and companies with multiple funding rounds. It provides a clear audit trail of all equity transactions.
+Ownership cycles are rejected at write time. You cannot, for example, make Entity A a shareholder of Entity B if Entity B is already a direct or indirect shareholder of Entity A.
 </Info>
+
+## Control-only UBOs
+
+Some individuals control an entity without holding any equity — for example, a person who can appoint or remove the majority of the board. To record this:
+
+1. Click **Add shareholder** → **Individual**.
+2. Enter their details and set **Ownership percentage** to **0**.
+3. Toggle **Has significant control** on and pick a **Control type**.
+
+The person appears in the **Ultimate beneficial owners** section but not in the **Shareholders** list, since they hold no equity.
+
+## Beneficial owner control types
+
+Each UBO is tagged with the basis on which they qualify. Commenda supports the control types most commonly required by global beneficial ownership registers:
+
+- **Direct ownership** — the person directly owns shares above the threshold
+- **Indirect ownership** — the person owns the entity through one or more intermediate corporate shareholders
+- **Other significant control** — non-equity control (e.g. board appointment rights, voting trusts)
+
+Click any UBO to open their detail panel, where you can review their address, nationality, date of birth, masked SSN (last four digits only), and the roles they hold across the entity (director, officer, shareholder, UBO, authorized signatory). For inherited UBOs, the panel shows the path of corporate shareholders through which they own the entity.
+
+<Warning>
+You can edit or delete a UBO that came from a direct individual shareholding, but **inherited UBOs** can only be changed by editing the parent corporate shareholder. This keeps the inheritance graph consistent.
+</Warning>
+
+## UBO thresholds
+
+The UBO threshold is the minimum ownership percentage at which a person is treated as a beneficial owner. Commenda applies the threshold for the entity's **country of incorporation** — for example:
+
+- 25% for most EU countries, the United States, the United Kingdom, Canada, and Australia
+- 10% for India, Chile, Argentina, and many Caribbean jurisdictions
+- 5% for Colombia, Ghana, Nigeria, and South Africa
+- Any positive ownership for Ecuador and Guatemala
+
+Thresholds are applied automatically — you do not need to configure them per entity.
+
+## Stock classes
+
+If an entity has multiple classes of stock (Common, Preferred Series A, etc.), you can define each class on the entity and assign it to individual shareholdings.
+
+Each stock class has:
+
+- **Class name** (e.g. "Common", "Preferred Series A")
+- **Type** (Common or Preferred)
+
+Once a class exists, you can pick it in the **Stock class** dropdown when adding or editing a shareholder.
+
+## Editing and removing shareholders
+
+Use the row actions on each shareholder to update or remove them.
+
+- **Editing an individual** at 0% ownership with significant control disabled would orphan the row — use **Remove** instead.
+- **Editing a corporate shareholder** to 0% is not supported. Remove the corporate shareholder if it no longer holds equity.
+- **Removing a shareholder** also removes any UBOs that only existed because of that shareholding. Inherited UBOs from other branches are preserved.
+
+## Exporting an ownership summary
+
+Click **Export** on the Ownership tab to download a PDF summary of the entity's ownership and control. The document includes:
+
+- A cover page with entity name, incorporation country, and report date
+- The full shareholder register with ownership percentages and stock classes
+- All ultimate beneficial owners with their control type and source
+- Snapshot metadata so the report is suitable for sharing with banks, auditors, and regulators
+
+The PDF contains every shareholder and UBO regardless of pagination on screen.
+
+## Org structure view
+
+For companies with multiple related entities, open the **Corporate structure** view to see the full ownership graph as a diagram. See [Corporate structure](/product/entities/corporate-structure) for details.

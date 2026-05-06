@@ -65,6 +65,22 @@ sidebarTitle: "Entity Management"
         "@type": "Answer",
         "text": "Yes. Commenda supports team-based access with role-based permissions, so Controllers, finance staff, legal teams, and external advisors can each be given appropriate levels of access to entity data."
       }
+    },
+    {
+      "@type": "Question",
+      "name": "How does Commenda determine ultimate beneficial owners (UBOs)?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Commenda computes UBOs automatically from the shareholdings recorded on each entity. A natural person becomes a UBO when their direct or indirect ownership crosses the threshold for the entity's incorporation country (typically 25% in the EU, US, UK, Canada, and Australia, and lower in many emerging markets). Commenda also supports control-only UBOs — individuals who exercise significant control without holding equity — and inherited UBOs that flow up through corporate shareholders."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I export an ownership and control report?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. From the Ownership tab on any entity, click Export to download a PDF that includes the full shareholder register, every ultimate beneficial owner with their control type, and snapshot metadata suitable for sharing with banks, auditors, and regulators."
+      }
     }
   ]
 }
@@ -119,5 +135,18 @@ sidebarTitle: "Entity Management"
 
   <Accordion title="Can multiple team members access entity data in Commenda?">
     Yes. Commenda supports team-based access with role-based permissions, so Controllers, finance staff, legal teams, and external advisors can each be given appropriate levels of access to entity data.
+  </Accordion>
+
+  <Accordion title="How does Commenda determine ultimate beneficial owners (UBOs)?">
+    Commenda computes UBOs automatically from the shareholdings recorded on each entity. A natural person becomes a UBO when their direct or indirect ownership crosses the threshold for the entity's incorporation country — typically 25% in the EU, US, UK, Canada, and Australia, and lower in many emerging markets. Commenda also supports:
+
+    - **Control-only UBOs** — individuals who exercise significant control without holding equity
+    - **Inherited UBOs** — UBOs of a corporate shareholder that propagate down to the entity below, with options to auto-inherit, opt out, or pick specific people
+
+    See the [Ownership and beneficial owners](/product/entities/ownership) page for details.
+  </Accordion>
+
+  <Accordion title="Can I export an ownership and control report?">
+    Yes. From the Ownership tab on any entity, click **Export** to download a PDF that includes the full shareholder register, every ultimate beneficial owner with their control type, and snapshot metadata suitable for sharing with banks, auditors, and regulators.
   </Accordion>
 </AccordionGroup>

@@ -111,7 +111,11 @@ Each stock class has:
 - **Class name** (e.g. "Common", "Preferred Series A")
 - **Type** (Common or Preferred)
 
-Once a class exists, you can pick it in the **Stock class** dropdown when adding or editing a shareholder.
+Stock classes are created and listed per entity. Once a class exists on an entity, it appears in the **Stock class** dropdown when adding or editing a shareholder on that entity. Classes that are still attached to a shareholding cannot be deleted — reassign or remove the shareholdings first.
+
+## Non-controlled entities and ownership
+
+If a corporate shareholder is a [non-controlled entity](/product/entities/creating-entities#adding-an-existing-entity), it still appears as a shareholder of the entity below and is included in the [Corporate structure](/product/entities/corporate-structure) org chart. However, Commenda does not walk through a non-controlled parent when computing inherited UBOs — only ownership through entities you control contributes to the indirect-ownership UBO calculation. This keeps reporting focused on the people and entities you actually manage.
 
 ## Editing and removing shareholders
 

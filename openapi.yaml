@@ -9064,7 +9064,16 @@ components:
           example: 75
         governanceRelationships:
           type: object
+          description: |
+            Map of governance roles this person holds at the business entity, keyed by role name. The value carries role-specific flags. The set of keys present is a subset of `DIRECTOR`, `AUTHORIZED_SIGNATORY`, and `BENEFICIAL_OWNER`. `BENEFICIAL_OWNER` is included when the person is currently recorded as an ultimate beneficial owner (UBO) of the business entity by Commenda's ownership engine.
           additionalProperties: true
+          example:
+            DIRECTOR:
+              startDate: '2020-01-15'
+              endDate: null
+              isResidentDirector: true
+            BENEFICIAL_OWNER:
+              isBeneficialOwner: true
         jobTitle:
           type: array
           items:
@@ -9177,7 +9186,16 @@ components:
                 example: 75
               governanceRelationships:
                 type: object
+                description: |
+                  Map of governance roles this person holds at the business entity, keyed by role name. The value carries role-specific flags. The set of keys present is a subset of `DIRECTOR`, `AUTHORIZED_SIGNATORY`, and `BENEFICIAL_OWNER`. `BENEFICIAL_OWNER` is included when the person is currently recorded as an ultimate beneficial owner (UBO) of the business entity by Commenda's ownership engine.
                 additionalProperties: true
+                example:
+                  DIRECTOR:
+                    startDate: '2020-01-15'
+                    endDate: null
+                    isResidentDirector: true
+                  BENEFICIAL_OWNER:
+                    isBeneficialOwner: true
               jobTitle:
                 type: array
                 items:

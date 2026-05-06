@@ -109,6 +109,61 @@ GET /business-entity/list/company/:companyId
 }
 ```
 
+<Note>
+  Business entities the customer has marked as **non-controlled** (for example, an external parent holding company recorded only to complete the ownership graph) are excluded from this listing. Use [Get business entity](#get-business-entity) by id to read a non-controlled entity directly, or fetch the company's organizational structure to see them in context.
+</Note>
+
+### Get organizational structure
+
+Retrieve the full ownership graph for a company, including non-controlled parent entities. The response is the union of every entity the company owns or that owns into the company, plus the ownership edges between them.
+
+```http
+GET /business-entity/list/company/:companyId/org-structure
+```
+
+**Path parameters**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `companyId` | integer | Unique identifier for the company |
+
+**Response**
+
+```json
+{
+  "entities": [
+    {
+      "id": 123,
+      "legalName": "Acme Corporation",
+      "incorporationCountry": "US",
+      "businessEntityType": "C_CORP",
+      "keyPersons": { "data": [{ "directorId": 42, "name": "Jane Founder" }], "count": 1 },
+      "bankAccounts": { "data": [], "count": 0 },
+      "taxClassification": "C_CORP"
+    }
+  ],
+  "edges": [
+    {
+      "fromCorporationId": 124,
+      "toCorporationId": 123,
+      "ownershipPercent": 1000000,
+      "hasSignificantControl": true
+    }
+  ],
+  "percentScale": 1000000
+}
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `entities[]` | array | All entities reachable in the ownership graph, including non-controlled parents. |
+| `edges[]` | array | Directed `from → to` ownership edges. `from` is the shareholder, `to` is the owned entity. |
+| `edges[].ownershipPercent` | integer | Ownership percentage scaled by `percentScale` (e.g. `1000000` with `percentScale: 1000000` represents 100%). |
+| `edges[].hasSignificantControl` | boolean | Whether the shareholder has been flagged as exercising significant control. |
+| `percentScale` | integer | Divisor applied to every `ownershipPercent` value in the response. |
+
+This is the only listing surface that surfaces non-controlled entities by design — it powers the org chart visualization.
+
 ## Key persons
 
 ### Add key person
@@ -145,6 +200,10 @@ POST /business-entity/:businessEntityId/persons/:personId
 | `endDate` | string \| null | Date the person left the role, if applicable |
 | `ownershipPercentage` | number | Equity ownership percentage |
 | `isResidentDirector` | boolean | Whether the person is a resident director of this entity. Used in jurisdictions that require at least one locally resident director (e.g. India). Optional. |
+
+<Note>
+  When you read a person back through the Commenda OS persons endpoints, the response includes a `governanceRelationships` object keyed by role. The set of keys present is a subset of `DIRECTOR`, `AUTHORIZED_SIGNATORY`, and `BENEFICIAL_OWNER`. The `BENEFICIAL_OWNER` key is set automatically by Commenda's ownership engine when the person is currently recorded as an ultimate beneficial owner (UBO) of the business entity — it is not assigned through this endpoint.
+</Note>
 
 **Response**
 

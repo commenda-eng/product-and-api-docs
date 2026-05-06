@@ -43,7 +43,7 @@ Create a location to track where a corporation has physical or legal presence. T
 <ParamField body="location_types" type="array" required>
   Array of location types. At least one type is required.
 
-  Values: `HEADQUARTERS`, `BRANCH_OFFICE`, `RETAIL_LOCATION`, `FACTORY`, `WAREHOUSE`, `NATURAL_RESOURCE_SITE`, `REGISTERED_OFFICE`, `REPRESENTATIVE_OFFICE`, `CONSTRUCTION_SITE`, `THIRD_PARTY_FULFILLMENT`, `REMOTE_EMPLOYEE`, `DEPENDENT_AGENT`, `INDEPENDENT_AGENT`, `REGISTRATION`, `OTHER`
+  Values: `PRINCIPAL_PLACE_OF_BUSINESS`, `BRANCH_OFFICE`, `RETAIL_LOCATION`, `FACTORY`, `WAREHOUSE`, `NATURAL_RESOURCE_SITE`, `REGISTERED_OFFICE`, `REPRESENTATIVE_OFFICE`, `CONSTRUCTION_SITE`, `THIRD_PARTY_FULFILLMENT`, `REMOTE_EMPLOYEE`, `DEPENDENT_AGENT`, `INDEPENDENT_AGENT`, `REGISTRATION`, `MAILING_ADDRESS`, `OTHER`
 </ParamField>
 
 <ParamField body="is_primary" type="boolean">
@@ -66,6 +66,20 @@ Create a location to track where a corporation has physical or legal presence. T
   Optional notes about the location.
 </ParamField>
 
+<ParamField body="metadata" type="object">
+  Arbitrary JSON metadata stored verbatim. Useful for caller-supplied data such as a display name or origin-platform attributes (e.g., `{"name": "SF HQ"}`).
+</ParamField>
+
+<ParamField body="source_platform" type="string">
+  Origin platform identifier when this location is mirrored from another system. Currently accepts `COMMENDA`.
+</ParamField>
+
+<ParamField body="source_platform_id" type="string">
+  Origin platform's record ID. Together with `source_platform`, forms a back-reference to the source row.
+
+  When a back-reference is supplied and an active row already exists for the same `(source_platform, source_platform_id)` pair, the existing row is updated in place rather than duplicated. This makes repeat sync calls idempotent.
+</ParamField>
+
 <RequestExample>
 ```bash cURL
 curl --request POST \
@@ -81,7 +95,7 @@ curl --request POST \
       "postal_code": "94105",
       "country": "US"
     },
-    "location_types": ["HEADQUARTERS", "REGISTERED_OFFICE"],
+    "location_types": ["PRINCIPAL_PLACE_OF_BUSINESS", "REGISTERED_OFFICE"],
     "is_primary": true,
     "start_date": "2024-01-01"
   }'
@@ -97,9 +111,27 @@ curl --request POST \
     "postal_code": "94105",
     "country": "US"
   },
-  "location_types": ["HEADQUARTERS", "REGISTERED_OFFICE"],
+  "location_types": ["PRINCIPAL_PLACE_OF_BUSINESS", "REGISTERED_OFFICE"],
   "is_primary": true,
   "start_date": "2024-01-01"
+}
+```
+
+```json With back-reference
+{
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "address": {
+    "address_line_1": "123 Main Street",
+    "city": "San Francisco",
+    "state": "CA",
+    "postal_code": "94105",
+    "country": "US"
+  },
+  "location_types": ["PRINCIPAL_PLACE_OF_BUSINESS"],
+  "start_date": "2024-01-01",
+  "source_platform": "COMMENDA",
+  "source_platform_id": "loc_abc123",
+  "metadata": {"name": "SF HQ"}
 }
 ```
 

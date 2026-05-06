@@ -409,6 +409,7 @@
               "engine/indirect-tax/corporation/corporation-GET-ONE",
               "engine/indirect-tax/corporation/corporation-UPDATE",
               "engine/indirect-tax/corporation/corporation-DELETE",
+              "engine/indirect-tax/corporation/corporation-internal-archive-DELETE",
               "engine/indirect-tax/corporation/corporation-GET-EMAIL-ALIAS",
               "engine/indirect-tax/corporation/corporation-POST-EMAIL-ALIAS"
             ]
@@ -527,9 +528,10 @@
             "pages": [
               "engine/indirect-tax/locations/locations",
               "engine/indirect-tax/locations/locations-POST",
-              "engine/indirect-tax/locations/locations-GET",
+              "engine/indirect-tax/locations/locations-list-POST",
               "engine/indirect-tax/locations/locations-id-POST",
-              "engine/indirect-tax/locations/locations-id-DELETE"
+              "engine/indirect-tax/locations/locations-id-DELETE",
+              "engine/indirect-tax/locations/locations-bulk-POST"
             ]
           },
           {

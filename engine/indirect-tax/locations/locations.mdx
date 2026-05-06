@@ -11,7 +11,7 @@ The Locations API lets you manage physical locations for a corporation. Location
 
 | Type | Description |
 |------|-------------|
-| `HEADQUARTERS` | Main administrative office |
+| `PRINCIPAL_PLACE_OF_BUSINESS` | Main administrative office (matches IRS Form 1120 / MCA terminology) |
 | `BRANCH_OFFICE` | Secondary office location |
 | `RETAIL_LOCATION` | Customer-facing retail store |
 | `FACTORY` | Manufacturing facility |
@@ -25,22 +25,40 @@ The Locations API lets you manage physical locations for a corporation. Location
 | `DEPENDENT_AGENT` | Agent who acts exclusively on behalf of the company |
 | `INDEPENDENT_AGENT` | Agent who acts on behalf of multiple companies |
 | `REGISTRATION` | Location linked to a tax registration |
+| `MAILING_ADDRESS` | Receive-only mailing address with no operational presence |
 | `OTHER` | Other location type |
 
-A single location can have multiple types (e.g., `["HEADQUARTERS", "REGISTERED_OFFICE"]`).
+A single location can have multiple types (e.g., `["PRINCIPAL_PLACE_OF_BUSINESS", "REGISTERED_OFFICE"]`).
+
+<Info>
+  `HEADQUARTERS` was renamed to `PRINCIPAL_PLACE_OF_BUSINESS` to align with IRS Form 1120 and MCA terminology. Existing data and references are migrated automatically — update any clients that send `HEADQUARTERS` in request bodies to send `PRINCIPAL_PLACE_OF_BUSINESS`.
+</Info>
+
+## Cross-platform back-references
+
+Locations can carry an optional back-reference to the platform they were mirrored from:
+
+- `source_platform` — identifier for the originating platform (e.g. `COMMENDA`).
+- `source_platform_id` — the location's identifier on that platform.
+
+When both are supplied, [`POST /api/v1/locations`](/engine/indirect-tax/locations/locations-POST) becomes idempotent on the `(source_platform, source_platform_id)` pair: an active row already mirrored from that pair is updated in place instead of duplicated. Trusted services can resolve origin-platform IDs back to sales-tax IDs by calling [`POST /api/v1/locations/list`](/engine/indirect-tax/locations/locations-list-POST) with the `source_platform` filter.
+
+Locations also accept an opaque `metadata` JSON object that is stored verbatim — useful for stashing display metadata such as a friendly name.
 
 ## Establishment rules
 
 Locations are checked when creating EU trade bloc registrations:
 
-- **Union OSS** requires a qualifying EU establishment (headquarters, branch office, warehouse, factory, retail location, or dependent agent) in the member state country.
+- **Union OSS** requires a qualifying EU establishment (principal place of business, branch office, warehouse, factory, retail location, or dependent agent) in the member state country.
 - **Non-Union OSS** requires that you have no qualifying EU establishment in any EU country.
+
+`MAILING_ADDRESS`, `REGISTERED_OFFICE`, `REMOTE_EMPLOYEE`, and `INDEPENDENT_AGENT` do not qualify as fixed establishments.
 
 ## API endpoints
 
 | Endpoint | Method | Description |
 |----------|--------|-------------|
 | [`/locations`](/engine/indirect-tax/locations/locations-POST) | POST | Create a location |
-| [`/locations`](/engine/indirect-tax/locations/locations-GET) | GET | List locations for a corporation |
+| [`/locations/list`](/engine/indirect-tax/locations/locations-list-POST) | POST | List locations with filters in the request body |
 | [`/locations/{location_id}`](/engine/indirect-tax/locations/locations-id-POST) | POST | Update a location |
 | [`/locations/{location_id}`](/engine/indirect-tax/locations/locations-id-DELETE) | DELETE | Delete (archive) a location |

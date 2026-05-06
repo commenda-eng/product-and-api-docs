@@ -527,7 +527,7 @@
             "pages": [
               "engine/indirect-tax/locations/locations",
               "engine/indirect-tax/locations/locations-POST",
-              "engine/indirect-tax/locations/locations-GET",
+              "engine/indirect-tax/locations/locations-list-POST",
               "engine/indirect-tax/locations/locations-id-POST",
               "engine/indirect-tax/locations/locations-id-DELETE"
             ]

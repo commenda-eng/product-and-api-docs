@@ -147,7 +147,17 @@ GET /business-entity/list/company/:companyId/org-structure
       "fromCorporationId": 124,
       "toCorporationId": 123,
       "ownershipPercent": 1000000,
+      "dilutedOwnershipPercent": 500000,
+      "stockClassId": "stk_class_abc123",
       "hasSignificantControl": true
+    }
+  ],
+  "stockClasses": [
+    {
+      "id": "stk_class_abc123",
+      "corporationId": 123,
+      "name": "Class A Common",
+      "initialSharesAuthorized": 1000
     }
   ],
   "percentScale": 1000000
@@ -158,9 +168,16 @@ GET /business-entity/list/company/:companyId/org-structure
 |-------|------|-------------|
 | `entities[]` | array | All entities reachable in the ownership graph, including non-controlled parents. |
 | `edges[]` | array | Directed `from → to` ownership edges. `from` is the shareholder, `to` is the owned entity. |
-| `edges[].ownershipPercent` | integer | Ownership percentage scaled by `percentScale` (e.g. `1000000` with `percentScale: 1000000` represents 100%). |
+| `edges[].ownershipPercent` | integer | Raw ownership percentage within the share class, scaled by `percentScale` (e.g. `1000000` with `percentScale: 1000000` represents 100%). |
+| `edges[].dilutedOwnershipPercent` | integer | Ownership percentage relative to the target corporation's total authorized shares across all classes, scaled by `percentScale`. Falls back to `ownershipPercent` when the corporation's classes have incomplete authorized share data, or when the stakeholding has no associated stock class. Use this value to label org chart edges. |
+| `edges[].stockClassId` | string \| null | Identifier of the stock class this edge represents. `null` for legacy stakeholdings without an explicit class. Look up class detail in the top-level `stockClasses` array. |
 | `edges[].hasSignificantControl` | boolean | Whether the shareholder has been flagged as exercising significant control. |
-| `percentScale` | integer | Divisor applied to every `ownershipPercent` value in the response. |
+| `stockClasses[]` | array | Flat list of stock classes for every corporation in the graph. Group by `corporationId` to render per-issuer detail. |
+| `stockClasses[].id` | string | Stock class identifier, referenced by `edges[].stockClassId`. |
+| `stockClasses[].corporationId` | integer | Corporation that issued the class. |
+| `stockClasses[].name` | string | Human-readable name of the share class (for example, `Class A Common`). |
+| `stockClasses[].initialSharesAuthorized` | integer \| null | Total shares authorized for the class. `null` when not recorded; if any class on a corporation is missing this value, diluted percentages on that corporation's edges fall back to the raw `ownershipPercent`. |
+| `percentScale` | integer | Divisor applied to every `ownershipPercent` and `dilutedOwnershipPercent` value in the response. |
 
 This is the only listing surface that surfaces non-controlled entities by design — it powers the org chart visualization.
 

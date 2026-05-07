@@ -38,11 +38,15 @@ If there is exactly one customer-level shipping address or customer-level billin
 
 **Customers**: CONTACTS
 
-We extract the customer-level shipping address and billing address from the webhook payload’s raw_data field.
+Customer records continue to sync as source records and snapshots, but their addresses are __not__ eagerly geocoded or pushed into the sales-tax address pipeline. The eager customer-address path is skipped for `CONTACTS`, so `rawAddressString` is left null unless another path explicitly sets it.
+
+When a CONTACT does sync, we still extract the customer-level shipping address and billing address from the webhook payload's raw_data field for source-record purposes:
 
 - If the shipping address is set, we set the contact shipping address to the webhook payload shipping address.
 - If the billing address is set, we set the contact billing address to the webhook payload billing address
 - If the billing address is set but the shipping address is not set, we set the contact shipping address to the webhook payload *billing *address
+
+Transaction-level address resolution and the transaction → contact/customer address fallback are unchanged. Invoice, credit-note, cash-sale, and cash-refund flows still resolve and geocode addresses normally, including the customer-level fallback described above.
 
 ## Calculations:
 

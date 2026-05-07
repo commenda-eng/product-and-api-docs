@@ -22,12 +22,16 @@ We choose the shipping address if it’s non-null, and the billing address if th
 
 **Xero contacts **(CONTACTS in rootfi):
 
-Read contact-level addresses from Raw Data (bypassing a Rootfi bug that switches STREET and POBOX addresses), and follow the following hierarchy:
+Contact records continue to sync as source records and snapshots, but their addresses are __not__ eagerly geocoded or pushed into the sales-tax address pipeline. The eager customer-address path is skipped for `CONTACTS`, so `rawAddressString` is left null unless another path explicitly sets it.
+
+When a CONTACT does sync, we still read contact-level addresses from Raw Data (bypassing a Rootfi bug that switches STREET and POBOX addresses) for source-record purposes, following this hierarchy:
 
 - Raw data STREET address → treated as shipping
 - Raw data POBOX address → treated as billing
 
 We choose the shipping address if it’s non-null, and the billing address if the shipping address is null.
+
+Transaction-level address resolution (including the transaction → contact fallback used by payment vouchers) is unchanged.
 
 ## Calculations:
 

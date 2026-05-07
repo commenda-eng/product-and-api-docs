@@ -147,7 +147,17 @@ GET /business-entity/list/company/:companyId/org-structure
       "fromCorporationId": 124,
       "toCorporationId": 123,
       "ownershipPercent": 1000000,
+      "dilutedOwnershipPercent": 600000,
+      "stockClassId": "clx1abc23def45ghi67jkl89",
       "hasSignificantControl": true
+    }
+  ],
+  "stockClasses": [
+    {
+      "id": "clx1abc23def45ghi67jkl89",
+      "corporationId": 123,
+      "name": "Common Stock",
+      "initialSharesAuthorized": 10000000
     }
   ],
   "percentScale": 1000000
@@ -158,9 +168,18 @@ GET /business-entity/list/company/:companyId/org-structure
 |-------|------|-------------|
 | `entities[]` | array | All entities reachable in the ownership graph, including non-controlled parents. |
 | `edges[]` | array | Directed `from → to` ownership edges. `from` is the shareholder, `to` is the owned entity. |
-| `edges[].ownershipPercent` | integer | Ownership percentage scaled by `percentScale` (e.g. `1000000` with `percentScale: 1000000` represents 100%). |
+| `edges[].ownershipPercent` | integer | Raw ownership percentage within the share class, scaled by `percentScale` (e.g. `1000000` with `percentScale: 1000000` represents 100%). |
+| `edges[].dilutedOwnershipPercent` | integer | Ownership as a percentage of the target entity's total authorized shares across all stock classes, scaled by `percentScale`. Falls back to `ownershipPercent` when the entity's stock classes have incomplete authorized share data. |
+| `edges[].stockClassId` | string \| null | Identifier of the stock class this stakeholding belongs to. `null` for legacy stakeholdings recorded without an explicit class. |
 | `edges[].hasSignificantControl` | boolean | Whether the shareholder has been flagged as exercising significant control. |
-| `percentScale` | integer | Divisor applied to every `ownershipPercent` value in the response. |
+| `stockClasses[]` | array | Flat list of every stock class issued by entities in the graph. Group by `corporationId` to render per-issuer detail. |
+| `stockClasses[].id` | string | Stock class identifier referenced by `edges[].stockClassId`. |
+| `stockClasses[].corporationId` | integer | Identifier of the entity that issued the class. |
+| `stockClasses[].name` | string | Display name of the stock class (e.g. `Common Stock`, `Series A Preferred`). |
+| `stockClasses[].initialSharesAuthorized` | integer \| null | Initial authorized shares for the class. `null` when not recorded. |
+| `percentScale` | integer | Divisor applied to every `ownershipPercent` and `dilutedOwnershipPercent` value in the response. |
+
+Use `ownershipPercent` to display a stakeholder's share within their class, and `dilutedOwnershipPercent` to show their stake against the entity's total authorized shares — useful when an entity has multiple share classes with different sizes.
 
 This is the only listing surface that surfaces non-controlled entities by design — it powers the org chart visualization.
 

@@ -46,20 +46,15 @@ If the individual passes the UBO threshold for the entity's incorporation countr
 
 For a corporate shareholder, pick another entity from the same workspace and provide:
 
-- **Ownership percentage**
-- **Relationship type** (typically **Parent**)
+- **Ownership percentage** (set to **0** to record a control-only relationship — see [Control-only corporate shareholders](#control-only-corporate-shareholders))
+- **Relationship type** — Parent, Investor, or Other
 - **Stock class** (optional)
-- **Inherited UBO mode** — controls how UBOs from the parent entity propagate down
+- **Significant control** (optional) — toggle on if the corporate shareholder exercises significant control over this entity
+- **Inherited UBOs** — pick which of the parent's UBOs should propagate down as indirect UBOs of this entity
 
-#### Inherited UBO modes
+#### Selecting inherited UBOs
 
-When a corporate entity becomes a shareholder, its own UBOs may also become indirect UBOs of the entity below. Pick how you want this handled:
-
-| Mode | Behavior |
-|------|----------|
-| **Auto** | Inherit every UBO from the parent that meets the indirect-ownership threshold. This is the default and is recomputed whenever the parent's ownership changes. |
-| **Opt out** | Inherit no UBOs from the parent. Use this when the parent's UBOs are not relevant for this entity's reporting. |
-| **Opt in** | Inherit only the UBOs you explicitly select. You must select at least one person. |
+When a corporate entity becomes a shareholder, you choose explicitly which of its UBOs propagate down as indirect UBOs of the entity below. The picker lists every UBO recorded against the parent entity; tick the ones that should also be UBOs of this entity. Leaving the list empty propagates no UBOs — the corporate shareholder still appears as a shareholder, but none of its UBOs become indirect UBOs of this entity.
 
 For each inherited UBO you can override the [control type](#beneficial-owner-control-types) — for example, to mark a parent's founder as exercising "Other significant control" rather than "Indirect ownership" for this entity.
 
@@ -76,6 +71,10 @@ Some individuals control an entity without holding any equity — for example, a
 3. Toggle **Has significant control** on and pick a **Control type**.
 
 The person appears in the **Ultimate beneficial owners** section but not in the **Shareholders** list, since they hold no equity.
+
+### Control-only corporate shareholders
+
+A corporate entity can also exercise significant control without holding equity — for example, a holding company that has board appointment rights over a sister entity. To record this, add the corporate shareholder with **Ownership percentage** set to **0** and **Significant control** toggled on. The link appears as a dashed edge on the [Corporate structure](/product/entities/corporate-structure) org chart to distinguish it from equity ownership.
 
 ## Beneficial owner control types
 
@@ -121,9 +120,10 @@ If a corporate shareholder is a [non-controlled entity](/product/entities/creati
 
 Use the row actions on each shareholder to update or remove them.
 
-- **Editing an individual** at 0% ownership with significant control disabled would orphan the row — use **Remove** instead.
-- **Editing a corporate shareholder** to 0% is not supported. Remove the corporate shareholder if it no longer holds equity.
+- **Editing an individual** to 0% ownership requires **Significant control** to be on; otherwise the person no longer qualifies as a shareholder or a UBO and you should **Remove** them instead.
+- **Editing a corporate shareholder** to 0% is allowed only when **Significant control** is on (a [control-only corporate shareholder](#control-only-corporate-shareholders)). Otherwise, remove the corporate shareholder if it no longer holds equity.
 - **Removing a shareholder** also removes any UBOs that only existed because of that shareholding. Inherited UBOs from other branches are preserved.
+- **Inherited UBOs** cannot be edited or removed directly — change them by editing the parent corporate shareholder's inherited-UBO selection.
 
 ## Exporting an ownership summary
 

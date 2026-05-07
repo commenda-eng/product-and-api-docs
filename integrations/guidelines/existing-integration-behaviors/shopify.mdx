@@ -16,9 +16,4 @@ We don’t seem to fall back to a customer-level address if those fields are mis
 
 **Shopify Customers** (ECOMMERCE_CUSTOMERS in rootfi)
 
-We follow this hierarchy to pick the first valid address:
-
-- Rootfi SHIPPING address
-- Rootfi BILLING address
-
-We select exactly one of these addresses, geocode it, and sync it to the sales tax API.
+Customer records continue to sync as source records and snapshots through Rootfi, but their addresses are __not__ eagerly geocoded or pushed into the sales-tax address pipeline. The eager customer-address path is skipped for `ECOMMERCE_CUSTOMERS`, so `rawAddressString` is left null unless another path explicitly sets it. Transaction-level address resolution for `ECOMMERCE_TRANSACTIONS` is unchanged.

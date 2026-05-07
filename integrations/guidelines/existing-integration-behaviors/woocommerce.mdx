@@ -25,7 +25,7 @@ Finally, we pick the available shipping address, or the billing address if there
 
 **Customers**: ECOMMERCE_CUSTOMERS
 
-We record the shipping and billing addresses on the contact, synced through Rootfi.
+Customer records continue to sync as source records and snapshots through Rootfi, but their addresses are __not__ eagerly geocoded or pushed into the sales-tax address pipeline. The eager customer-address path is skipped for `ECOMMERCE_CUSTOMERS`, so `rawAddressString` is left null unless another path explicitly sets it. Order-level address resolution (including the order → customer fallback above) is unchanged.
 
 ## Calculations:
 

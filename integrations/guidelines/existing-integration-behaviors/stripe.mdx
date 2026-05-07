@@ -33,14 +33,7 @@ Address is considered valid if any of its fields are set (if it has a street, OR
 
 **Stripe Customers** (PAYMENT_CUSTOMERS in rootfi)
 
-We follow this hierarchy to pick the first valid address:
-
-- Rootfi SHIPPING address
-- Rootfi BILLING address
-- Payment method billing address, retrieved via the pass-through API
-	- only if the ‘fallbackToPaymentMethodAddressEnabled’ setting is set to true
-
-We select exactly one of these addresses, geocode it, and sync it to the sales tax API.
+Customer records continue to sync as source records and snapshots through Rootfi, but their addresses are __not__ eagerly geocoded or pushed into the sales-tax address pipeline. The eager customer-address path is skipped for `PAYMENT_CUSTOMERS`, so `rawAddressString` is left null unless another path explicitly sets it. Invoice-level (`PAYMENT_INVOICES`) and credit-note (`PAYMENT_CREDIT_NOTES`) address resolution — including the transaction → customer fallback described above — is unchanged.
 
 **Stripe Credit Notes **(PAYMENT_CREDIT_NOTES in rootfi)
 

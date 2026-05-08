@@ -43,6 +43,41 @@ Commenda dynamically creates tax codes in Xero for each effective tax rate, so y
 Tax calculation is supported for accounts receivable invoices (`ACCREC`), accounts receivable credit notes (`ACCRECCREDIT`), and cash refunds. Bills and bill credit notes are synced for data tracking but are not processed for tax calculation.
 </Info>
 
+## How Commenda updates Xero documents
+
+When Commenda calculates tax on a Xero invoice or credit note, it appends a single tax line item to the document and applies the calculated tax rate to your existing line items. Your original line items remain intact — Commenda does not overwrite the account codes you set on them.
+
+### Tax line item
+
+The appended tax line uses the following values:
+
+| Field | Value |
+|---|---|
+| Description | `US Sales Tax` |
+| Quantity | `1` |
+| Unit amount | The total calculated tax |
+| Account code | `Sales Tax` |
+| Tax type | The Commenda-managed tax code for the applicable rate (for example, `Sales Tax 8.25%`) |
+
+Because the tax line carries a stable description, you can filter or report on Commenda-applied tax across your Xero documents by searching for `US Sales Tax`.
+
+### Sales Tax liability account
+
+The first time Commenda needs to write a tax line to a Xero document, it creates a dedicated liability account in your chart of accounts:
+
+| Field | Value |
+|---|---|
+| Name | `Sales Tax` |
+| Code | `Sales Tax` |
+| Type | `LIABILITY` |
+| Description | `Commenda Tax Account` |
+
+This account is used as the destination for collected sales tax, which is the standard accounting treatment for indirect tax payable to a tax authority. Commenda reuses this account for all subsequent tax lines.
+
+<Info>
+If you previously had a Commenda-created `SALES` account named **Commenda Tax** (code `COMMENDA`) from an earlier version of the integration, Commenda will create the new `Sales Tax` liability account alongside it. New tax lines will use the liability account. You can leave the old account in place or archive it once historical reporting is complete.
+</Info>
+
 ## Address resolution
 
 Xero does not store addresses at the invoice level. Instead, Commenda resolves the tax jurisdiction by looking at the **contact's addresses**:

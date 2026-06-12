@@ -32,6 +32,7 @@ description: "Retrieve a specific exemption certificate by its unique identifier
     
     <ResponseField name="verification_status" type="string">
       Current verification status of the certificate:
+      - `NOT_READY`: No certificate file is attached
       - `VERIFICATION_PENDING`: Awaiting verification
       - `VERIFICATION_SUCCESS`: Successfully verified
       - `VERIFICATION_FAILED`: Verification failed

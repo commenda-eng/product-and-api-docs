@@ -265,11 +265,15 @@ Commenda provides webhook notifications for events related to the following obje
 
    Fires when an existing filing is updated (for example, when its status changes, totals are recomputed, or it is filed). The payload includes the updated filings under `data.updated_filings`. Filings that have been removed are reported under `data.removed_filings`.
 
-## Exemptions Certificates
+<a id="exemptions-certificates" />
+
+## Exemption Certificates
 
 1. #### `EXEMPTION_CERTIFICATES.VERIFICATION.SUCCEEDED`
 
-   Once a customer uploads an exemption certificate Commenda begins the process of validating it. Once the validation is complete, Commenda begins treating related transactions as tax exempt. This webhook is triggered once the validation process succeeds.
+   This webhook is triggered when Commenda updates an exemption certificate's `verification_status` to `VERIFICATION_SUCCESS`.
+
+   Tax calculation is based on active jurisdiction exemptions, effective dates, and expiration settings. A successful verification status does not by itself control tax treatment.
 
    ```json
    {
@@ -280,7 +284,7 @@ Commenda provides webhook notifications for events related to the following obje
      "organization_id": "c2710df6-c6cf-4cd0-aa38-63faa44f16bc",
      "data": {
        "corporation_id": "a093d086-19e8-48c8-82d6-aba51f82eafc",
-       "exemption_certificate_id": "e3d97512-5415-4b3c-bcc9-f2d6ebf00d1b"
+       "certificate_id": "e3d97512-5415-4b3c-bcc9-f2d6ebf00d1b"
      },
      "api_version": "v1.0"
    }
@@ -288,11 +292,13 @@ Commenda provides webhook notifications for events related to the following obje
 
 2. #### `EXEMPTION_CERTIFICATES.VERIFICATION.FAILED`
 
-   In some cases, a exemption certificate under validation will fail to pass our internal criteria. A non exhaustive list of failure cases is included below. More cases will be added over time.
+   This webhook is triggered when Commenda updates an exemption certificate's `verification_status` to `VERIFICATION_FAILED`. When this status is set, the certificate's jurisdiction exemptions are deactivated.
+
+   A non-exhaustive list of failure reasons is included below. More cases may be added over time.
 
    - `INPUTS.NAME_MISMATCH`
 
-     **Trigger:** If the name of the customer doesn't matches the name mentioned on the exemption certificate.
+     **Trigger:** The customer name does not match the name on the exemption certificate.
 
      **Resolution:** Either update the name of the customer or upload the right exemption certificate.
 
@@ -304,19 +310,19 @@ Commenda provides webhook notifications for events related to the following obje
 
    - `CERTIFICATE.INVALID_TYPE_OR_FORMAT`
 
-     **Trigger:** If the type of the certificate is invalid for this customer this webhook will be triggered.
+     **Trigger:** The certificate type is invalid for this customer.
 
      **Resolution:** The customer will need to upload the latest version of the exemption certificate for the purchaser.
 
    - `PURCHASER.MISSING_ADDRESS`
 
-     **Trigger:** Some states like Texas requires the address of the purchaser to be present on the exemption certificate. This webhook will be triggered if the address is missing.
+     **Trigger:** Some states, such as Texas, require the purchaser's address to be present on the exemption certificate.
 
-     **Resolution:** Upload a newer version of exemption certificate that contains the purchaser's address.
+     **Resolution:** Upload a newer exemption certificate that contains the purchaser's address.
 
    - `OTHER`
 
-     **Trigger:** This is to cover edge cases. A human readable message on how to resolve the error and what went wrong will be attached.
+     **Trigger:** This covers edge cases. A human-readable message on what went wrong and how to resolve it will be attached.
 
      **Resolution:** The `data` interface of the event payload will contain a possible resolution for the error.
 
@@ -329,12 +335,12 @@ Commenda provides webhook notifications for events related to the following obje
      "organization_id": "c2710df6-c6cf-4cd0-aa38-63faa44f16bc",
      "data": {
        "corporation_id": "a093d086-19e8-48c8-82d6-aba51f82eafc",
-       "registration_id": "e3d97512-5415-4b3c-bcc9-f2d6ebf00d1b",
-       "error" : {
-          "type": "PURCHASER.NAME_MISMATCH",
-          "doc_url": <link_to_documentation>,
+       "certificate_id": "e3d97512-5415-4b3c-bcc9-f2d6ebf00d1b",
+       "error": {
+          "type": "INPUTS.NAME_MISMATCH",
+          "doc_url": "https://docs.commenda.io/engine/indirect-tax/webhooks/event#exemption-certificates",
           "title": "Purchaser's name doesn't match on the Customer's model and Exemption certificate.",
-          "detail": "The name of the customer doesn't match the name on the exemption certificate.".
+          "detail": "The name of the customer doesn't match the name on the exemption certificate.",
           "resolution": "Either update the name of the customer or upload the right exemption certificate."
        }
      },
@@ -342,9 +348,11 @@ Commenda provides webhook notifications for events related to the following obje
    }
    ```
 
-   3. #### `EXEMPTION_CERTIFICATES.EXPIRATION`
-      We send out a notification two weeks before an exemption certificate is expiring, to give a customer notice that they'll need to upload a new one.
-      **Trigger:** The expiration date mentioned on the exemption certificate is passing and the certificate will no longer be valid.
+3. #### `EXEMPTION_CERTIFICATES.EXPIRATION`
+
+   We send out a notification before an exemption certificate jurisdiction exemption expires, giving the customer notice that they need to upload a new one.
+
+   **Trigger:** The expiration date on a jurisdiction exemption is approaching and the exemption will no longer be valid after that date.
 
    **Resolution:** The customer will need to upload the latest version of the exemption certificate for the purchaser.
 
@@ -357,8 +365,11 @@ Commenda provides webhook notifications for events related to the following obje
      "organization_id": "c2710df6-c6cf-4cd0-aa38-63faa44f16bc",
      "data": {
        "corporation_id": "a093d086-19e8-48c8-82d6-aba51f82eafc",
+       "customer_id": "f1e2d3c4-b5a6-7890-1234-56789abcdef0",
        "certificate_id": "e3d97512-5415-4b3c-bcc9-f2d6ebf00d1b",
-       "expiration_date": "2025-02-27"
+       "end_date": "2025-02-27",
+       "country": "US",
+       "state": "TX"
      },
      "api_version": "v1.0"
    }

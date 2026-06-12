@@ -25,10 +25,10 @@ To create an exemption certificate, follow these steps:
 
 3. **MTC**: This is a [Multistate Tax Commission exemption certificate](https://www.mtc.gov/resources/uniform-sales-use-tax-exemption-certificate). It may be recognized in multiple states, including any of the 36 states which are are part of the Multistate Tax Commission.
 
-## Certificate verification
+## Certificate review status
 
-Exemption certificates provided by customers may sometimes be invalid. Reasons can include incorrect certificate types, mismatched names, expired documents, and more. To protect merchants, Commenda automatically verifies these exemption certificates.
+Exemption certificates include a `verification_status` field so Commenda can surface the review state of a certificate. When a certificate is created with a `file_id`, its initial status is `VERIFICATION_PENDING`. Certificates created without a file are marked `NOT_READY` until a file is attached.
 
-Initially, exemption certificates are marked as `INVALID`. While in this state, they cannot be used to exempt transactions from sales tax. After the certificate is created, Commenda validates it. The validation process will update the certificate status to either `VALID` or `INVALID` based on the verification outcome.
+Tax calculation is based on active jurisdiction exemptions, effective dates, and expiration settings. Do not use `verification_status` alone to predict tax treatment. If Commenda marks a certificate `VERIFICATION_FAILED`, the certificate's jurisdiction exemptions are deactivated.
 
-This verification process is asynchronous, and updates are sent to merchants via webhooks. For more details about exemption certificate webhooks, visit [here](/engine/indirect-tax/webhooks/webhooks).
+When Commenda updates a certificate to `VERIFICATION_SUCCESS` or `VERIFICATION_FAILED`, the corresponding exemption certificate webhook is sent. For more details, see [exemption certificate webhooks](/engine/indirect-tax/webhooks/event#exemptions-certificates).

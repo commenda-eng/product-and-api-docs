@@ -96,6 +96,7 @@ description: "Create an exemption certificate for a customer with one or more ju
     
     <ResponseField name="verification_status" type="string">
       Current verification status of the certificate:
+      - `NOT_READY`: No certificate file is attached
       - `VERIFICATION_PENDING`: Awaiting verification
       - `VERIFICATION_SUCCESS`: Successfully verified
       - `VERIFICATION_FAILED`: Verification failed

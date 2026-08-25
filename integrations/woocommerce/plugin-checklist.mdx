@@ -1,0 +1,89 @@
+---
+title: "WooCommerce Plugin Checklist"
+description: "Go-live checklist to run every time the Commenda plugin is installed or updated on your WooCommerce store"
+---
+
+Follow this checklist every time the Commenda plugin is installed or updated on your WooCommerce store. Work through the steps in order and tick each one as you go.
+
+<Warning>
+If a step doesn't come out the way it says it should, contact us before going live rather than continuing.
+</Warning>
+
+<Steps>
+  <Step title="Turn on taxes in WooCommerce">
+    Go to **WooCommerce → Settings → General** and tick **Enable taxes**.
+
+    <Check>
+    **You should see** — a Tax tab appear in your WooCommerce settings.
+    </Check>
+
+    <Warning>
+    **If this stays off** — Commenda still calculates the tax, but WooCommerce discards the result and every order goes out untaxed. This is the most common cause of missing tax, and it can run for months without anything looking wrong.
+    </Warning>
+  </Step>
+  <Step title="Clear any tax rates you already have">
+    Go to **WooCommerce → Settings → Tax → Standard rates** and remove any rates listed. Commenda supplies every rate you need — rates left over from a previous provider, or entered by hand, will conflict with ours.
+
+    <Check>
+    **You should see** — an empty rate table. Every rate comes from Commenda.
+    </Check>
+
+    <Warning>
+    **If you're moving from another tax provider** — agree a switch-off time with us so the two never run at the same time. Rates left in place can tax an order twice.
+    </Warning>
+  </Step>
+  <Step title="Add your existing registrations">
+    Add every registration you already hold in the Commenda app.
+
+    <Check>
+    **You should see** — every state or region you're registered in listed in your account before your first taxed order.
+    </Check>
+
+    <Warning>
+    **If one is missing** — orders shipping to that state will come out untaxed.
+    </Warning>
+  </Step>
+  <Step title="Place a test order">
+    Place a test order in your store, shipping to an address where you're registered.
+
+    <Check>
+    **You should see** — tax added at checkout, and a tax line on the completed order.
+    </Check>
+
+    <Warning>
+    **If tax shows as 0.00** — stop and contact us before going live. Don't keep placing orders.
+    </Warning>
+  </Step>
+  <Step title="Check your checkout still behaves normally">
+    Add and remove a few items from the cart, then go through to checkout.
+
+    <Check>
+    **You should see** — tax appearing at checkout, and no noticeable slowdown while adding items.
+    </Check>
+
+    <Warning>
+    **If the cart feels slow** — tell us.
+    </Warning>
+  </Step>
+  <Step title="Test an exempt customer">
+    If you sell to tax-exempt customers, place an order for one who has a certificate on file.
+
+    <Check>
+    **You should see** — the order comes out with no tax.
+    </Check>
+
+    <Warning>
+    **If tax is still applied** — contact us before you go live.
+    </Warning>
+  </Step>
+</Steps>
+
+<Note>
+If you use fee lines on orders, let us know. Fees aren't currently included in the tax calculation, and we'll need to handle that for your account.
+</Note>
+
+## That's WooCommerce set up
+
+Every step above has passed, so you're ready to go live. Run through this list again after any WooCommerce update, plugin update, or new state registration.
+
+Questions on any step, or something not behaving the way it's described here — send us the order number and we'll take it from there.

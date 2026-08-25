@@ -1,0 +1,89 @@
+---
+title: "NetSuite Plugin Checklist"
+description: "Go-live checklist to run every time the Commenda bundle is installed or updated in your NetSuite account"
+---
+
+Follow this checklist every time the Commenda bundle is installed or updated in your NetSuite account. Work through the steps in order and tick each one as you go.
+
+<Warning>
+If a step doesn't come out the way it says it should, contact us before going live rather than continuing.
+</Warning>
+
+<Steps>
+  <Step title="Enable the required NetSuite features">
+    Go to **Setup → Company → Enable Features**. Under **SuiteCloud**, enable Token-Based Authentication, OAuth 2.0, REST Web Services, Client SuiteScript, and Server SuiteScript.
+
+    <Check>
+    **You should see** — all five enabled before the bundle is installed.
+    </Check>
+
+    <Warning>
+    **If any are off** — the install fails with a generic "An unexpected error has occurred", which won't tell you the cause.
+    </Warning>
+  </Step>
+  <Step title="Check the Commenda tax code was created">
+    Installing the bundle creates a single tax code named **Commenda**. You don't need to create tax codes or list your jurisdictions — that happens automatically.
+
+    <Check>
+    **You should see** — a tax code named **Commenda** in your NetSuite tax code list.
+    </Check>
+
+    <Warning>
+    **If it isn't there** — the bundle install hasn't completed. Contact us before creating any transactions.
+    </Warning>
+  </Step>
+  <Step title="Remove any tax rates you set up previously">
+    Commenda supplies every rate you need. Rates left over from a previous provider, or entered by hand, will conflict with ours.
+
+    <Check>
+    **You should see** — no manually entered tax rates left in your system.
+    </Check>
+
+    <Warning>
+    **If you're moving from another tax provider** — agree a switch-off time with us so the two never run at the same time.
+    </Warning>
+  </Step>
+  <Step title="Add your existing registrations">
+    Add every registration you already hold in the Commenda app.
+
+    <Check>
+    **You should see** — every state or region you're registered in listed in your account before your first taxed transaction.
+    </Check>
+
+    <Warning>
+    **If one is missing** — transactions in that state will come out untaxed.
+    </Warning>
+  </Step>
+  <Step title="Create a test transaction of each type">
+    Create an invoice, a sales order, a cash sale, a credit memo, and an estimate, each for an address where you're registered.
+
+    <Check>
+    **You should see** — correct tax on all five.
+    </Check>
+
+    <Warning>
+    **If tax shows as 0.00**, or one type behaves differently from the others — stop and send us the record number before going live.
+    </Warning>
+  </Step>
+  <Step title="Test an exempt customer">
+    If you sell to tax-exempt customers, create a transaction for one who has a certificate on file.
+
+    <Check>
+    **You should see** — the transaction comes out with no tax.
+    </Check>
+
+    <Warning>
+    **If tax is still applied** — contact us before you go live.
+    </Warning>
+  </Step>
+</Steps>
+
+<Note>
+Two notes: Commenda works with NetSuite's legacy tax engine — if your account runs SuiteTax, tell us before install. And the tax calculation setting lives in the bundle inside NetSuite, not in your Commenda dashboard, so that's where to check whether calculation is on.
+</Note>
+
+## That's NetSuite set up
+
+Every step above has passed, so you're ready to go live. Run through this list again after any bundle update or new state registration.
+
+Questions on any step, or something not behaving the way it's described here — send us the record number and we'll take it from there.

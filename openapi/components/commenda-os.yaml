@@ -140,10 +140,15 @@ schemas:
         example: 44
       locationTypes:
         type: array
+        description: |
+          One or more location types describing the role this location plays for the business entity.
+          Allowed values: `PRINCIPAL_PLACE_OF_BUSINESS`, `REGISTERED_OFFICE`, `MAILING_ADDRESS`, `HEADQUARTERS`, `BRANCH_OFFICE`, `FACTORY`, `WAREHOUSE`, `RETAIL_LOCATION`, `POINT_OF_SALE`, `NATURAL_RESOURCE_SITE`, `REPRESENTATIVE_OFFICE`, `CONSTRUCTION_SITE`, `THIRD_PARTY_FULFILLMENT`, `REMOTE_EMPLOYEE`, `DEPENDENT_AGENT`, `INDEPENDENT_AGENT`, `REGISTRATION`, `CONTACT_ADDRESS`, `OTHER`.
+
+          Legacy values (`REGISTERED_OFFICE_ADDRESS`, `OPERATING_ADDRESS`, `OFFICE`, `CONTRACTORS`, `WAREHOUSE_OR_INVENTORY`, `BRANCH`, `EMPLOYEES_WORK_LOCATION`) are deprecated and continue to be returned only for historical records that have not yet been migrated. Use the unified values above when creating or updating locations.
         items:
           type: string
         example:
-          - OPERATIONS
+          - PRINCIPAL_PLACE_OF_BUSINESS
       address:
         $ref: "./commenda-os.yaml#/schemas/CommendaOsLocationAddress"
       createdAt:
@@ -1150,10 +1155,17 @@ schemas:
         example: 12
       locationTypes:
         type: array
+        description: |
+          One or more location types describing the role this location plays for the business entity.
+          Allowed values: `PRINCIPAL_PLACE_OF_BUSINESS`, `REGISTERED_OFFICE`, `MAILING_ADDRESS`, `HEADQUARTERS`, `BRANCH_OFFICE`, `FACTORY`, `WAREHOUSE`, `RETAIL_LOCATION`, `POINT_OF_SALE`, `NATURAL_RESOURCE_SITE`, `REPRESENTATIVE_OFFICE`, `CONSTRUCTION_SITE`, `THIRD_PARTY_FULFILLMENT`, `REMOTE_EMPLOYEE`, `DEPENDENT_AGENT`, `INDEPENDENT_AGENT`, `REGISTRATION`, `CONTACT_ADDRESS`, `OTHER`.
+
+          When `locationTypes` includes `REGISTERED_OFFICE` or `MAILING_ADDRESS`, `locationName` is required. When it includes `REMOTE_EMPLOYEE`, `employeeCount` is required.
+
+          Legacy values such as `REGISTERED_OFFICE_ADDRESS`, `OPERATING_ADDRESS`, `OFFICE`, `CONTRACTORS`, `WAREHOUSE_OR_INVENTORY`, `BRANCH`, and `EMPLOYEES_WORK_LOCATION` are deprecated. New requests should use the unified vocabulary above (for example, send `REGISTERED_OFFICE` instead of `REGISTERED_OFFICE_ADDRESS`, and `PRINCIPAL_PLACE_OF_BUSINESS` instead of `OPERATING_ADDRESS`).
         items:
           type: string
         example:
-          - REGISTERED_OFFICE_ADDRESS
+          - REGISTERED_OFFICE
       address:
         $ref: "./commenda-os.yaml#/schemas/CommendaOsLocationAddress"
   CommendaOsLocationUpdateRequest:
@@ -1178,10 +1190,15 @@ schemas:
         example: 12
       locationTypes:
         type: array
+        description: |
+          One or more location types describing the role this location plays for the business entity.
+          Allowed values: `PRINCIPAL_PLACE_OF_BUSINESS`, `REGISTERED_OFFICE`, `MAILING_ADDRESS`, `HEADQUARTERS`, `BRANCH_OFFICE`, `FACTORY`, `WAREHOUSE`, `RETAIL_LOCATION`, `POINT_OF_SALE`, `NATURAL_RESOURCE_SITE`, `REPRESENTATIVE_OFFICE`, `CONSTRUCTION_SITE`, `THIRD_PARTY_FULFILLMENT`, `REMOTE_EMPLOYEE`, `DEPENDENT_AGENT`, `INDEPENDENT_AGENT`, `REGISTRATION`, `CONTACT_ADDRESS`, `OTHER`.
+
+          Legacy values such as `REGISTERED_OFFICE_ADDRESS`, `OPERATING_ADDRESS`, `OFFICE`, `CONTRACTORS`, `WAREHOUSE_OR_INVENTORY`, `BRANCH`, and `EMPLOYEES_WORK_LOCATION` are deprecated. Use the unified vocabulary above when updating a location.
         items:
           type: string
         example:
-          - REGISTERED_OFFICE_ADDRESS
+          - REGISTERED_OFFICE
       address:
         $ref: "./commenda-os.yaml#/schemas/CommendaOsLocationAddress"
   CommendaOsBusinessEntityPersonsResponse:

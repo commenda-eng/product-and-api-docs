@@ -1,0 +1,46 @@
+---
+title: "Archive corporation (internal)"
+api: "DELETE https://transaction-tax.api.in.commenda.io/api/v1/internal/corporations/{corporation_id}"
+description: "Admin endpoint for trusted services to archive a corporation"
+---
+
+Archive a sales-tax corporation using admin authentication. Mirrors the auth model of `POST /corporations/connect`: the same trusted service that creates a corporation can also clean it up without holding a corp-scoped user token.
+
+<Note>
+  This is an admin-only endpoint. End users should use the standard [`DELETE /corporations/{id}`](/engine/indirect-tax/corporation/corporation-DELETE) endpoint instead.
+</Note>
+
+## When to use
+
+Use this endpoint to roll back a partial create flow. For example, if a service creates a corporation via `POST /corporations/connect` and a subsequent step (such as bulk-creating mirrored locations) fails, the orchestrator can call this endpoint to delete the orphaned corporation cleanly.
+
+## Path parameters
+
+<ParamField path="corporation_id" type="string" required>
+  The corporation UUID to archive.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl --request DELETE \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/internal/corporations/550e8400-e29b-41d4-a716-446655440000' \
+  --header 'Authorization: Bearer <admin_token>'
+```
+</RequestExample>
+
+<ResponseExample>
+```text 204
+No Content
+```
+
+```json 404 - Not found
+{
+  "error": {
+    "type": "CORPORATIONS_NOT_FOUND",
+    "title": "Corporation not found.",
+    "status": 404,
+    "instance": "/api/v1/internal/corporations/550e8400-e29b-41d4-a716-446655440000"
+  }
+}
+```
+</ResponseExample>

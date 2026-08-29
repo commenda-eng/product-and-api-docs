@@ -5753,6 +5753,22 @@ components:
           type: string
           description: Method used to create this transaction.
           example: TRANSACTIONS_API_BULK
+        filing_ids:
+          type: array
+          description: IDs of all filings this transaction is currently attached to. A single transaction can belong to multiple filings simultaneously (for example, a German sale that contributes to a monthly prepay, a quarterly VAT return, and an annual reconciliation; or an EU sale that appears on both the local-country VAT return and a OSS return). Authoritative source — read this field to know which filings include the transaction.
+          items:
+            type: string
+            format: uuid
+          example:
+            - 1cb7c7b6-aaaa-4bbb-cccc-111111111111
+            - 8d7865e0-bbbb-4ccc-dddd-222222222222
+            - d51d1417-cccc-4ddd-eeee-333333333333
+        filing_id:
+          type: string
+          format: uuid
+          deprecated: true
+          description: Deprecated. Legacy 1:1 transaction-to-filing pointer kept for backward compatibility while consumers migrate to `filing_ids`. Populated only for transactions attached before the multi-filing-per-invoice change (or carried by backfill); empty for transactions attached after that change, even when the transaction is attached to one or more filings. Read `filing_ids` for the authoritative list. Will be removed in a future release.
+          example: f1e2d3c4-b5a6-7890-abcd-ef1234567890
         marketplace:
           type: string
           nullable: true

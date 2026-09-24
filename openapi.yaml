@@ -8539,7 +8539,6 @@ components:
         - generalBusinessEntityInfo
         - accountingInfo
         - featureSpecificInfo
-        - entityRelationship
         - lastUpdateTime
       properties:
         id:
@@ -8681,9 +8680,6 @@ components:
         onboardingInfo:
           type: object
           nullable: true
-          additionalProperties: true
-        entityRelationship:
-          type: object
           additionalProperties: true
         structure:
           type: object

@@ -15,7 +15,7 @@ The Documents API manages business entity documents organized by category, inclu
 Get all documents for a business entity.
 
 ```http
-GET /business-entity/:businessEntityId/documents
+GET /business-entities/:businessEntityId/documents
 ```
 
 **Path parameters**
@@ -26,32 +26,37 @@ GET /business-entity/:businessEntityId/documents
 
 **Response**
 
+The list also has an entry for each formation document the entity is expected to have. One that has not been uploaded yet has `id`, `fileName` and `fileUrl` set to `null`. The example below is trimmed.
+
 ```json
 {
   "documents": [
     {
-      "id": 123,
+      "id": 789,
+      "fileName": "Certificate_of_Incorporation.pdf",
+      "fileUrl": "https://files.example.com/certificate-of-incorporation.pdf",
       "documentType": "FORMATION_DOCUMENT",
       "documentSubType": "CertificateOfIncorporation",
-      "documentName": "Certificate of Incorporation",
-      "fileId": "file_abc123",
-      "fileName": "Certificate_of_Incorporation.pdf",
-      "effectiveStartDate": "2020-01-15",
+      "effectiveStartDate": null,
       "effectiveEndDate": null,
-      "serviceRequestId": null,
-      "createdAt": "2020-01-15T10:00:00Z"
+      "isTimeSensitive": false,
+      "isUnique": true,
+      "createdAt": 1579082400000,
+      "updatedAt": 1579082400000
     }
   ],
   "count": 1
 }
 ```
 
+`createdAt` and `updatedAt` are Unix timestamps in milliseconds.
+
 ### Create document
 
 Add a new document to a business entity.
 
 ```http
-POST /business-entity/:businessEntityId/documents
+POST /business-entities/:businessEntityId/documents
 ```
 
 **Path parameters**
@@ -64,33 +69,45 @@ POST /business-entity/:businessEntityId/documents
 
 ```json
 {
-  "documentType": "FORMATION_DOCUMENT",
   "documentSubType": "CertificateOfIncorporation",
-  "fileId": "file_abc123",
-  "effectiveStartDate": "2020-01-15",
-  "serviceRequestId": 456
+  "fileUrl": "https://files.example.com/certificate-of-incorporation.pdf",
+  "fileName": "Certificate_of_Incorporation.pdf"
 }
 ```
 
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `documentSubType` | string | Yes | The document type, for example `CertificateOfIncorporation`. `Other` is accepted for any document. |
+| `fileUrl` | string | No | Hosted URL of the file |
+| `fileName` | string | No | File name |
+| `effectiveStartDate` | string | No | ISO 8601 date the document takes effect. Time-sensitive document types only. |
+| `effectiveEndDate` | string | No | ISO 8601 date the document stops applying. Time-sensitive document types only. |
+| `serviceRequestId` | string | No | Service request to associate the document with |
+
+A `documentSubType` that does not apply to the entity returns `400 Bad Request`, and a second document of a unique type returns `409 Conflict`.
+
 **Response**
+
+Returns `201 Created` with the new document, in the same shape as an entry of [List documents](#list-documents).
 
 ```json
 {
   "document": {
-    "id": 123,
+    "id": 789,
+    "fileName": "Certificate_of_Incorporation.pdf",
+    "fileUrl": "https://files.example.com/certificate-of-incorporation.pdf",
     "documentType": "FORMATION_DOCUMENT",
-    "documentSubType": "CertificateOfIncorporation",
-    "fileId": "file_abc123"
+    "documentSubType": "CertificateOfIncorporation"
   }
 }
 ```
 
 ### Update document
 
-Update an existing document.
+Replace the file behind an existing document.
 
 ```http
-POST /business-entity/:businessEntityId/documents/:documentId
+PATCH /business-entities/:businessEntityId/documents/:documentId
 ```
 
 **Path parameters**
@@ -102,17 +119,18 @@ POST /business-entity/:businessEntityId/documents/:documentId
 
 **Request body**
 
+Both fields are required.
+
 ```json
 {
-  "effectiveStartDate": "2020-01-15",
-  "effectiveEndDate": "2025-12-31",
-  "serviceRequestId": 456
+  "fileUrl": "https://files.example.com/certificate-of-incorporation-amended.pdf",
+  "fileName": "Certificate_of_Incorporation_Amended.pdf"
 }
 ```
 
 **Response**
 
-Returns `200 OK` on success.
+Returns `200 OK` with no body.
 
 ## Supported documents
 
@@ -121,7 +139,7 @@ Returns `200 OK` on success.
 Get all document types available for a business entity.
 
 ```http
-GET /business-entity/:businessEntityId/documents/supported
+GET /business-entities/:businessEntityId/documents/supported
 ```
 
 **Path parameters**
@@ -141,16 +159,21 @@ GET /business-entity/:businessEntityId/documents/supported
       "documentSubType": "CertificateOfIncorporation",
       "country": "US",
       "jurisdiction": null,
-      "corporationType": "C_CORP",
+      "corporationType": "CCorp",
       "isTimeSensitive": false,
       "isUnique": true,
-      "canBeAddedByAddDocument": true
+      "canBeAddedByAddDocument": true,
+      "supportsDataStorage": false
     }
   ]
 }
 ```
 
+Time-sensitive document types are listed once the entity has a fiscal year and a formation date.
+
 ## Document categories
+
+A document's category is returned as `documentType`: `FORMATION_DOCUMENT`, `SHAREHOLDER_DOCUMENT`, `TAX_AND_COMPLIANCE_DOCUMENT`, `FINANCIAL_RECORDS`, `OFFICE_AND_ADMINISTRATION_DOCUMENT`, `CONTRACTS_AND_AGREEMENTS` or `MISCELLANEOUS`. Its specific type is `documentSubType`.
 
 ### Formation documents
 
@@ -226,7 +249,7 @@ Some document types can only exist once per entity:
 ### Service request association
 
 Documents can be linked to service requests:
-- `serviceRequestId`: Associates document with a specific service request
+- `serviceRequestId`: Associates the document with a specific service request when you create it
 - Enables tracking of documents generated through compliance workflows
 
 ## Jurisdiction-specific documents
@@ -288,10 +311,10 @@ Document types vary by country and entity type:
 
 ## File management
 
-Documents reference files stored in the Files API:
-1. Upload file using Files API to get `fileId`
-2. Create document record with `fileId` reference
-3. Document metadata stored separately from file content
+Documents reference hosted files:
+1. Upload the file and keep its hosted URL
+2. Create the document record with that `fileUrl` and a `fileName`
+3. To replace the file later, [update the document](#update-document) with the new `fileUrl` and `fileName`
 
 ## Related resources
 

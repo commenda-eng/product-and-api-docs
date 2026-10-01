@@ -25,7 +25,7 @@ Before adding a bank account, ensure you have:
 Before creating a bank account, call the fields configuration endpoint to discover which credential fields are required or optional for the target country.
 
 ```http
-GET /bank-accounts/fields-config
+GET /bankAccount/fields-config
 ```
 
 The response contains:
@@ -104,21 +104,16 @@ Then collect the country-specific credential fields. Use the [fields configurati
 ### Step 2: Create the bank account
 
 ```http
-POST /business-entity/:businessEntityId/bank-accounts
+POST /bankAccount
 ```
-
-**Path parameters**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `businessEntityId` | integer | Unique identifier for the business entity |
 
 **Request body**
 
-Pass country-specific routing and account details inside the `credentials` object. The example below creates a US checking account:
+Pass the business entity ID as `corporationId`, and country-specific routing and account details inside the `credentials` object. The example below creates a US checking account:
 
 ```json
 {
+  "corporationId": 123,
   "bankName": "First National Bank",
   "accountHolderName": "Acme Corporation",
   "country": "US",
@@ -128,9 +123,20 @@ Pass country-specific routing and account details inside the `credentials` objec
     "routingNumber": "021000021",
     "accountType": "Checkings"
   },
-  "isPrimary": true
+  "isRemittanceAccount": true
 }
 ```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `corporationId` | integer | Yes | Business entity ID |
+| `bankName` | string | No | Full legal name of the financial institution |
+| `accountHolderName` | string | No | Legal name on the account |
+| `country` | string | No | ISO 3166-1 alpha-2 country code where the account is held. Credentials are only validated when it is sent. |
+| `currency` | string | No | ISO 4217 currency code (e.g., `USD`, `EUR`, `INR`) |
+| `credentials` | object | No | Country-specific routing and identification fields |
+| `taxRegistrationId` | string | No | Linked tax registration identifier |
+| `isRemittanceAccount` | boolean | No | Whether this account is used for tax remittance |
 
 <Info>
 Account and routing details are canonical inside the `credentials` object. Top-level `accountNumber`, `routingNumber`, and `swiftCode` fields are still accepted for backward compatibility and are automatically mirrored into `credentials.accountNumber`, `credentials.routingNumber`, and `credentials.swiftBic`.
@@ -140,6 +146,7 @@ For an Indian bank account, the `credentials` object uses different fields:
 
 ```json
 {
+  "corporationId": 124,
   "bankName": "State Bank of India",
   "accountHolderName": "Acme India Pvt Ltd",
   "country": "IN",
@@ -157,41 +164,15 @@ When `credentials.accountType` is set, its value is used directly for both `bank
 
 **Response**
 
+Returns `201 Created`.
+
 ```json
 {
-  "id": "ba_abc123",
-  "businessEntityId": 123,
-  "bankName": "First National Bank",
-  "accountHolderName": "Acme Corporation",
-  "country": "US",
-  "currency": "USD",
-  "accountNumber": "****6789",
-  "credentials": {
-    "accountNumber": "123456789",
-    "routingNumber": "021000021",
-    "accountType": "Checkings"
-  },
-  "bankAccountType": "Checkings",
-  "subType": "Checkings",
-  "isPrimary": true,
-  "createdAt": "2024-01-15T10:30:00Z"
+  "bankAccount": {
+    "id": "8f14e45f-ceea-4c6e-9b7d-3a1f2c5d6e7f"
+  }
 }
 ```
-
-### Step 3: Verify the account
-
-After creating the bank account, verify the details are correct:
-
-```http
-GET /business-entity/:businessEntityId/bank-accounts/:bankAccountId
-```
-
-**Path parameters**
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `businessEntityId` | integer | Business entity ID |
-| `bankAccountId` | string | Bank account ID |
 
 ## Update a bank account
 
@@ -199,23 +180,18 @@ To update existing bank account information:
 
 ### Step 1: Retrieve current details
 
-First, get the current bank account information:
-
-```http
-GET /business-entity/:businessEntityId/bank-accounts/:bankAccountId
-```
+First, [list the entity's bank accounts](#list-all-bank-accounts) and find the account by its `id`.
 
 ### Step 2: Update the account
 
 ```http
-PATCH /business-entity/:businessEntityId/bank-accounts/:bankAccountId
+POST /bankAccount/:bankAccountId
 ```
 
 **Path parameters**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `businessEntityId` | integer | Business entity ID |
 | `bankAccountId` | string | Bank account ID |
 
 **Request body**
@@ -230,14 +206,14 @@ Include only the fields you want to update. All fields are optional.
 | `currency` | string | ISO 4217 currency code (e.g., `USD`, `EUR`, `INR`) |
 | `bankAddress` | string | Address of the bank |
 | `taxRegistrationId` | string | Linked tax registration identifier |
-| `isPrimary` | boolean | Whether this account is the primary account for the entity |
+| `isRemittanceAccount` | boolean | `true` makes this the entity's remittance account, replacing any other; `false` unsets it |
 | `credentials` | object | Country-specific routing and identification fields |
+
+The example below updates an account held in Germany:
 
 ```json
 {
   "accountHolderName": "Acme GmbH",
-  "country": "DE",
-  "currency": "EUR",
   "credentials": {
     "iban": "DE89370400440532013000"
   }
@@ -245,53 +221,72 @@ Include only the fields you want to update. All fields are optional.
 ```
 
 <Info>
-Credential updates are merged with existing values. Sending `{ "credentials": { "iban": "..." } }` adds or overwrites the `iban` field without removing other credential fields already stored on the account.
+Credential updates are merged with existing values. Sending `{ "credentials": { "iban": "..." } }` adds or overwrites the `iban` field without removing other credential fields already stored on the account. The credentials you send are validated together, so include every field the account's country requires, even when you change only one.
 </Info>
 
 <Info>
-Credential keys that are not part of the country's field configuration are silently dropped before validation. This lets you safely update accounts that were created when the legacy schema (for example, a top-level `swiftCode`) was still in use, without having to clean up the existing record first.
+Credential keys that are not part of the field configuration for the country already stored on the account are silently dropped before validation. This lets you safely update accounts that were created when the legacy schema (for example, a top-level `swiftCode`) was still in use, without having to clean up the existing record first. A `country` sent in the same request does not change which fields are kept.
 </Info>
 
 **Response**
 
-Returns the updated bank account object with `200 OK` status.
+Returns `201 Created` with the stored bank account record, including its full `credentials`.
+
+```json
+{
+  "id": "5d1c2b7e-8a3f-4e6b-9c0d-1f2a3b4c5d6e",
+  "corporationId": 125,
+  "bankName": "Deutsche Bank",
+  "accountHolderName": "Acme GmbH",
+  "country": "DE",
+  "currency": "EUR",
+  "credentials": {
+    "iban": "DE89370400440532013000"
+  },
+  "createdAt": "2024-01-15T10:30:00.000Z",
+  "lastUpdateTime": "2024-06-01T09:00:00.000Z"
+}
+```
 
 ## List all bank accounts
 
 To view all bank accounts for a corporation:
 
 ```http
-GET /business-entity/:businessEntityId/bank-accounts
+GET /bankAccount?corporationId=:businessEntityId
 ```
 
-**Path parameters**
+**Query parameters**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `businessEntityId` | integer | Business entity ID |
+| `corporationId` | integer | Business entity ID (required) |
 
 **Response**
+
+The example below is trimmed. `accountNumberMask` and `routingNumberMask` are the last four digits of the stored numbers.
 
 ```json
 {
   "accounts": [
     {
-      "id": "ba_abc123",
+      "id": "8f14e45f-ceea-4c6e-9b7d-3a1f2c5d6e7f",
+      "corporationId": 123,
       "bankName": "First National Bank",
-      "accountNumber": "****6789",
-      "bankAccountType": "Checkings",
+      "accountHolderName": "Acme Corporation",
       "country": "US",
       "currency": "USD",
-      "isPrimary": true
-    },
-    {
-      "id": "ba_def456",
-      "bankName": "HDFC Bank",
-      "accountNumber": "****1234",
-      "bankAccountType": "Savings",
-      "country": "IN",
-      "currency": "INR",
-      "isPrimary": false
+      "accountNumberMask": "6789",
+      "routingNumberMask": "0021",
+      "credentials": {
+        "accountNumber": "123456789",
+        "routingNumber": "021000021",
+        "accountType": "Checkings"
+      },
+      "bankAccountType": "Checkings",
+      "subType": "Checkings",
+      "isRemittanceAccount": true,
+      "statements": []
     }
   ]
 }
@@ -302,14 +297,13 @@ GET /business-entity/:businessEntityId/bank-accounts
 To delete a bank account from a corporation:
 
 ```http
-DELETE /business-entity/:businessEntityId/bank-accounts/:bankAccountId
+DELETE /bankAccount/:bankAccountId
 ```
 
 **Path parameters**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `businessEntityId` | integer | Business entity ID |
 | `bankAccountId` | string | Bank account ID |
 
 **Response**
@@ -317,7 +311,7 @@ DELETE /business-entity/:businessEntityId/bank-accounts/:bankAccountId
 Returns `204 No Content` on success.
 
 <Warning>
-You cannot delete a bank account if managed filings is enabled for one or more registrations linked to the corporation. Disable managed filings first.
+You cannot delete a corporation's only bank account while managed filings is enabled for one or more of its registrations. Disable managed filings first.
 </Warning>
 
 ## Credentials reference
@@ -328,9 +322,9 @@ The `credentials` object holds country-specific bank routing and identification 
 |-------|-----------|-------------|
 | `accountNumber` | Most | Local bank account number |
 | `routingNumber` | US | ABA routing transit number (9 digits) |
-| `accountType` | US | `Checkings` or `Savings` |
+| `accountType` | US, CL, CO | `Checkings` or `Savings` |
 | `ifscCode` | IN | Indian Financial System Code (11 characters) |
-| `sortCode` | GB, IE | Bank sort code (6 digits) |
+| `sortCode` | GB, GH, GI | Bank sort code (6 digits) |
 | `iban` | EU, SEPA countries | International Bank Account Number |
 | `swiftBic` | Global | SWIFT/BIC code (8 or 11 characters) |
 | `bsb` | AU | Bank/State/Branch code (6 digits) |
@@ -343,11 +337,11 @@ The `credentials` object holds country-specific bank routing and identification 
 ## Best practices
 
 - **Use the fields config** — always call the fields configuration endpoint to determine required fields for a country instead of hardcoding field lists
-- **Set a primary account** — mark one account as primary for default transactions
+- **Set a remittance account** — mark the account used for tax payments with `isRemittanceAccount`
 - **Verify account numbers** — double-check account and routing numbers before saving
 - **Pass the country** — always include `country` when creating a bank account so server-side validation can enforce the correct credential rules
 - **Update regularly** — keep bank account information current when accounts change
-- **Secure storage** — account numbers are automatically masked in responses for security
+- **Display masked numbers** — list responses include `accountNumberMask` and `routingNumberMask` for display; the full values are in `credentials`
 - **Currency matching** — ensure the currency matches the country's primary currency or your business operations
 - **Account holder names** — use the exact legal name registered with the bank
 

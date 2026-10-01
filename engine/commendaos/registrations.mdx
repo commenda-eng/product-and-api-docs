@@ -15,7 +15,7 @@ The Registrations API manages formal registrations with government agencies that
 Get all registrations for a business entity.
 
 ```http
-GET /business-entity/:businessEntityId/registrations
+GET /business-entities/:businessEntityId/registrations
 ```
 
 **Path parameters**
@@ -28,36 +28,65 @@ GET /business-entity/:businessEntityId/registrations
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `extends` | string[] | Optional fields to include: `credentials` |
+| `extends` | string[] | Optional fields to include: `CREDENTIALS` adds the credentials linked to each registration as `linkedCredential` |
+| `applicability` | string | Only return registrations of one applicability: `DOMESTIC`, `FOREIGN`, `BOTH`, or `CUSTOM` for custom registrations |
 
 **Response**
+
+The example below is trimmed. `governmentIdentifiers` are the identifiers the registration produced that the entity holds; `unheldGovernmentIdentifiers` are the ones it produces that the entity has not recorded yet, in the same shape.
 
 ```json
 {
   "registrations": [
     {
-      "id": "reg_abc123",
-      "type": "INCOME_TAX",
+      "id": "cm3h4d5e60003l508p2q4r6st",
+      "registrationIdentifier": "REG:US:EIN_APPLICATION",
+      "displayName": "Employer Identification Number Application",
+      "description": "IRS process for obtaining a federal EIN through the online tool or by phone, fax, or mail.",
+      "purpose": "INCOME_TAX",
       "country": "US",
-      "jurisdiction": "FEDERAL",
-      "registrationDate": "2020-01-15",
+      "jurisdiction": null,
+      "jurisdictionId": "ADM0_US",
+      "businessEntityId": 123,
+      "corporationType": "CCorp",
+      "applicability": "BOTH",
+      "isCustom": false,
       "status": "ACTIVE",
-      "isDomestic": true,
-      "expiryDate": null,
-      "governmentIdentifierId": "gi_xyz789",
-      "credentials": [...]
+      "registrationStatus": "REGISTERED",
+      "registeredBy": "USER",
+      "effectiveStartDate": "2020-01-15",
+      "effectiveEndDate": null,
+      "governmentIdentifiers": [
+        { "id": "cm3g1b2c30002l508h7j9k1mn", "identifierTypeId": "GID:US:EIN", "displayName": "Employer Identification Number", "value": "12-3456789" }
+      ],
+      "unheldGovernmentIdentifiers": [],
+      "documents": [],
+      "hasLinkedCredential": true,
+      "linkedCredential": [
+        {
+          "id": "0b6f3f4e-6a7d-4c1e-9d0a-2f5b8c9e1a23",
+          "blocks": [
+            { "id": "cm3j8k9l00005l508a1b2c3d4", "key": "User name", "mask": null, "type": "PlainText" },
+            { "id": "cm3j8k9l00006l508e5f6g7h8", "key": "Password", "mask": "3!", "type": "SecureString" }
+          ]
+        }
+      ],
+      "createdAt": 1579082400000,
+      "lastUpdatedAt": 1579082400000
     }
   ],
   "count": 1
 }
 ```
 
+`linkedCredential` and `hasLinkedCredential` only reflect the linked credentials when you request `extends=CREDENTIALS`. Without it, `linkedCredential` is left out and `hasLinkedCredential` is `false`. `createdAt` and `lastUpdatedAt` are Unix timestamps in milliseconds.
+
 ### Get registration
 
 Retrieve a single registration by ID.
 
 ```http
-GET /business-entity/:businessEntityId/registrations/:registrationId
+GET /business-entities/:businessEntityId/registrations/:registrationId
 ```
 
 **Path parameters**
@@ -71,38 +100,34 @@ GET /business-entity/:businessEntityId/registrations/:registrationId
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `extends` | string[] | Optional fields to include: `credentials` |
+| `extends` | string[] | Optional fields to include: `CREDENTIALS` |
 
 **Response**
+
+The registration has the same shape as an entry of [List registrations](#list-registrations). The example below is trimmed.
 
 ```json
 {
   "registration": {
-    "id": "reg_abc123",
-    "type": "INCOME_TAX",
+    "id": "cm3h4d5e60003l508p2q4r6st",
+    "registrationIdentifier": "REG:US:EIN_APPLICATION",
+    "displayName": "Employer Identification Number Application",
+    "purpose": "INCOME_TAX",
     "country": "US",
-    "jurisdiction": "FEDERAL",
-    "registrationDate": "2020-01-15",
+    "jurisdictionId": "ADM0_US",
     "status": "ACTIVE",
-    "isDomestic": true,
-    "expiryDate": null,
-    "governmentIdentifierId": "gi_xyz789",
-    "credentials": [
-      {
-        "id": "cred_123",
-        "name": "IRS e-Services"
-      }
-    ]
+    "effectiveStartDate": "2020-01-15",
+    "effectiveEndDate": null
   }
 }
 ```
 
 ### Create registration
 
-Add a new registration to a business entity.
+Add a new registration to a business entity. Either name a registration from the entity's [supported registrations](#supported-registrations) with `registrationIdentifier`, or describe a custom one with `name` and `registrationPurpose`.
 
 ```http
-POST /business-entity/:businessEntityId/registrations
+POST /business-entities/:businessEntityId/registrations
 ```
 
 **Path parameters**
@@ -115,22 +140,50 @@ POST /business-entity/:businessEntityId/registrations
 
 ```json
 {
-  "type": "INCOME_TAX",
-  "country": "US",
-  "jurisdiction": "FEDERAL",
-  "registrationDate": "2020-01-15",
+  "registrationIdentifier": "REG:US:EIN_APPLICATION",
   "status": "ACTIVE",
-  "isDomestic": true,
-  "governmentIdentifierId": "gi_xyz789"
+  "effectiveStartDate": "2020-01-15",
+  "governmentIdentifiers": [
+    { "identifierTypeId": "GID:US:EIN", "value": "12-3456789" }
+  ]
 }
 ```
 
+A custom registration:
+
+```json
+{
+  "name": "San Francisco business registration",
+  "registrationPurpose": "OTHER",
+  "country": "US",
+  "jurisdiction": "ADM1_US-CA",
+  "status": "ACTIVE",
+  "effectiveStartDate": "2021-03-01"
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `registrationIdentifier` | string | Unless custom | The `registrationIdentifier` of a supported registration. Cannot be combined with `name` or `registrationPurpose`. |
+| `name` | string | Custom only | Name of a custom registration |
+| `registrationPurpose` | string | Custom only | `INCOME_TAX`, `INDIRECT_TAX`, `PAYROLL`, `CORPORATE_REGISTRY`, `SOCIAL_SECURITY`, `TRADE`, `FORMATION`, `REGULATORY_REPORTING`, `TAX_AND_COMPLIANCE_REPORTING` or `OTHER` |
+| `country` | string | Custom only | Country of the registration (ISO 3166-1 alpha-2). For a supported registration, defaults to the entity's incorporation country. |
+| `jurisdiction` | string | No | Jurisdiction of a custom registration, for example `ADM1_US-CA` |
+| `status` | string | Yes | [Registration status](#registration-status) |
+| `effectiveStartDate` | string | Yes | ISO 8601 date the registration took effect |
+| `effectiveEndDate` | string | No | ISO 8601 date the registration ended. Must be after `effectiveStartDate`. |
+| `governmentIdentifiers` | object[] | No | Identifiers the registration produced: a `value`, the `identifierTypeId` it is for, and optional `supportingDocuments` as in the [Government Identifiers API](/engine/commendaos/government-identifiers#supporting-documents). `identifierTypeId` may be left out where the registration produces one identifier, and is left out for a custom registration, whose number is held under an id Commenda gives it. |
+
+A supported registration can be recorded once per entity; creating it again returns `409 Conflict`.
+
 **Response**
+
+Returns `201 Created`.
 
 ```json
 {
   "registration": {
-    "id": "reg_abc123"
+    "id": "cm3h4d5e60003l508p2q4r6st"
   }
 }
 ```
@@ -140,7 +193,7 @@ POST /business-entity/:businessEntityId/registrations
 Update an existing registration.
 
 ```http
-POST /business-entity/:businessEntityId/registrations/:registrationId
+PATCH /business-entities/:businessEntityId/registrations/:registrationId
 ```
 
 **Path parameters**
@@ -155,21 +208,29 @@ POST /business-entity/:businessEntityId/registrations/:registrationId
 ```json
 {
   "status": "INACTIVE",
-  "expiryDate": "2025-12-31",
-  "registrationDate": "2020-01-15"
+  "effectiveStartDate": "2020-01-15",
+  "effectiveEndDate": "2025-12-31"
 }
 ```
 
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `effectiveStartDate` | string | Yes | ISO 8601 date the registration took effect |
+| `effectiveEndDate` | string | No | ISO 8601 date the registration ended. Must be after `effectiveStartDate`. |
+| `status` | string | No | [Registration status](#registration-status) |
+| `registeredBy` | string | No | `COMMENDA` or `USER` |
+| `governmentIdentifiers` | object[] | No | Updates to the registration's identifiers: each takes the identifier's `id`, and a new `value` and/or `supportingDocuments` (the identifier's whole evidence; an empty list removes it) |
+
 **Response**
 
-Returns `200 OK` on success.
+Returns `200 OK` with no body.
 
 ### Delete registration
 
 Remove a registration from a business entity.
 
 ```http
-DELETE /business-entity/:businessEntityId/registrations/:registrationId
+DELETE /business-entities/:businessEntityId/registrations/:registrationId
 ```
 
 **Path parameters**
@@ -187,18 +248,18 @@ Returns `204 No Content` on success.
 
 ### Get supported registrations
 
-Get all registration types available for a business entity or country.
+Get the registrations a business entity can record, in its incorporation country or in another country.
 
 ```http
-GET /business-entity/registrations/supportedRegistrations
+GET /business-entities/registrations/supportedRegistrations
 ```
 
 **Query parameters**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `businessEntityId` | integer | Filter by business entity (optional) |
-| `country` | string | Filter by country code (optional) |
+| `businessEntityId` | integer | Business entity ID (required) |
+| `country` | string | Country to register in (ISO 3166-1 alpha-2). Defaults to the entity's incorporation country. |
 
 **Response**
 
@@ -206,14 +267,18 @@ GET /business-entity/registrations/supportedRegistrations
 {
   "supportedRegistrations": [
     {
-      "type": "INCOME_TAX",
-      "displayName": "Federal Income Tax",
-      "description": "IRS federal income tax registration",
+      "registrationIdentifier": "REG:US:EIN_APPLICATION",
+      "displayName": "Employer Identification Number Application",
+      "description": "IRS process for obtaining a federal EIN through the online tool or by phone, fax, or mail.",
+      "purpose": "INCOME_TAX",
       "country": "US",
-      "jurisdiction": "FEDERAL",
-      "requiredIdentifiers": ["EIN"],
-      "isExpirable": false,
-      "purpose": "TAXATION"
+      "jurisdictionId": "ADM0_US",
+      "legacyJurisdiction": null,
+      "corporationType": "CCorp",
+      "applicability": "BOTH",
+      "producedGovernmentIdentifiers": [
+        { "identifierTypeId": "GID:US:EIN", "displayName": "Employer Identification Number", "example": "12-3456789", "regex": null }
+      ]
     }
   ],
   "count": 1
@@ -225,7 +290,7 @@ GET /business-entity/registrations/supportedRegistrations
 Get registration types available for a specific business entity.
 
 ```http
-GET /business-entity/:businessEntityId/registrations/supportedRegistrations
+GET /business-entities/:businessEntityId/registrations/supportedRegistrations
 ```
 
 **Path parameters**
@@ -236,7 +301,7 @@ GET /business-entity/:businessEntityId/registrations/supportedRegistrations
 
 **Response**
 
-Same format as above, filtered by the entity's incorporation country and jurisdiction.
+Same format as above, for the entity's incorporation country.
 
 ## Registration types
 
@@ -297,28 +362,39 @@ Access credentials for filing systems:
 
 ## Registration status
 
+The `status` field takes one of:
+
 | Status | Description |
 |--------|-------------|
 | `ACTIVE` | Registration is current and valid |
 | `INACTIVE` | Registration has been deactivated |
 | `PENDING` | Registration application in progress |
-| `EXPIRED` | Registration has expired (for expirable types) |
-| `SUSPENDED` | Registration temporarily suspended by authority |
+| `INVALID` | Registration has been marked invalid |
 
 ## Domestic vs foreign registrations
 
 - **Domestic**: For entities formed in the jurisdiction (e.g., Delaware corporation registering in Delaware)
 - **Foreign**: For entities qualified to do business from another jurisdiction (e.g., Delaware corporation registering in California)
 
+A registration's `applicability` says which it is for: `DOMESTIC`, `FOREIGN` or `BOTH`. It is `null` for a custom registration.
+
 ## Linking credentials
 
 Associate portal access credentials with registrations:
 
 ```http
-POST /business-entity/:businessEntityId/registrations/:registrationId/credential/:credentialId
+POST /business-entities/:businessEntityId/registrations/:registrationId/credential/:credentialId
 ```
 
-This links a credential to a specific registration, enabling automated filing and compliance workflows.
+This links a credential to a specific registration, enabling automated filing and compliance workflows. Returns `200 OK`:
+
+```json
+{
+  "credential": {
+    "id": "0b6f3f4e-6a7d-4c1e-9d0a-2f5b8c9e1a23"
+  }
+}
+```
 
 ## Related resources
 

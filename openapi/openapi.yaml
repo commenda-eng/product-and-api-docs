@@ -3,15 +3,15 @@ openapi: 3.0.1
 info:
   title: Commenda Public APIs
   description:
-    APIs for Commenda entity management, partner incorporation, indirect tax,
-    compliance, and corporate operations.
+    APIs for Commenda entity management, indirect tax, compliance, and
+    corporate operations.
   license:
     name: NONE
     url: NONE
   version: 1.0.0
 servers:
   - url: https://api.prod.commenda.io/api/v1
-    description: Commenda platform APIs, including Partner Incorporation and Commenda OS.
+    description: Commenda platform APIs.
   - url: https://transaction-tax.api.in.commenda.io/api/v1
     description: Global Indirect Tax API.
 security:

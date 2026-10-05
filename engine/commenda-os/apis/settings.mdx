@@ -183,6 +183,19 @@ POST /settings/query
 | `STRIPE_INTEGRATION_SETTINGS`                | `object`         | Non-null JSON object       |
 | `GLOBAL_INDIRECT_TAX_SYNC_SETTINGS`          | `string[]`       | ISO 3166 2-alpha codes     |
 | `TEST_ACCOUNT`                               | `boolean`        | Boolean                    |
+| `INDIRECT_TAX_TRANSACTIONS_UPLOAD_METHOD`    | `string`         | `TransactionDataUploadMethod` enum |
+
+### `INDIRECT_TAX_TRANSACTIONS_UPLOAD_METHOD` values
+
+Controls how a corporation provides indirect tax transaction data. Accepted values:
+
+| Value                     | Description                                                       |
+| ------------------------- | ----------------------------------------------------------------- |
+| `MANUAL_UPLOAD`           | Transactions are uploaded manually (for example, via CSV).        |
+| `MANUAL_AND_INTEGRATION`  | Transactions come from both manual uploads and connected integrations. |
+| `INTEGRATION_ONLY`        | Transactions are sourced exclusively from connected integrations. |
+
+When this setting is scoped to a `CORPORATION` and set to `MANUAL_UPLOAD` or `MANUAL_AND_INTEGRATION`, Commenda automatically creates a monthly indirect tax upload service request on the 1st of each month and emails company admins to upload transactions for filings due that month.
 
 ---
 

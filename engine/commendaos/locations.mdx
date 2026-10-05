@@ -37,7 +37,7 @@ GET /business-entity/:businessEntityId/locations
       "state": "CA",
       "postalCode": "94105",
       "country": "US",
-      "locationType": ["REGISTERED_OFFICE", "OPERATING"],
+      "locationType": ["REGISTERED_OFFICE", "PRINCIPAL_PLACE_OF_BUSINESS"],
       "startDate": "2020-01-15",
       "endDate": null,
       "employeeCount": 25,
@@ -75,7 +75,7 @@ GET /business-entity/:businessEntityId/locations/:locationId
   "state": "CA",
   "postalCode": "94105",
   "country": "US",
-  "locationType": ["REGISTERED_OFFICE", "OPERATING"],
+  "locationType": ["REGISTERED_OFFICE", "PRINCIPAL_PLACE_OF_BUSINESS"],
   "startDate": "2020-01-15",
   "endDate": null,
   "employeeCount": 25,
@@ -108,7 +108,7 @@ POST /business-entity/:businessEntityId/locations
   "state": "CA",
   "postalCode": "94105",
   "country": "US",
-  "locationType": ["OPERATING"],
+  "locationType": ["PRINCIPAL_PLACE_OF_BUSINESS"],
   "startDate": "2020-01-15",
   "employeeCount": 25
 }
@@ -178,18 +178,43 @@ Returns `204 No Content` on success.
 
 ## Location types
 
-A single location can have multiple types:
+A single location can have multiple types. The vocabulary below is unified with the indirect-tax service so the same value works across products.
 
 | Type | Description | Use case |
 |------|-------------|----------|
-| `REGISTERED_OFFICE` | Official legal address on file with authorities | Required for corporate filings |
-| `OPERATING` | Primary business operations location | Main office or headquarters |
-| `MAILING` | Correspondence address | Where mail is received |
+| `PRINCIPAL_PLACE_OF_BUSINESS` | Primary business operations location | Main office where the business is run |
+| `REGISTERED_OFFICE` | Official legal address on file with authorities | Required for corporate filings; `locationName` is required |
+| `MAILING_ADDRESS` | Correspondence address | Where mail is received; `locationName` is required |
 | `HEADQUARTERS` | Main administrative office | Corporate HQ |
-| `POINT_OF_SALE` | Retail or customer-facing location | Stores, showrooms |
+| `BRANCH_OFFICE` | Secondary office location | Regional offices |
+| `FACTORY` | Manufacturing site | Production facilities |
 | `WAREHOUSE` | Inventory storage facility | Distribution centers |
-| `BRANCH` | Secondary office location | Regional offices |
-| `EMPLOYEE_WORK_LOCATION` | Where staff are based | Remote offices, coworking spaces |
+| `RETAIL_LOCATION` | Customer-facing retail site | Stores, showrooms |
+| `POINT_OF_SALE` | Point-of-sale location | Checkout terminals, kiosks |
+| `NATURAL_RESOURCE_SITE` | Resource extraction site | Mines, wells, quarries |
+| `REPRESENTATIVE_OFFICE` | Non-trading representative office | Liaison offices |
+| `CONSTRUCTION_SITE` | Active construction site | Project sites that may trigger nexus |
+| `THIRD_PARTY_FULFILLMENT` | Third-party warehouse or 3PL | Marketplace or contract fulfillment |
+| `REMOTE_EMPLOYEE` | Remote employee work location | `employeeCount` is required |
+| `DEPENDENT_AGENT` | Dependent agent location | Agents acting on the company's behalf |
+| `INDEPENDENT_AGENT` | Independent agent location | Independent intermediaries |
+| `REGISTRATION` | Address used solely for a registration | Tax or regulatory registration address |
+| `CONTACT_ADDRESS` | Contact address for a person or party | Customer or contact records (not synced to indirect-tax) |
+| `OTHER` | Any other location type | Fallback when no specific type fits |
+
+### Deprecated values
+
+The following legacy values are deprecated. They are retained on read responses for historical records that have not yet been migrated, but new requests should use the unified vocabulary above.
+
+| Deprecated value | Replacement |
+|------------------|-------------|
+| `REGISTERED_OFFICE_ADDRESS` | `REGISTERED_OFFICE` |
+| `OPERATING_ADDRESS` | `PRINCIPAL_PLACE_OF_BUSINESS` |
+| `OFFICE` | `BRANCH_OFFICE` or `HEADQUARTERS` |
+| `BRANCH` | `BRANCH_OFFICE` |
+| `WAREHOUSE_OR_INVENTORY` | `WAREHOUSE` |
+| `CONTRACTORS` | `INDEPENDENT_AGENT` |
+| `EMPLOYEES_WORK_LOCATION` | `REMOTE_EMPLOYEE` |
 
 ## Address fields
 
@@ -242,7 +267,14 @@ Track location validity with `startDate` and `endDate`:
 
 This enables historical tracking of where entities operated over time.
 
+## Indirect-tax sync
+
+Once a corporation has sales tax enabled, create, update, and archive operations on Commenda OS locations are automatically mirrored to the indirect-tax service. The sync is best-effort: a failure to mirror a single location does not fail the underlying location request, and the original error reason (for example, an invalid postal code or state code) is captured in observability for follow-up.
+
+`CONTACT_ADDRESS` locations are intentionally excluded from the indirect-tax mirror because they describe people or parties rather than business presence.
+
 ## Related resources
 
 - [Business Entity API](/engine/commendaos/business-entity) - Manage parent business entities
 - [Registrations API](/engine/commendaos/registrations) - Registrations triggered by location-based thresholds
+- [Indirect Tax Locations API](/engine/indirect-tax/locations/locations) - Underlying indirect-tax location resource

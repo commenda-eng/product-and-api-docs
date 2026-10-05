@@ -1,0 +1,139 @@
+---
+title: "List locations"
+api: "POST https://transaction-tax.api.in.commenda.io/api/v1/locations/list"
+description: "List locations with filters supplied in the request body"
+---
+
+List locations with optional filters. Supports cursor-based pagination and filtering by corporation, jurisdiction, or by an originating platform's identifiers.
+
+<Note>
+  This endpoint replaces the previous `GET /api/v1/locations` and `GET /api/v1/locations/lookup` endpoints. Filters are supplied in the request body so callers can pass arrays without URL-encoding tradeoffs.
+</Note>
+
+## Authorization
+
+The endpoint branches on which filters you supply:
+
+- **Corp-scoped read** — when `corporation_id` is supplied, the caller must have access to the corporation.
+- **Admin-scoped read** — when only `source_platform` (and optionally `source_platform_ids`) is supplied, admin auth applies. This is the path used by trusted services that mirror locations from another platform and need to resolve origin-platform IDs back to sales-tax IDs.
+
+At least one of `corporation_id` or `source_platform` must be provided.
+
+## Request body
+
+<ParamField body="corporation_id" type="string">
+  The unique identifier (UUID) for the corporation. Required for corp-scoped reads.
+</ParamField>
+
+<ParamField body="jurisdiction_ids" type="array">
+  Filter by jurisdiction IDs. An empty array is treated as "no filter".
+
+  Example: `["JUR_US_STATE_CA", "JUR_US_STATE_TX"]`
+</ParamField>
+
+<ParamField body="source_platform" type="string">
+  Filter to locations mirrored from the given originating platform. Allowed values: `COMMENDA`.
+</ParamField>
+
+<ParamField body="source_platform_ids" type="array">
+  Filter to locations whose `source_platform_id` is in this list. Use together with `source_platform` to resolve origin-platform IDs back to sales-tax location IDs. An empty array is treated as "no filter".
+</ParamField>
+
+<ParamField body="limit" type="integer">
+  Number of results per page. Default: `10`, maximum: `100`.
+</ParamField>
+
+<ParamField body="cursor" type="string">
+  Pagination cursor from a previous response.
+</ParamField>
+
+<RequestExample>
+```bash cURL
+curl --request POST \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/locations/list' \
+  --header 'Authorization: Bearer <your_token>' \
+  --header 'Content-Type: application/json' \
+  --data '{
+    "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+    "limit": 20
+  }'
+```
+
+```json By corporation
+{
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "limit": 20
+}
+```
+
+```json By corporation + jurisdiction
+{
+  "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+  "jurisdiction_ids": ["JUR_US_STATE_CA", "JUR_US_STATE_TX"]
+}
+```
+
+```json By back-reference (admin)
+{
+  "source_platform": "COMMENDA",
+  "source_platform_ids": ["loc_abc123", "loc_def456"]
+}
+```
+</RequestExample>
+
+<ResponseExample>
+```json 200
+{
+  "message": "Successfully fetched locations.",
+  "data": {
+    "locations": [
+      {
+        "id": "b2c3d4e5-f6a7-8901-bcde-f12345678901",
+        "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
+        "address": {
+          "address_line_1": "123 Main Street",
+          "city": "San Francisco",
+          "state": "CA",
+          "postal_code": "94105",
+          "country": "US"
+        },
+        "location_types": ["PRINCIPAL_PLACE_OF_BUSINESS", "REGISTERED_OFFICE"],
+        "is_primary": true,
+        "is_active": true,
+        "start_date": "2024-01-01",
+        "metadata": { "name": "SF HQ" },
+        "source_platform": "COMMENDA",
+        "source_platform_id": "loc_abc123",
+        "created_at": "2024-01-15T10:30:00Z",
+        "updated_at": "2024-01-15T10:30:00Z"
+      }
+    ],
+    "cursor": "eyJpZCI6ImIyYzNkNGU1..."
+  }
+}
+```
+
+```json 200 - Empty
+{
+  "message": "Successfully fetched locations.",
+  "data": {
+    "locations": [],
+    "cursor": null
+  }
+}
+```
+
+```json 400 - No filter supplied
+{
+  "error": {
+    "type": "CLIENT_INVALID_REQUEST_BODY",
+    "title": "Failed to validate the request body",
+    "detail": {
+      "description": "At least one of corporation_id or source_platform must be provided."
+    },
+    "status": 400,
+    "instance": "/api/v1/locations/list"
+  }
+}
+```
+</ResponseExample>

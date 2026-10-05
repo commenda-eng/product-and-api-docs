@@ -44,6 +44,8 @@ Update a location's address, types, active status, or date range.
 
 <ParamField body="location_types" type="array">
   Updated array of location types. Minimum 1 type if provided.
+
+  Values: `PRINCIPAL_PLACE_OF_BUSINESS`, `BRANCH_OFFICE`, `RETAIL_LOCATION`, `FACTORY`, `WAREHOUSE`, `NATURAL_RESOURCE_SITE`, `REGISTERED_OFFICE`, `REPRESENTATIVE_OFFICE`, `CONSTRUCTION_SITE`, `THIRD_PARTY_FULFILLMENT`, `REMOTE_EMPLOYEE`, `DEPENDENT_AGENT`, `INDEPENDENT_AGENT`, `REGISTRATION`, `MAILING_ADDRESS`, `OTHER`
 </ParamField>
 
 <ParamField body="is_primary" type="boolean">
@@ -66,6 +68,10 @@ Update a location's address, types, active status, or date range.
   Updated notes.
 </ParamField>
 
+<ParamField body="metadata" type="object">
+  Caller-supplied JSON object stored verbatim alongside the location. Pass the full object to update — values are not deep-merged.
+</ParamField>
+
 <RequestExample>
 ```bash cURL
 curl --request POST \
@@ -73,14 +79,14 @@ curl --request POST \
   --header 'Authorization: Bearer <your_token>' \
   --header 'Content-Type: application/json' \
   --data '{
-    "location_types": ["HEADQUARTERS", "REGISTERED_OFFICE", "WAREHOUSE"],
+    "location_types": ["PRINCIPAL_PLACE_OF_BUSINESS", "REGISTERED_OFFICE", "WAREHOUSE"],
     "notes": "Added warehouse function"
   }'
 ```
 
 ```json Update types
 {
-  "location_types": ["HEADQUARTERS", "REGISTERED_OFFICE", "WAREHOUSE"],
+  "location_types": ["PRINCIPAL_PLACE_OF_BUSINESS", "REGISTERED_OFFICE", "WAREHOUSE"],
   "notes": "Added warehouse function"
 }
 ```
@@ -107,7 +113,7 @@ curl --request POST \
       "postal_code": "94105",
       "country": "US"
     },
-    "location_types": ["HEADQUARTERS", "REGISTERED_OFFICE", "WAREHOUSE"],
+    "location_types": ["PRINCIPAL_PLACE_OF_BUSINESS", "REGISTERED_OFFICE", "WAREHOUSE"],
     "is_primary": true,
     "is_active": true,
     "start_date": "2024-01-01",

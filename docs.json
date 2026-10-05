@@ -9,6 +9,12 @@
   },
   "favicon": "/favicon-32x32.png",
   "openapi": ["openapi.yaml"],
+  "redirects": [
+    { "source": "/engine/partner-api/:slug*", "destination": "/engine/api-introduction" },
+    { "source": "/engine/incorporation/:slug*", "destination": "/engine/api-introduction" },
+    { "source": "/engine/commendaos/partner-api/:slug*", "destination": "/engine/commendaos/overview" },
+    { "source": "/engine/partner-webhooks/:slug*", "destination": "/engine/api-introduction" }
+  ],
   "navigation": {
     "tabs": [
       {

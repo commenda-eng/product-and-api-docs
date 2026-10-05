@@ -15,7 +15,7 @@ The Locations API manages physical addresses where business entities operate, in
 Get all locations for a business entity.
 
 ```http
-GET /business-entity/:businessEntityId/locations
+GET /business-entities/:businessEntityId/locations
 ```
 
 **Path parameters**
@@ -30,31 +30,40 @@ GET /business-entity/:businessEntityId/locations
 {
   "locations": [
     {
-      "id": "loc_abc123",
-      "addressLine1": "123 Main Street",
-      "addressLine2": "Suite 100",
-      "city": "San Francisco",
-      "state": "CA",
-      "postalCode": "94105",
-      "country": "US",
-      "locationType": ["REGISTERED_OFFICE", "OPERATING"],
-      "startDate": "2020-01-15",
-      "endDate": null,
+      "id": "cm3f7a9k20001l508x2d4q6ve",
+      "name": "San Francisco office",
+      "locationTypes": ["PRINCIPAL_PLACE_OF_BUSINESS"],
+      "address": {
+        "id": 88,
+        "addressLine1": "123 Main Street",
+        "addressLine2": "Suite 100",
+        "addressLine3": null,
+        "city": "San Francisco",
+        "state": "CA",
+        "postalCode": "94105",
+        "country": "US"
+      },
+      "startDate": "2020-01-15T00:00:00.000Z",
       "employeeCount": 25,
-      "source": "COMMENDA",
-      "sourceId": null
+      "isVirtualAddress": false,
+      "corporationId": 123,
+      "createdAt": 1579082400000,
+      "updatedAt": 1710948600000,
+      "archivedAt": null
     }
   ],
   "count": 1
 }
 ```
 
+`createdAt`, `updatedAt` and `archivedAt` are Unix timestamps in milliseconds. `endDate` is included once the location has one.
+
 ### Get location
 
 Retrieve a single location by ID.
 
 ```http
-GET /business-entity/:businessEntityId/locations/:locationId
+GET /business-entities/:businessEntityId/locations/:locationId
 ```
 
 **Path parameters**
@@ -68,19 +77,26 @@ GET /business-entity/:businessEntityId/locations/:locationId
 
 ```json
 {
-  "id": "loc_abc123",
-  "addressLine1": "123 Main Street",
-  "addressLine2": "Suite 100",
-  "city": "San Francisco",
-  "state": "CA",
-  "postalCode": "94105",
-  "country": "US",
-  "locationType": ["REGISTERED_OFFICE", "OPERATING"],
-  "startDate": "2020-01-15",
-  "endDate": null,
+  "id": "cm3f7a9k20001l508x2d4q6ve",
+  "name": "San Francisco office",
+  "locationTypes": ["PRINCIPAL_PLACE_OF_BUSINESS"],
+  "address": {
+    "id": 88,
+    "addressLine1": "123 Main Street",
+    "addressLine2": "Suite 100",
+    "addressLine3": null,
+    "city": "San Francisco",
+    "state": "CA",
+    "postalCode": "94105",
+    "country": "US"
+  },
+  "startDate": "2020-01-15T00:00:00.000Z",
   "employeeCount": 25,
-  "source": "COMMENDA",
-  "sourceId": null
+  "isVirtualAddress": false,
+  "corporationId": 123,
+  "createdAt": 1579082400000,
+  "updatedAt": 1710948600000,
+  "archivedAt": null
 }
 ```
 
@@ -89,7 +105,7 @@ GET /business-entity/:businessEntityId/locations/:locationId
 Add a new location to a business entity.
 
 ```http
-POST /business-entity/:businessEntityId/locations
+POST /business-entities/:businessEntityId/locations
 ```
 
 **Path parameters**
@@ -102,24 +118,41 @@ POST /business-entity/:businessEntityId/locations
 
 ```json
 {
-  "addressLine1": "123 Main Street",
-  "addressLine2": "Suite 100",
-  "city": "San Francisco",
-  "state": "CA",
-  "postalCode": "94105",
-  "country": "US",
-  "locationType": ["OPERATING"],
+  "locationName": "San Francisco office",
+  "locationTypes": ["PRINCIPAL_PLACE_OF_BUSINESS"],
+  "address": {
+    "addressLine1": "123 Main Street",
+    "addressLine2": "Suite 100",
+    "city": "San Francisco",
+    "state": "CA",
+    "postalCode": "94105",
+    "country": "US"
+  },
   "startDate": "2020-01-15",
   "employeeCount": 25
 }
 ```
 
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `locationTypes` | string[] | Yes | One or more [location types](#location-types) |
+| `address` | object | Yes | The address, see [Address fields](#address-fields) |
+| `locationName` | string | No | Display name for the location |
+| `startDate` | string | No | ISO 8601 date the location became active |
+| `endDate` | string | No | ISO 8601 date the location closed |
+| `employeeCount` | number | No | Number of employees based at the location |
+| `isVirtualAddress` | boolean | No | Whether the address is a virtual address |
+
+An entity can have only one `REGISTERED_OFFICE` location and one `MAILING_ADDRESS` location. Creating a second one returns `400 Bad Request`.
+
 **Response**
+
+Returns `201 Created`.
 
 ```json
 {
   "location": {
-    "id": "loc_abc123"
+    "id": "cm3f7a9k20001l508x2d4q6ve"
   }
 }
 ```
@@ -129,7 +162,7 @@ POST /business-entity/:businessEntityId/locations
 Update an existing location.
 
 ```http
-POST /business-entity/:businessEntityId/locations/:locationId
+PATCH /business-entities/:businessEntityId/locations/:locationId
 ```
 
 **Path parameters**
@@ -141,28 +174,35 @@ POST /business-entity/:businessEntityId/locations/:locationId
 
 **Request body**
 
+Takes the same fields as [Create location](#create-location), all optional. When you send `address`, include its required fields.
+
 ```json
 {
-  "addressLine1": "456 Market Street",
-  "addressLine2": "Floor 5",
-  "city": "San Francisco",
-  "state": "CA",
-  "postalCode": "94103",
+  "address": {
+    "addressLine1": "456 Market Street",
+    "addressLine2": "Floor 5",
+    "city": "San Francisco",
+    "state": "CA",
+    "postalCode": "94103",
+    "country": "US"
+  },
   "employeeCount": 30,
   "endDate": "2025-12-31"
 }
 ```
 
+An `endDate` before the location's start date is rejected with `400 Bad Request`.
+
 **Response**
 
-Returns `200 OK` on success.
+Returns `200 OK` with no body.
 
 ### Delete location
 
 Remove a location from a business entity.
 
 ```http
-DELETE /business-entity/:businessEntityId/locations/:locationId
+DELETE /business-entities/:businessEntityId/locations/:locationId
 ```
 
 **Path parameters**
@@ -178,27 +218,38 @@ Returns `204 No Content` on success.
 
 ## Location types
 
-A single location can have multiple types:
+A single location can have multiple types (e.g., `["PRINCIPAL_PLACE_OF_BUSINESS", "REGISTERED_OFFICE"]`):
 
-| Type | Description | Use case |
-|------|-------------|----------|
-| `REGISTERED_OFFICE` | Official legal address on file with authorities | Required for corporate filings |
-| `OPERATING` | Primary business operations location | Main office or headquarters |
-| `MAILING` | Correspondence address | Where mail is received |
-| `HEADQUARTERS` | Main administrative office | Corporate HQ |
-| `POINT_OF_SALE` | Retail or customer-facing location | Stores, showrooms |
-| `WAREHOUSE` | Inventory storage facility | Distribution centers |
-| `BRANCH` | Secondary office location | Regional offices |
-| `EMPLOYEE_WORK_LOCATION` | Where staff are based | Remote offices, coworking spaces |
+| Type | Description |
+|------|-------------|
+| `REGISTERED_OFFICE` | Official legal address on file with authorities. One per entity. |
+| `MAILING_ADDRESS` | Correspondence address. One per entity. |
+| `PRINCIPAL_PLACE_OF_BUSINESS` | Primary business operations location |
+| `BRANCH_OFFICE` | Secondary office location |
+| `RETAIL_LOCATION` | Customer-facing retail store |
+| `FACTORY` | Manufacturing facility |
+| `WAREHOUSE` | Inventory storage or distribution center |
+| `NATURAL_RESOURCE_SITE` | Natural resource extraction site |
+| `REPRESENTATIVE_OFFICE` | Representative office in a foreign jurisdiction |
+| `CONSTRUCTION_SITE` | Active construction project site |
+| `THIRD_PARTY_FULFILLMENT` | Third-party fulfillment center |
+| `REMOTE_EMPLOYEE` | Location where remote employees work |
+| `DEPENDENT_AGENT` | Agent who acts exclusively on behalf of the company |
+| `INDEPENDENT_AGENT` | Agent who acts on behalf of multiple companies |
+| `REGISTRATION` | Location linked to a tax registration |
+| `OTHER` | Other location type |
 
 ## Address fields
+
+The `address` object takes these fields:
 
 | Field | Type | Required | Description |
 |-------|------|----------|-------------|
 | `addressLine1` | string | Yes | Street address |
 | `addressLine2` | string | No | Apartment, suite, unit, building, floor |
-| `city` | string | Yes | City or locality |
-| `state` | string | Conditional | State/province (required for US, Canada, India, Australia) |
+| `addressLine3` | string | No | Additional address line |
+| `city` | string | No | City or locality |
+| `state` | string | No | State or province code. Not every country has one. |
 | `postalCode` | string | Yes | ZIP/postal code |
 | `country` | string | Yes | ISO 3166-1 alpha-2 country code |
 
@@ -222,23 +273,13 @@ Use `startDate` to track when physical presence began in a jurisdiction. This is
 
 ## Location sources
 
-Locations can be created from multiple sources:
-
-| Source | Description |
-|--------|-------------|
-| `COMMENDA` | Manually entered in CommendaOS |
-| `GUSTO` | Synced from Gusto payroll |
-| `RIPPLING` | Synced from Rippling HRIS |
-| `JUSTWORKS` | Synced from Justworks |
-| `DEEL` | Synced from Deel |
-
-External locations include a `sourceId` for reference back to the originating system.
+Locations you create through this API are recorded as entered in CommendaOS. The source of a location is not returned in location responses.
 
 ## Time periods
 
 Track location validity with `startDate` and `endDate`:
-- `startDate`: When the location became active (required)
-- `endDate`: When the location was closed (optional, null for active locations)
+- `startDate`: When the location became active (optional)
+- `endDate`: When the location was closed (optional, absent for active locations)
 
 This enables historical tracking of where entities operated over time.
 

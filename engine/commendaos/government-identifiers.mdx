@@ -15,7 +15,7 @@ The Government Identifiers API manages official identification numbers issued by
 Get all government identifiers for a business entity.
 
 ```http
-GET /business-entity/:businessEntityId/government-identifiers
+GET /business-entities/:businessEntityId/government-identifiers
 ```
 
 **Path parameters**
@@ -28,38 +28,61 @@ GET /business-entity/:businessEntityId/government-identifiers
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `extend` | string[] | Optional fields to include: `supportingDocument` |
+| `extend` | string[] | Optional fields to include: `SUPPORTING_DOCUMENT` fills in the file name and URL of each identifier's uploaded evidence |
 
 **Response**
+
+The list also includes the identifiers the entity is expected to hold but has not recorded yet. Those entries have `id: null` and `value: null`. The example below is trimmed.
 
 ```json
 {
   "governmentIdentifiers": [
     {
-      "id": "gi_abc123",
-      "type": "EIN",
+      "id": "cm3g1b2c30002l508h7j9k1mn",
+      "identifierTypeId": "GID:US:EIN",
+      "displayName": "Employer Identification Number",
+      "shortName": "EIN",
       "value": "12-3456789",
+      "example": "12-3456789",
       "country": "US",
-      "jurisdiction": "FEDERAL",
-      "issuedDate": "2020-01-15",
-      "expiryDate": null,
-      "status": "ACTIVE",
-      "supportingDocument": {
-        "fileId": "file_xyz789",
-        "fileName": "EIN_Letter.pdf"
-      }
+          "jurisdictionId": "ADM0_US",
+      "corporationId": 123,
+      "purposes": ["TAXATION"],
+      "isFunctionCritical": true,
+      "isCustom": false,
+      "regexString": null,
+      "supportingDocuments": [
+        { "id": 456, "fileName": "EIN_Letter.pdf", "fileUrl": "https://files.example.com/ein-letter.pdf" }
+      ],
+      "acceptedDocuments": [
+        { "documentTypeId": "DOC:US:CP575", "displayName": "Employer Identification Number Verification Notice" }
+      ],
+      "linkedRegistrations": [
+        { "registrationIdentifier": "REG:US:EIN_APPLICATION", "displayName": "Employer Identification Number Application", "purpose": "INCOME_TAX" }
+      ],
+      "createdAt": 1579082400000,
+      "lastUpdatedAt": 1579082400000
+    },
+    {
+      "id": null,
+      "identifierTypeId": "GID:US_DE:FILE_NUMBER",
+      "displayName": "Delaware Entity File Number",
+      "value": null,
+      "country": "US"
     }
   ],
-  "count": 1
+  "count": 2
 }
 ```
+
+`createdAt` and `lastUpdatedAt` are Unix timestamps in milliseconds.
 
 ### Get government identifier
 
 Retrieve a single government identifier by ID.
 
 ```http
-GET /business-entity/:businessEntityId/government-identifiers/:governmentIdentifierId
+GET /business-entities/:businessEntityId/government-identifiers/:governmentIdentifierId
 ```
 
 **Path parameters**
@@ -71,21 +94,20 @@ GET /business-entity/:businessEntityId/government-identifiers/:governmentIdentif
 
 **Response**
 
+Returns one identifier, in the same shape as an entry of [List government identifiers](#list-government-identifiers). The example below is trimmed.
+
 ```json
 {
-  "id": "gi_abc123",
-  "type": "EIN",
+  "id": "cm3g1b2c30002l508h7j9k1mn",
+  "identifierTypeId": "GID:US:EIN",
+  "displayName": "Employer Identification Number",
   "value": "12-3456789",
   "country": "US",
-  "jurisdiction": "FEDERAL",
-  "issuedDate": "2020-01-15",
-  "expiryDate": null,
-  "status": "ACTIVE",
-  "purpose": "TAXATION",
-  "supportingDocument": {
-    "fileId": "file_xyz789",
-    "fileName": "EIN_Letter.pdf"
-  }
+  "jurisdictionId": "ADM0_US",
+  "purposes": ["TAXATION"],
+  "supportingDocuments": [
+    { "id": 456, "fileName": "EIN_Letter.pdf", "fileUrl": "https://files.example.com/ein-letter.pdf" }
+  ]
 }
 ```
 
@@ -94,7 +116,7 @@ GET /business-entity/:businessEntityId/government-identifiers/:governmentIdentif
 Add a new government identifier to a business entity.
 
 ```http
-POST /business-entity/:businessEntityId/government-identifiers
+POST /business-entities/:businessEntityId/government-identifiers
 ```
 
 **Path parameters**
@@ -107,25 +129,35 @@ POST /business-entity/:businessEntityId/government-identifiers
 
 ```json
 {
-  "type": "EIN",
+  "identifierTypeId": "GID:US:EIN",
   "value": "12-3456789",
-  "country": "US",
-  "jurisdiction": "FEDERAL",
-  "issuedDate": "2020-01-15",
-  "status": "ACTIVE",
-  "supportingDocument": {
-    "fileId": "file_xyz789",
-    "description": "EIN confirmation letter from IRS"
-  }
+  "supportingDocuments": [
+    {
+      "fileUrl": "https://files.example.com/ein-letter.pdf",
+      "fileName": "EIN_Letter.pdf"
+    }
+  ]
 }
 ```
 
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `identifierTypeId` | string | Yes | The identifier type, as returned in `identifierTypeId` by [List government identifiers](#list-government-identifiers) (for example `GID:US:EIN`) |
+| `value` | string | Yes | The identifier value |
+| `country` | string | No | Issuing country (ISO 3166-1 alpha-2). Defaults to the entity's incorporation country. |
+| `registrationIdentifier` | string | No | The registration the identifier came from (for example `REG:US:EIN_APPLICATION`). Required when more than one of the entity's registrations produces this identifier type. |
+| `supportingDocuments` | object[] | No | Evidence for the identifier. See [Supporting documents](#supporting-documents). |
+
+An entity holds one identifier of each type; creating a second one returns `400 Bad Request`.
+
 **Response**
+
+Returns `201 Created`.
 
 ```json
 {
   "governmentIdentifier": {
-    "id": "gi_abc123"
+    "id": "cm3g1b2c30002l508h7j9k1mn"
   }
 }
 ```
@@ -135,7 +167,7 @@ POST /business-entity/:businessEntityId/government-identifiers
 Update an existing government identifier.
 
 ```http
-POST /business-entity/:businessEntityId/government-identifiers/:governmentIdentifier
+PATCH /business-entities/:businessEntityId/government-identifiers/:governmentIdentifierId
 ```
 
 **Path parameters**
@@ -143,28 +175,34 @@ POST /business-entity/:businessEntityId/government-identifiers/:governmentIdenti
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `businessEntityId` | integer | Business entity ID |
-| `governmentIdentifier` | string | Government identifier ID |
+| `governmentIdentifierId` | string | Government identifier ID |
 
 **Request body**
 
 ```json
 {
   "value": "12-3456789",
-  "issuedDate": "2020-01-15",
-  "expiryDate": "2025-01-15",
-  "status": "ACTIVE",
-  "supportingDocument": {
-    "fileId": "file_xyz789",
-    "description": "Updated EIN letter"
-  }
+  "supportingDocuments": [
+    {
+      "fileUrl": "https://files.example.com/ein-letter-2024.pdf",
+      "fileName": "EIN_Letter_2024.pdf"
+    }
+  ]
 }
 ```
 
+| Field | Type | Description |
+|-------|------|-------------|
+| `value` | string | The new identifier value |
+| `supportingDocuments` | object[] | The identifier's whole evidence: it replaces what the identifier holds. An empty list removes it; leaving the field out changes nothing. |
+
 **Response**
 
-Returns `200 OK` on success.
+Returns `200 OK` with no body.
 
 ## Supported identifier types
+
+The type codes below name each identifier informally. To create one, send its `identifierTypeId` (for example `GID:US:EIN`), as returned by [List government identifiers](#list-government-identifiers).
 
 ### United States
 
@@ -242,11 +280,19 @@ Returns `200 OK` on success.
 
 ## Validation rules
 
-Government identifiers are validated using jurisdiction-specific regex patterns. Invalid formats will return a `400 Bad Request` error.
+Government identifier values are validated against the identifier type's format pattern, where one is defined (returned as `regexString`). Invalid formats will return a `400 Bad Request` error.
 
 ## Supporting documents
 
-Each government identifier can have an associated supporting document (e.g., EIN letter, tax registration certificate). Upload the file first using the Files API, then reference the `fileId` when creating or updating the identifier.
+A government identifier can carry supporting documents (e.g., EIN letter, tax registration certificate). Upload each file first, then list them in `supportingDocuments` when creating or updating the identifier. Each entry takes:
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `fileUrl` | string | Yes | Hosted URL of the file |
+| `fileName` | string | Yes | File name |
+| `fileId` | integer | No | ID of a file already stored in Commenda. That file is used, updated with `fileUrl` and `fileName`, instead of a new file being created. |
+
+The accepted document types for an identifier are listed in its `acceptedDocuments`.
 
 ## Related resources
 

@@ -15,7 +15,7 @@ The Business Entity API provides endpoints for managing legal business entities 
 Retrieve a single business entity by ID.
 
 ```http
-GET /business-entity/:businessEntityId
+GET /business-entities/:businessEntityId
 ```
 
 **Path parameters**
@@ -28,24 +28,53 @@ GET /business-entity/:businessEntityId
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `extends` | string[] | Optional fields to include: `governmentIdentifiers`, `locations` |
+| `extends` | string[] | Optional collections to include: `GOVERNMENT_IDENTIFIERS`, `LOCATIONS`. Repeat the parameter or separate values with commas. |
 
 **Response**
+
+The entity is returned as nested groups. The example below is trimmed; `governmentIdentifiers` and `locations` are only present when requested through `extends`.
 
 ```json
 {
   "id": 123,
-  "legalName": "Acme Corporation",
-  "dbaName": "Acme",
-  "incorporationCountry": "US",
-  "incorporationJurisdiction": "DE",
-  "entityType": "C_CORP",
-  "formationDate": "2020-01-15",
-  "businessDescription": "Software development",
-  "fiscalYearEnd": "12-31",
-  "accountingBasis": "ACCRUAL",
-  "governmentIdentifiers": [...],
-  "locations": [...]
+  "generalCorporationInfo": {
+    "legalName": "Acme Corporation",
+    "dbaName": "Acme",
+    "companyId": 45,
+    "incorporationCountry": "US",
+    "jurisdiction": "ADM1_US-DE",
+    "businessEntityType": "CCorp",
+    "entityLegalFormId": "GLEIF:XTIQ",
+    "formationDate": "2020-01-15",
+    "businessDescription": "Software development",
+    "entityEmail": "legal@acme.com",
+    "primaryTaxIdType": "US_EIN",
+    "taxIds": [{ "type": "US_EIN", "name": "Employer Identification Number", "value": "12-3456789" }],
+    "uniqueIdentifierFromJurisdiction": { "name": "Delaware Entity File Number", "value": "1234567" },
+    "registeredAddress": {
+      "id": 88,
+      "addressLine1": "251 Little Falls Drive",
+      "city": "Wilmington",
+      "state": "DE",
+      "postalCode": "19808",
+      "country": "US",
+      "type": "OperatingAddress"
+    }
+  },
+  "locationsInfo": {
+    "primaryMailingAddress": null
+  },
+  "accountingInfo": {
+    "fiscalYearStart": { "day": 1, "month": 1 },
+    "fiscalYear": { "type": "FIXED_DATE", "data": { "FIXED_DATE": { "month": "DEC", "day": 31 } } },
+    "accountingBasis": "ACCRUAL",
+    "countrySpecificFields": {}
+  },
+  "featureSpecificInfo": {
+    "salesTax": { "isEnabled": true },
+    "incorporation": { "isIncorporationInProgress": false }
+  },
+  "lastUpdateTime": "2025-03-20T15:30:00.000Z"
 }
 ```
 
@@ -54,7 +83,7 @@ GET /business-entity/:businessEntityId
 Update core business entity information.
 
 ```http
-POST /business-entity/:businessEntityId
+PATCH /business-entities/:businessEntityId
 ```
 
 **Path parameters**
@@ -65,52 +94,82 @@ POST /business-entity/:businessEntityId
 
 **Request body**
 
+Send only the fields you want to change. Fields the API does not recognize are rejected with `400 Bad Request`.
+
 ```json
 {
   "legalName": "Acme Corporation Inc.",
   "dbaName": "Acme",
   "businessDescription": "Enterprise software development",
-  "fiscalYearEnd": "12-31",
+  "fiscalYearDay": 1,
+  "fiscalYearMonth": 1,
   "accountingBasis": "ACCRUAL",
-  "taxClassification": "C_CORP"
+  "taxedAs": "C_CORPORATION"
 }
 ```
 
+| Field | Type | Description |
+|-------|------|-------------|
+| `legalName` | string | Legal name (1–1024 characters) |
+| `dbaName` | string | Doing-business-as name |
+| `businessDescription` | string | Description of the business (up to 4096 characters) |
+| `formationDate` | string | Formation date (strict ISO 8601) |
+| `jurisdiction` | string \| null | Jurisdiction id, for example `ADM1_US-DE` |
+| `fiscalYearDay` | integer | Day the fiscal year starts (1–31). Must be sent together with `fiscalYearMonth`. |
+| `fiscalYearMonth` | integer | Month the fiscal year starts (1–12). Must be sent together with `fiscalYearDay`. A December 31 year end is `fiscalYearDay: 1`, `fiscalYearMonth: 1`. |
+| `accountingBasis` | string | `CASH` or `ACCRUAL` |
+| `taxedAs` | string | Tax classification, for example `C_CORPORATION`, `S_CORPORATION`, `PARTNERSHIP`, `DISREGARDED_ENTITY` |
+| `entityEmail` | string | Contact email for the entity |
+| `primaryTaxId` | string \| null | The primary tax id, such as a US corporation's EIN. `null` removes it. |
+| `uniqueIdentifierFromJurisdiction` | string \| null | The identifier issued at formation, such as a Delaware file number. `null` removes it. |
+| `operatingAddress` | object | Recorded as the registered office. Takes the same fields as a location's `address`. |
+
+Where the entity's legal form fixes its fiscal year end, a `fiscalYearDay` and `fiscalYearMonth` that work out to a different year end are rejected with `400 Bad Request`.
+
 **Response**
 
-Returns `200 OK` on success.
+Returns `200 OK` with no body.
 
 ### List business entities
 
-Get all business entities for a company.
+Get the business entities for a company, one page at a time.
 
 ```http
-GET /business-entity/list/company/:companyId
+GET /business-entities?companyId=:companyId
 ```
 
-**Path parameters**
+**Query parameters**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `companyId` | integer | Unique identifier for the company |
+| `companyId` | integer | Unique identifier for the company (required) |
+| `includeNonControlled` | boolean | `true` also returns non-controlled entities. Defaults to `false`. |
+| `cursor` | integer | The `nextCursor` from the previous page. Omit it for the first page. |
+| `limit` | integer | Page size, up to `100`. Defaults to `100`. |
 
 **Response**
+
+Each entry in `entities` has the same shape as [Get business entity](#get-business-entity). Entities are ordered by id; `nextCursor` is `null` on the last page.
 
 ```json
 {
   "entities": [
     {
       "id": 123,
-      "legalName": "Acme Corporation",
-      "incorporationCountry": "US",
-      "incorporationJurisdiction": "DE"
+      "generalCorporationInfo": {
+        "legalName": "Acme Corporation",
+        "incorporationCountry": "US",
+        "jurisdiction": "ADM1_US-DE",
+        "businessEntityType": "CCorp"
+      }
     }
-  ]
+  ],
+  "nextCursor": 123
 }
 ```
 
 <Note>
-  Business entities the customer has marked as **non-controlled** (for example, an external parent holding company recorded only to complete the ownership graph) are excluded from this listing. Use [Get business entity](#get-business-entity) by id to read a non-controlled entity directly, or fetch the company's organizational structure to see them in context.
+  Business entities the customer has marked as **non-controlled** (for example, an external parent holding company recorded only to complete the ownership graph) are excluded from this listing unless you pass `includeNonControlled=true`. You can also use [Get business entity](#get-business-entity) by id to read a non-controlled entity directly, or fetch the company's organizational structure to see them in context.
 </Note>
 
 ### Get organizational structure
@@ -118,14 +177,16 @@ GET /business-entity/list/company/:companyId
 Retrieve the full ownership graph for a company, including non-controlled parent entities. The response is the union of every entity the company owns or that owns into the company, plus the ownership edges between them.
 
 ```http
-GET /business-entity/list/company/:companyId/org-structure
+GET /business-entities/org-structure?companyId=:companyId
 ```
 
-**Path parameters**
+**Query parameters**
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `companyId` | integer | Unique identifier for the company |
+| `companyId` | integer | Unique identifier for the company (required) |
+
+Returns `404 Not Found` when the ownership experience is not enabled for the company.
 
 **Response**
 
@@ -136,18 +197,21 @@ GET /business-entity/list/company/:companyId/org-structure
       "id": 123,
       "legalName": "Acme Corporation",
       "incorporationCountry": "US",
-      "businessEntityType": "C_CORP",
+      "businessEntityType": "CCorp",
       "keyPersons": { "data": [{ "directorId": 42, "name": "Jane Founder" }], "count": 1 },
       "bankAccounts": { "data": [], "count": 0 },
-      "taxClassification": "C_CORP"
+      "taxClassification": "C_CORPORATION",
+      "taxChartClass": "CORPORATION",
+      "taxChartClassOverride": null,
+      "isNonControlledEntity": false
     }
   ],
   "edges": [
     {
       "fromCorporationId": 124,
       "toCorporationId": 123,
-      "ownershipPercent": 1000000,
-      "dilutedOwnershipPercent": 500000,
+      "ownershipPercent": 100,
+      "dilutedOwnershipPercent": 50,
       "stockClassId": "stk_class_abc123",
       "hasSignificantControl": true
     }
@@ -157,29 +221,30 @@ GET /business-entity/list/company/:companyId/org-structure
       "id": "stk_class_abc123",
       "corporationId": 123,
       "name": "Class A Common",
-      "initialSharesAuthorized": 1000
+      "authorizedShares": 1000
     }
   ],
-  "percentScale": 1000000
+  "percentScale": 10000
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
 | `entities[]` | array | All entities reachable in the ownership graph, including non-controlled parents. |
+| `entities[].isNonControlledEntity` | boolean | Whether the customer marked the entity as non-controlled. |
 | `edges[]` | array | Directed `from → to` ownership edges. `from` is the shareholder, `to` is the owned entity. |
-| `edges[].ownershipPercent` | integer | Raw ownership percentage within the share class, scaled by `percentScale` (e.g. `1000000` with `percentScale: 1000000` represents 100%). |
-| `edges[].dilutedOwnershipPercent` | integer | Ownership percentage relative to the target corporation's total authorized shares across all classes, scaled by `percentScale`. Falls back to `ownershipPercent` when the corporation's classes have incomplete authorized share data, or when the stakeholding has no associated stock class. Use this value to label org chart edges. |
+| `edges[].ownershipPercent` | number | Ownership percentage within the share class, as a plain percentage (`100` is 100%). `0` when the owned shares or the class's authorized shares are not recorded. |
+| `edges[].dilutedOwnershipPercent` | number | Ownership percentage relative to the target corporation's total authorized shares across all classes, as a plain percentage. Classes without authorized shares are left out of that total. Equals `ownershipPercent` when the stakeholding has no associated stock class, or when none of the corporation's classes record authorized shares. Use this value to label org chart edges. |
 | `edges[].stockClassId` | string \| null | Identifier of the stock class this edge represents. `null` for legacy stakeholdings without an explicit class. Look up class detail in the top-level `stockClasses` array. |
 | `edges[].hasSignificantControl` | boolean | Whether the shareholder has been flagged as exercising significant control. |
 | `stockClasses[]` | array | Flat list of stock classes for every corporation in the graph. Group by `corporationId` to render per-issuer detail. |
 | `stockClasses[].id` | string | Stock class identifier, referenced by `edges[].stockClassId`. |
 | `stockClasses[].corporationId` | integer | Corporation that issued the class. |
 | `stockClasses[].name` | string | Human-readable name of the share class (for example, `Class A Common`). |
-| `stockClasses[].initialSharesAuthorized` | integer \| null | Total shares authorized for the class. `null` when not recorded; if any class on a corporation is missing this value, diluted percentages on that corporation's edges fall back to the raw `ownershipPercent`. |
-| `percentScale` | integer | Divisor applied to every `ownershipPercent` and `dilutedOwnershipPercent` value in the response. |
+| `stockClasses[].authorizedShares` | integer \| null | Total shares authorized for the class. `null` when not recorded. |
+| `percentScale` | integer | Legacy field, always `10000`. The percentages above are already plain percentages; do not divide them by it. |
 
-This is the only listing surface that surfaces non-controlled entities by design — it powers the org chart visualization.
+This listing always includes non-controlled entities by design — it powers the org chart visualization.
 
 ## Key persons
 
@@ -188,7 +253,7 @@ This is the only listing surface that surfaces non-controlled entities by design
 Associate a person with a business entity.
 
 ```http
-POST /business-entity/:businessEntityId/persons/:personId
+POST /business-entities/:businessEntityId/persons/:personId
 ```
 
 **Path parameters**
@@ -200,23 +265,30 @@ POST /business-entity/:businessEntityId/persons/:personId
 
 **Request body**
 
+All fields are optional; only the ones you send are changed. Calling the endpoint again for the same person updates their roles on the entity.
+
 ```json
 {
-  "role": "DIRECTOR",
-  "startDate": "2020-01-15",
-  "endDate": null,
-  "ownershipPercentage": 25.5,
+  "isDirector": true,
+  "roles": ["CEO"],
+  "isAuthorizedSignatory": true,
+  "sharePercentage": 25.5,
   "isResidentDirector": true
 }
 ```
 
 | Field | Type | Description |
 |-------|------|-------------|
-| `role` | string | Governance role (e.g. `DIRECTOR`, `OFFICER`, `SHAREHOLDER`) |
-| `startDate` | string | Date the person assumed the role (ISO 8601) |
-| `endDate` | string \| null | Date the person left the role, if applicable |
-| `ownershipPercentage` | number | Equity ownership percentage |
-| `isResidentDirector` | boolean | Whether the person is a resident director of this entity. Used in jurisdictions that require at least one locally resident director (e.g. India). Optional. |
+| `isDirector` | boolean | Whether the person is a director of this entity |
+| `roles` | string[] | Board positions: `President`, `VicePresident`, `Secretary`, `Treasurer`, `CEO`, `CFO`, `Manager`, `BankSignatory`. A position given here is removed from any other person on the entity who held it. |
+| `jobTitle` | string[] | Job titles held at the entity |
+| `isAuthorizedSignatory` | boolean | Whether the person can sign on behalf of the entity |
+| `isResponsibleParty` | boolean | Whether the person is the entity's responsible party. `true` removes the flag from any other person on the entity. |
+| `sharePercentage` | number | Equity ownership percentage |
+| `hasSignificantControl` | boolean | Whether the person exercises significant control over the entity |
+| `isManager` | boolean | Whether the person is a manager of the entity |
+| `startDateOfEmployment` | string | Date the person started at the entity |
+| `isResidentDirector` | boolean | Whether the person is a resident director of this entity. Used in jurisdictions that require at least one locally resident director (e.g. India). |
 
 <Note>
   When you read a person back through the Commenda OS persons endpoints, the response includes a `governanceRelationships` object keyed by role. The set of keys present is a subset of `DIRECTOR`, `AUTHORIZED_SIGNATORY`, and `BENEFICIAL_OWNER`. The `BENEFICIAL_OWNER` key is set automatically by Commenda's ownership engine when the person is currently recorded as an ultimate beneficial owner (UBO) of the business entity — it is not assigned through this endpoint.
@@ -224,14 +296,14 @@ POST /business-entity/:businessEntityId/persons/:personId
 
 **Response**
 
-Returns `200 OK` on success.
+Returns `200 OK` with no body.
 
 ### Remove key person
 
 Remove a person from a business entity.
 
 ```http
-DELETE /business-entity/:businessEntityId/persons/:personId
+DELETE /business-entities/:businessEntityId/persons/:personId
 ```
 
 **Path parameters**
@@ -249,23 +321,29 @@ Returns `204 No Content` on success.
 
 ### Unassign business entity
 
-Remove a business entity from a company.
+Remove the registered agent assigned to a business entity.
 
 ```http
-POST /business-entity/unassign
+POST /business-entities/unassign
 ```
 
 **Request body**
 
 ```json
 {
-  "businessEntityId": 123
+  "businessEntityId": 123,
+  "registeredAgent": true
 }
 ```
 
+| Field | Type | Description |
+|-------|------|-------------|
+| `businessEntityId` | integer | Business entity ID (required) |
+| `registeredAgent` | boolean | `true` removes the entity's registered agent. Without it, the request changes nothing. |
+
 **Response**
 
-Returns `200 OK` on success.
+Returns `201 Created` with no body.
 
 ## Related resources
 

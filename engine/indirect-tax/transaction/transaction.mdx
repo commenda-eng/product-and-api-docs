@@ -104,6 +104,36 @@ The `tax_remitter_type` field indicates which party is responsible for remitting
 
 When a transaction is marked with `BUYER` as the tax remitter type, it indicates a reverse-charge scenario where the buyer self-assesses and remits the tax. This is common in cross-border B2B transactions within VAT jurisdictions.
 
+### Filing attachments
+
+A single transaction can be attached to multiple filings at the same time. For example, a German B2C sale may contribute to a monthly VAT prepay, the surrounding quarterly VAT return, and an annual reconciliation; an EU cross-border sale may appear on both the destination country's local VAT return and a One-Stop Shop (OSS) return.
+
+The transaction response surfaces this via two fields:
+
+| Field | Description |
+|---|---|
+| `filing_ids` | Array of all filing UUIDs the transaction is currently attached to. Authoritative — read this to know which filings include the transaction. |
+| `filing_id` | **Deprecated.** Legacy single-filing pointer kept only for backward compatibility. Populated for transactions attached before multi-filing support; empty for transactions attached after, even when `filing_ids` is non-empty. Will be removed in a future release. |
+
+```json
+// Example: GET /transactions/{id} response (truncated)
+{
+  "data": {
+    "id": "9753a999-6d64-4a4f-ad9b-345890d32722",
+    "invoice_number": "INV-2026-001",
+    "filing_ids": [
+      "1cb7c7b6-aaaa-4bbb-cccc-111111111111",
+      "8d7865e0-bbbb-4ccc-dddd-222222222222",
+      "d51d1417-cccc-4ddd-eeee-333333333333"
+    ]
+  }
+}
+```
+
+<Note>
+Migrate any code reading `filing_id` to use `filing_ids` instead. If you only need a single filing reference for display, pick the first entry in `filing_ids`; if you need to know every filing a transaction contributes to (for reconciliation, audit, or display), iterate the full array.
+</Note>
+
 ### Bulk transactions
 
 See [Bulk Transactions](/engine/indirect-tax/transaction/bulk-transactions).

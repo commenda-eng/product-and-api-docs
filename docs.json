@@ -132,6 +132,12 @@
                 ]
               }
             ]
+          },
+          {
+            "group": "Integration guides",
+            "pages": [
+              "guides/stripe-incremental-sync"
+            ]
           }
         ]
       },

@@ -5,6 +5,11 @@ schemas:
       id:
         type: string
         description: Unique identifier for the import job
+      entity_id:
+        type: string
+        nullable: true
+        description: |
+          The resource UUID this job acts on. For example, this is the filing UUID for `FILING` and `FILING_CONTRIBUTION` jobs, or the invoice UUID for breakdown jobs. Use it to join job rows back to their parent resources without a second lookup. Omitted from the response when the job is not scoped to a specific entity.
       status:
         type: string
         enum:

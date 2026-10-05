@@ -7,6 +7,8 @@ keywords: ["ownership", "shareholders", "UBO", "beneficial owners", "cap table",
 
 The **Ownership** tab lets you track who owns each entity and who controls it. Commenda records both **shareholders** (individuals or corporate entities holding equity) and **ultimate beneficial owners (UBOs)** — the natural persons who ultimately own or control the entity, as required by KYC and beneficial ownership reporting rules in most jurisdictions.
 
+UBO qualification is gated by **significant control**: a person is recorded as a UBO when they are explicitly marked as having significant control of the entity, either through their own shareholding or through a corporate parent that has been propagated down. Crossing the jurisdiction's UBO threshold by ownership percentage alone does not automatically qualify a person — you (or your team) make the qualification call by toggling significant control.
+
 <Note>
 The redesigned Ownership experience is rolling out progressively. If you do not yet see the features described below, your workspace is still on the legacy cap table view — your account team will let you know when the new experience is enabled.
 </Note>
@@ -37,10 +39,14 @@ For an individual, provide:
 - **Nationality**
 - **Ownership percentage** (0–100)
 - **Relationship type** — Founder, Investor, Employee, Board member, Advisor, or Other
-- **Stock class** (optional) — see [Stock classes](#stock-classes)
-- **Significant control** (optional) — mark the person as having significant control even if they are also a shareholder; you can then pick a [control type](#beneficial-owner-control-types)
+- **Stock class** (optional) — pick an existing class, or stage a new class inline (see [Stock classes](#stock-classes))
+- **Significant control** (optional) — mark the person as having significant control of the entity
 
-If the individual passes the UBO threshold for the entity's incorporation country, they are automatically recorded as a beneficial owner.
+If you toggle **Significant control** on, the individual is recorded as a beneficial owner of the entity at the moment the shareholder is saved.
+
+<Tip>
+If the entity already has shareholders without a stock class, the form offers an **Apply this class to all unassigned shareholders** option. Selecting it reassigns every null-class shareholding on the entity to the picked class in the same write — useful when you are recording an entity's first share class and want to backfill the existing register in one step.
+</Tip>
 
 ### Corporate shareholder
 
@@ -48,29 +54,30 @@ For a corporate shareholder, pick another entity from the same workspace and pro
 
 - **Ownership percentage** (set to **0** to record a control-only relationship — see [Control-only corporate shareholders](#control-only-corporate-shareholders))
 - **Relationship type** — Parent, Investor, or Other
-- **Stock class** (optional)
+- **Stock class** (optional) — pick an existing class, or stage a new class inline
 - **Significant control** (optional) — toggle on if the corporate shareholder exercises significant control over this entity
-- **Inherited UBOs** — pick which of the parent's UBOs should propagate down as indirect UBOs of this entity
 
-#### Selecting inherited UBOs
-
-When a corporate entity becomes a shareholder, you choose explicitly which of its UBOs propagate down as indirect UBOs of the entity below. The picker lists every UBO recorded against the parent entity; tick the ones that should also be UBOs of this entity. Leaving the list empty propagates no UBOs — the corporate shareholder still appears as a shareholder, but none of its UBOs become indirect UBOs of this entity.
-
-For each inherited UBO you can override the [control type](#beneficial-owner-control-types) — for example, to mark a parent's founder as exercising "Other significant control" rather than "Indirect ownership" for this entity.
+After saving the corporate shareholder, use **Inherit beneficial owners from parent** on the Ownership tab to propagate one or more of the parent's UBOs down as indirect UBOs of this entity (see [Inheriting UBOs from a corporate parent](#inheriting-ubos-from-a-corporate-parent)).
 
 <Info>
-Ownership cycles are rejected at write time. You cannot, for example, make Entity A a shareholder of Entity B if Entity B is already a direct or indirect shareholder of Entity A.
+Ownership cycles are rejected at write time. You cannot, for example, make Entity A a shareholder of Entity B if Entity B is already a direct or indirect shareholder of Entity A. Workspaces are also enforced — a corporate shareholder must belong to the same workspace as the entity being edited.
 </Info>
 
-## Control-only UBOs
+## Adding a beneficial owner directly
 
-Some individuals control an entity without holding any equity — for example, a person who can appoint or remove the majority of the board. To record this:
+Some individuals control an entity without holding any equity — for example, a person who can appoint or remove the majority of the board. Use **Add beneficial owner** on the Ownership tab to record them as a UBO without creating a shareholding:
 
-1. Click **Add shareholder** → **Individual**.
-2. Enter their details and set **Ownership percentage** to **0**.
-3. Toggle **Has significant control** on and pick a **Control type**.
+1. Click **Add beneficial owner**.
+2. Pick an existing person from the entity's parent company, or enter their first name, last name, date of birth, and nationality to create a new person record.
+3. Pick a **Direct control type** — Direct ownership, Indirect ownership, or Other significant control.
 
-The person appears in the **Ultimate beneficial owners** section but not in the **Shareholders** list, since they hold no equity.
+The person appears in the **Ultimate beneficial owners** section but not in the **Shareholders** list. The same flow is used to register an existing director as a UBO of an entity they control without holding shares.
+
+### Inheriting UBOs from a corporate parent
+
+When an entity has a corporate shareholder, you can pull one or more of the parent's UBOs down as indirect UBOs of this entity. On the Ownership tab, click **Inherit beneficial owners from parent**, pick the corporate shareholder, then tick which of its UBOs to inherit and pick a [control type](#beneficial-owner-control-types) for each.
+
+Inheritance is an explicit per-write action — selecting nobody is a no-op. Repeating the action later adds more inherited UBOs without disturbing the ones already recorded.
 
 ### Control-only corporate shareholders
 
@@ -78,28 +85,28 @@ A corporate entity can also exercise significant control without holding equity 
 
 ## Beneficial owner control types
 
-Each UBO is tagged with the basis on which they qualify. Commenda supports the control types most commonly required by global beneficial ownership registers:
+Each UBO carries a control type per source. Commenda supports the control types most commonly required by global beneficial ownership registers:
 
-- **Direct ownership** — the person directly owns shares above the threshold
+- **Direct ownership** — the person directly owns shares
 - **Indirect ownership** — the person owns the entity through one or more intermediate corporate shareholders
 - **Other significant control** — non-equity control (e.g. board appointment rights, voting trusts)
 
-Click any UBO to open their detail panel, where you can review their address, nationality, date of birth, masked SSN (last four digits only), and the roles they hold across the entity (director, officer, shareholder, UBO, authorized signatory). For inherited UBOs, the panel shows the path of corporate shareholders through which they own the entity.
+A UBO can have a **direct anchor** (their own shareholding or a direct registration via **Add beneficial owner**) and one or more **inherited paths** (each path representing a corporate shareholder through which they qualify). Each path carries its own control type — for example, the same person might appear as Direct ownership through their own shareholding and as Indirect ownership through a holding company.
 
-<Warning>
-You can edit or delete a UBO that came from a direct individual shareholding, but **inherited UBOs** can only be changed by editing the parent corporate shareholder. This keeps the inheritance graph consistent.
-</Warning>
+Click any UBO to open their detail panel, where you can review their address, nationality, date of birth, masked SSN (last four digits only), the roles they hold across the entity (director, officer, shareholder, UBO, authorized signatory), and every path that contributes to their UBO status.
+
+You can edit the direct control type independently of any path control types. Editing a path's control type updates only that path — the other paths and the direct anchor are left alone.
 
 ## UBO thresholds
 
-The UBO threshold is the minimum ownership percentage at which a person is treated as a beneficial owner. Commenda applies the threshold for the entity's **country of incorporation** — for example:
+The UBO threshold is the minimum ownership percentage at which most jurisdictions require a person to be reported as a beneficial owner. Commenda surfaces the threshold for the entity's **country of incorporation** alongside the shareholder register — for example:
 
 - 25% for most EU countries, the United States, the United Kingdom, Canada, and Australia
 - 10% for India, Chile, Argentina, and many Caribbean jurisdictions
 - 5% for Colombia, Ghana, Nigeria, and South Africa
 - Any positive ownership for Ecuador and Guatemala
 
-Thresholds are applied automatically — you do not need to configure them per entity.
+Thresholds are surfaced automatically — you do not need to configure them per entity. UBO qualification itself is gated by the **Significant control** toggle, not by the threshold percent.
 
 ## Stock classes
 
@@ -109,8 +116,13 @@ Each stock class has:
 
 - **Class name** (e.g. "Common", "Preferred Series A")
 - **Type** (Common or Preferred)
+- **Initial shares authorized**
 
-Stock classes are created and listed per entity. Once a class exists on an entity, it appears in the **Stock class** dropdown when adding or editing a shareholder on that entity. Classes that are still attached to a shareholding cannot be deleted — reassign or remove the shareholdings first.
+Stock classes are scoped per entity. The **Stock class** picker on every shareholder form lets you pick an existing class or stage a new one inline; the new class is created in the same write as the shareholder, so abandoning the form leaves no orphan class behind.
+
+When you add the entity's first stock class, you can opt to apply the new class to every existing shareholder that does not yet have one — the reassignment runs in the same write as the new shareholder.
+
+Classes that are still attached to a shareholding cannot be deleted — reassign or remove the shareholdings first.
 
 ## Non-controlled entities and ownership
 
@@ -120,10 +132,9 @@ If a corporate shareholder is a [non-controlled entity](/product/entities/creati
 
 Use the row actions on each shareholder to update or remove them.
 
-- **Editing an individual** to 0% ownership requires **Significant control** to be on; otherwise the person no longer qualifies as a shareholder or a UBO and you should **Remove** them instead.
 - **Editing a corporate shareholder** to 0% is allowed only when **Significant control** is on (a [control-only corporate shareholder](#control-only-corporate-shareholders)). Otherwise, remove the corporate shareholder if it no longer holds equity.
-- **Removing a shareholder** also removes any UBOs that only existed because of that shareholding. Inherited UBOs from other branches are preserved.
-- **Inherited UBOs** cannot be edited or removed directly — change them by editing the parent corporate shareholder's inherited-UBO selection.
+- **Removing a shareholder** also removes any UBO paths that only existed because of that shareholding. Other paths and the person's direct anchor are preserved.
+- **Beneficial owners** are managed independently of shareholdings. Use **Remove beneficial owner** on the UBO row to clear the direct anchor and every inherited path on this entity in one step. To clear a single inherited path while keeping the rest, edit that path's source corporate shareholder.
 
 ## Exporting an ownership summary
 
@@ -131,7 +142,7 @@ Click **Export** on the Ownership tab to download a PDF summary of the entity's 
 
 - A cover page with entity name, incorporation country, and report date
 - The full shareholder register with ownership percentages and stock classes
-- All ultimate beneficial owners with their control type and source
+- All ultimate beneficial owners with their direct control type (where set) and every contributing inherited path
 - Snapshot metadata so the report is suitable for sharing with banks, auditors, and regulators
 
 The PDF contains every shareholder and UBO regardless of pagination on screen.

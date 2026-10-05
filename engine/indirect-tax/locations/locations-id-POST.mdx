@@ -66,6 +66,10 @@ Update a location's address, types, active status, or date range.
   Updated notes.
 </ParamField>
 
+<ParamField body="metadata" type="object">
+  Arbitrary JSON metadata. Replaces the existing metadata blob when provided.
+</ParamField>
+
 <RequestExample>
 ```bash cURL
 curl --request POST \
@@ -73,14 +77,14 @@ curl --request POST \
   --header 'Authorization: Bearer <your_token>' \
   --header 'Content-Type: application/json' \
   --data '{
-    "location_types": ["HEADQUARTERS", "REGISTERED_OFFICE", "WAREHOUSE"],
+    "location_types": ["PRINCIPAL_PLACE_OF_BUSINESS", "REGISTERED_OFFICE", "WAREHOUSE"],
     "notes": "Added warehouse function"
   }'
 ```
 
 ```json Update types
 {
-  "location_types": ["HEADQUARTERS", "REGISTERED_OFFICE", "WAREHOUSE"],
+  "location_types": ["PRINCIPAL_PLACE_OF_BUSINESS", "REGISTERED_OFFICE", "WAREHOUSE"],
   "notes": "Added warehouse function"
 }
 ```
@@ -107,7 +111,7 @@ curl --request POST \
       "postal_code": "94105",
       "country": "US"
     },
-    "location_types": ["HEADQUARTERS", "REGISTERED_OFFICE", "WAREHOUSE"],
+    "location_types": ["PRINCIPAL_PLACE_OF_BUSINESS", "REGISTERED_OFFICE", "WAREHOUSE"],
     "is_primary": true,
     "is_active": true,
     "start_date": "2024-01-01",

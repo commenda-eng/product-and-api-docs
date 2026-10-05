@@ -79,6 +79,10 @@ Commenda exposes several APIs that let you programmatically manage business enti
 
 ## Authentication
 
+Commenda APIs use one of two authentication methods, depending on the API.
+
+### Global Indirect Tax API
+
 The Global Indirect Tax API uses Bearer token authentication. Include your token in the `Authorization` header of every request:
 
 ```bash
@@ -87,11 +91,16 @@ curl --request GET \
   --header 'Authorization: Bearer <your_token>'
 ```
 
+### Company Name Checker and Compliance Calendar Preview
+
+These APIs take an API key in the `x-api-key` header. Contact the Commenda team to get a key. See [Company Name Checker](/engine/company-name-checker/introduction) and [Compliance Calendar Preview](/engine/compliance-calendar/overview) for examples.
+
 ## Base URLs
 
 | API | Base URL |
 |-----|----------|
 | Global Indirect Tax | `https://transaction-tax.api.in.commenda.io/api/v1` |
+| Company Name Checker, Compliance Calendar Preview | `https://api.prod.commenda.io/api/v1` |
 
 All endpoint paths in this documentation are relative to their respective base URL.
 

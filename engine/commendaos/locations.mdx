@@ -6,7 +6,9 @@ icon: 'map-pin'
 
 ## Overview
 
-The Locations API manages physical addresses where business entities operate, including registered offices, operating addresses, warehouses, branches, and points of sale. Locations are used for registration threshold determination, compliance tracking, and employee management.
+The Locations API manages physical addresses where business entities operate — registered offices, principal places of business, warehouses, retail stores, factories, and more. Locations are used for registration threshold determination, compliance tracking, and employee management.
+
+Commenda uses a single unified `locationType` vocabulary across CommendaOS and the Indirect Tax API. The same enum values describe a location whether you read it through the [CommendaOS Partner API](/engine/commendaos/partner-api/commenda-os-business-entities-id-locations-GET) or the [Indirect Tax Locations API](/engine/indirect-tax/locations/locations). When a location is created or updated through CommendaOS, Commenda automatically mirrors the change to the Indirect Tax service so nexus and registration logic stay in sync.
 
 ## Core endpoints
 
@@ -37,7 +39,7 @@ GET /business-entity/:businessEntityId/locations
       "state": "CA",
       "postalCode": "94105",
       "country": "US",
-      "locationType": ["REGISTERED_OFFICE", "OPERATING"],
+      "locationType": ["REGISTERED_OFFICE", "PRINCIPAL_PLACE_OF_BUSINESS"],
       "startDate": "2020-01-15",
       "endDate": null,
       "employeeCount": 25,
@@ -75,7 +77,7 @@ GET /business-entity/:businessEntityId/locations/:locationId
   "state": "CA",
   "postalCode": "94105",
   "country": "US",
-  "locationType": ["REGISTERED_OFFICE", "OPERATING"],
+  "locationType": ["REGISTERED_OFFICE", "PRINCIPAL_PLACE_OF_BUSINESS"],
   "startDate": "2020-01-15",
   "endDate": null,
   "employeeCount": 25,
@@ -108,7 +110,7 @@ POST /business-entity/:businessEntityId/locations
   "state": "CA",
   "postalCode": "94105",
   "country": "US",
-  "locationType": ["OPERATING"],
+  "locationType": ["PRINCIPAL_PLACE_OF_BUSINESS"],
   "startDate": "2020-01-15",
   "employeeCount": 25
 }
@@ -178,18 +180,31 @@ Returns `204 No Content` on success.
 
 ## Location types
 
-A single location can have multiple types:
+A single location can have multiple types — for example, the same address may be both a `REGISTERED_OFFICE` and a `PRINCIPAL_PLACE_OF_BUSINESS`. Commenda uses one unified `LocationType` enum across CommendaOS and the Indirect Tax API, so values mean the same thing in either surface.
 
 | Type | Description | Use case |
 |------|-------------|----------|
-| `REGISTERED_OFFICE` | Official legal address on file with authorities | Required for corporate filings |
-| `OPERATING` | Primary business operations location | Main office or headquarters |
-| `MAILING` | Correspondence address | Where mail is received |
-| `HEADQUARTERS` | Main administrative office | Corporate HQ |
-| `POINT_OF_SALE` | Retail or customer-facing location | Stores, showrooms |
-| `WAREHOUSE` | Inventory storage facility | Distribution centers |
-| `BRANCH` | Secondary office location | Regional offices |
-| `EMPLOYEE_WORK_LOCATION` | Where staff are based | Remote offices, coworking spaces |
+| `PRINCIPAL_PLACE_OF_BUSINESS` | Primary place of business operations | Main office or headquarters where day-to-day business is conducted |
+| `REGISTERED_OFFICE` | Official legal address on file with authorities | Required for corporate filings, statutory mail, and registry records |
+| `MAILING_ADDRESS` | Correspondence address | Where mail and notices are received |
+| `HEADQUARTERS` | Main administrative office | Corporate HQ — distinct from the registered office in some jurisdictions |
+| `BRANCH_OFFICE` | Secondary office location | Regional offices, satellite offices, foreign branches |
+| `FACTORY` | Manufacturing facility | Production sites |
+| `WAREHOUSE` | Inventory storage facility | Distribution centers, fulfillment warehouses operated by the business |
+| `RETAIL_LOCATION` | Customer-facing retail location | Stores, showrooms, points of sale |
+| `NATURAL_RESOURCE_SITE` | Natural resource extraction site | Mines, oil & gas wells, quarries |
+| `REPRESENTATIVE_OFFICE` | Representative office in a foreign jurisdiction | Liaison offices that don't conduct revenue-generating activity |
+| `CONSTRUCTION_SITE` | Active construction project site | Contracted construction work that may create permanent establishment |
+| `THIRD_PARTY_FULFILLMENT` | Third-party fulfillment center | 3PL warehouses, FBA, marketplace fulfillment |
+| `REMOTE_EMPLOYEE` | Location where remote employees work | Use `employeeCount` to record headcount at the location |
+| `DEPENDENT_AGENT` | Agent who acts exclusively on behalf of the company | May trigger permanent establishment in some jurisdictions |
+| `INDEPENDENT_AGENT` | Agent who acts on behalf of multiple companies | Generally does not create permanent establishment |
+| `REGISTRATION` | Address linked to a tax registration | Used when a registration requires its own address record |
+| `OTHER` | Other location type | Use only when no other type fits |
+
+<Note>
+  When `locationTypes` includes `REGISTERED_OFFICE` or `MAILING_ADDRESS`, `locationName` is required. When it includes `REMOTE_EMPLOYEE`, `employeeCount` is required.
+</Note>
 
 ## Address fields
 
@@ -242,7 +257,12 @@ Track location validity with `startDate` and `endDate`:
 
 This enables historical tracking of where entities operated over time.
 
+## Indirect Tax sync
+
+Locations created or updated through the CommendaOS Partner API are automatically mirrored to the Indirect Tax service for any business entity that has indirect tax enabled. Archiving a location in CommendaOS archives the corresponding record on the indirect-tax side. The mirror is best-effort: a sync failure does not block the CommendaOS write, but is logged so it can be re-run from the exposure page if needed.
+
 ## Related resources
 
 - [Business Entity API](/engine/commendaos/business-entity) - Manage parent business entities
 - [Registrations API](/engine/commendaos/registrations) - Registrations triggered by location-based thresholds
+- [Indirect Tax Locations API](/engine/indirect-tax/locations/locations) - Read the mirrored location records used for nexus and registration logic

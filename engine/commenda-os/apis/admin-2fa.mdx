@@ -1,0 +1,213 @@
+---
+title: "Admin 2FA API"
+description: "Enroll, verify, and reset TOTP-based two-factor authentication for the admin console"
+icon: "shield-check"
+---
+
+## Overview
+
+The admin console enforces TOTP (RFC 6238) two-factor authentication for all admin users. Admins enroll once with an authenticator app (for example, Google Authenticator, 1Password, Authy), then verify a fresh six-digit code on every login.
+
+A user's 2FA state lives on the `User` row:
+
+- **`twoFactorSecret`** — the shared secret, stored encrypted at rest
+- **`twoFactorVerified`** — whether enrollment has been confirmed with a successful verify
+- **`lastUsedTotpStep`** — the highest TOTP time step accepted, used for replay protection
+- **`sessionVersion`** — bumped on reset to invalidate active sessions
+
+<Note>
+  These endpoints replace the prior SMS OTP flow. The legacy `phoneNumber` body parameter on `POST /setup-2fa` and the `GET /resend-otp` endpoint have been removed.
+</Note>
+
+---
+
+## Authentication & authorization
+
+**Authentication**
+
+- Bearer token (login cookie) required
+
+**Authorized roles**
+
+- `MAIN_APP_ADMIN_WITHOUT_2FA` — for `POST /setup-2fa` and `GET /verify-otp`
+- Super-admin — for `POST /super-admin/user/{id}/reset-2fa`
+
+The `MAIN_APP_ADMIN_WITHOUT_2FA` role admits an authenticated admin who has **not yet** completed 2FA verification on the current session. Once `GET /verify-otp` succeeds, subsequent privileged endpoints require the standard verified-admin role.
+
+---
+
+## Enroll TOTP
+
+Generate a new TOTP secret for the calling admin and return enrollment data the frontend can render as a QR code.
+
+```http
+POST /setup-2fa
+```
+
+The secret is generated server-side using a cryptographically secure RNG and is persisted encrypted-at-rest. No request body is required.
+
+### Request
+
+No body parameters.
+
+### Response
+
+```json
+{
+  "otpauthUrl": "otpauth://totp/Commenda%20Admin:user@example.com?secret=JBSWY3DPEHPK3PXP&issuer=Commenda%20Admin",
+  "qrCodeDataUrl": "data:image/png;base64,iVBORw0KGgoAAA...",
+  "secret": "JBSWY3DPEHPK3PXP"
+}
+```
+
+| Field           | Type     | Description                                                                  |
+| --------------- | -------- | ---------------------------------------------------------------------------- |
+| `otpauthUrl`    | `string` | RFC 6238 `otpauth://` URI to provision the secret in an authenticator app    |
+| `qrCodeDataUrl` | `string` | PNG data URL (`data:image/png;base64,...`) of the QR code for `otpauthUrl`   |
+| `secret`        | `string` | Base32-encoded shared secret, for users who enter it manually                |
+
+### Errors
+
+| Status | Code                  | When                                                                                |
+| ------ | --------------------- | ----------------------------------------------------------------------------------- |
+| `409`  | `ConflictException`   | The user has already verified 2FA. Re-enrollment must go through a super-admin reset. |
+
+<Warning>
+  Calling `POST /setup-2fa` while `twoFactorVerified` is `true` is rejected with `409 Conflict`. This prevents a stolen first-factor cookie from silently overwriting a verified user's secret. To re-enroll, ask a super-admin to call `POST /super-admin/user/{id}/reset-2fa` first.
+</Warning>
+
+---
+
+## Verify TOTP
+
+Verify a six-digit TOTP code from the user's authenticator app. On success, the response sets a fresh login cookie marking 2FA as satisfied for the current session.
+
+```http
+GET /verify-otp?otp={code}&redirectTo={url}
+```
+
+### Query parameters
+
+| Parameter    | Type     | Required | Description                                                                                |
+| ------------ | -------- | -------- | ------------------------------------------------------------------------------------------ |
+| `otp`        | `string` | Yes      | The six-digit code shown by the user's authenticator app                                   |
+| `redirectTo` | `string` | No       | Allowlisted URL to redirect to after verification. Open-redirect-guarded.                  |
+
+### Response
+
+`302 Found` redirect to `redirectTo` (or the admin home if omitted). The response sets the login cookie with `twoFactorAuthenticationSucceeded: true`.
+
+### Errors
+
+All rejection cases return the **same** body — `401 Unauthorized` with message `"OTP invalid or already used"` — so the response shape does not leak which case was hit (wrong code, expired window, replay, or lost concurrent-update race).
+
+| Status | Body message                  | When                                                                                              |
+| ------ | ----------------------------- | ------------------------------------------------------------------------------------------------- |
+| `401`  | `OTP invalid or already used` | Code does not match, falls outside the tolerance window, or has already been consumed (replay)    |
+| `429`  | (throttler default)           | Rate limit exceeded — see below                                                                   |
+
+### Rate limits
+
+`GET /verify-otp` is gated by two named throttle buckets:
+
+| Bucket     | Limit                | Scope                                |
+| ---------- | -------------------- | ------------------------------------ |
+| `default`  | 10 requests / 60 s   | Per IP — catches a burst from one client     |
+| `perUser`  | 5 requests / 15 min  | Per user — catches a slow drip across rotating IPs against one target |
+
+### Tolerance and replay protection
+
+- Codes are accepted up to **30 seconds in the past** and **0 seconds in the future** to absorb normal phone clock drift without inflating the brute-force window.
+- A successful verify atomically advances `User.lastUsedTotpStep`. The conditional update (`WHERE lastUsedTotpStep IS NULL OR lastUsedTotpStep < newStep`) guarantees that two concurrent verifies of the same code cannot both succeed — exactly one wins.
+
+---
+
+## Reset 2FA (super-admin)
+
+Clear a target user's TOTP enrollment and invalidate any active session for that user. Used to recover a locked-out admin or revoke a compromised session.
+
+```http
+POST /super-admin/user/{id}/reset-2fa
+```
+
+### Path parameters
+
+| Parameter | Type     | Description                          |
+| --------- | -------- | ------------------------------------ |
+| `id`      | `string` | The target user's ID                 |
+
+### Behavior
+
+On success, the target user's row is updated:
+
+- `twoFactorSecret` → `null`
+- `twoFactorVerified` → `false`
+- `lastUsedTotpStep` → `null`
+- `sessionVersion` → `+= 1` (invalidates any cookie minted before this call)
+
+The auth middleware rejects any JWT whose `sessionVersion` claim no longer matches the live row, so the target is logged out immediately rather than waiting for cookie TTL.
+
+### Response
+
+```json
+{
+  "success": true
+}
+```
+
+### Errors
+
+| Status | Code                  | When                                                                                |
+| ------ | --------------------- | ----------------------------------------------------------------------------------- |
+| `401`  | `UnauthorizedException` | Caller is not a super-admin                                                       |
+| `403`  | `ForbiddenException`  | Caller is attempting to reset their own 2FA. Self-recovery uses the runbook DB UPDATE. |
+| `404`  | `NotFoundException`   | Target user not found                                                               |
+
+<Warning>
+  Self-reset is forbidden via this endpoint. A phished super-admin must not be able to wipe their own 2FA and re-enroll on an attacker's device.
+</Warning>
+
+### Audit log
+
+Every successful reset emits a structured `totp.reset` log entry with `actorId`, `targetUserId`, and `targetIsSuperAdmin`. Resets that target another super-admin emit an additional `warn`-level entry so peer-targeting resets surface in audit review.
+
+---
+
+## Login redirect behavior
+
+After email/Google login, the auth controller redirects based on `twoFactorVerified`:
+
+| `twoFactorVerified` | Redirect target                          | What happens next                                                              |
+| ------------------- | ---------------------------------------- | ------------------------------------------------------------------------------ |
+| `false`             | Admin home (`/?redirectTo={original}`)   | Frontend auth-gate routes the user to `/2fa-setup` for first-time enrollment   |
+| `true`              | `/2fa-verify?redirectTo={original}`      | User must verify a fresh code before any privileged endpoint admits them       |
+
+No OTP is pre-sent on the login callback. With TOTP, codes are generated client-side by the authenticator app; the verify endpoint reads the encrypted secret directly from `User.twoFactorSecret`.
+
+---
+
+## Cookie payload
+
+The login cookie carries a `TTwoFactorAuthenticationProperties` block consumed by the frontend:
+
+```ts
+interface TTwoFactorAuthenticationProperties {
+  hasVerified2FA: boolean;
+  // Cutover-overlap field — synthesized as "" during the SMS-to-TOTP deploy
+  // window. To be removed once all clients have upgraded.
+  twoFactorPhoneNumber?: string;
+}
+```
+
+<Note>
+  The previous shape (`twoFactorPhoneNumber: string`, `hasVerified2FAPhone: boolean`) has been replaced. `twoFactorPhoneNumber` remains as an optional cutover-overlap field and will be dropped in a follow-up release.
+</Note>
+
+---
+
+## Deprecated and removed endpoints
+
+| Endpoint              | Status   | Notes                                                                              |
+| --------------------- | -------- | ---------------------------------------------------------------------------------- |
+| `GET /resend-otp`     | Removed  | TOTP codes are generated client-side; there is nothing to resend.                  |
+| `POST /setup-2fa` (with `phoneNumber` body) | Changed  | The body parameter `phoneNumber` is no longer accepted. The endpoint now takes no body and returns `otpauthUrl`, `qrCodeDataUrl`, and `secret`. |

@@ -57,6 +57,28 @@ Opening a filing gives you everything you need to review, sign off, and keep rec
 - **Assignment** — advisors can assign a specific team member to a filing so it's clear who owns the next action.
 - **Lock / unlock** — when a filing is ready for review, advisors lock it to freeze the numbers. Unlocking is available if transactions or prepayments need to be corrected before submission.
 
+### US return adjustments
+
+US state, county, city, and district returns often include line items beyond gross tax due — vendor compensation, penalties, interest, prepayments, marketplace-facilitator credits, and rounding. When you open a filing for a US jurisdiction, Commenda surfaces each of these lines on the detail view so the numbers you see match the return form exactly, and the same values are available programmatically on the [filing detail API endpoint](/engine/indirect-tax/filings/filings-GET-ONE) under `filing_adjustments`.
+
+Fields that can appear on the filing detail:
+
+| Field | Meaning |
+|---|---|
+| `vendor_discount` | Timely-filing vendor compensation (collection allowance) credited in states such as Florida, Illinois, and Texas when you file and pay on time. |
+| `discount` | Early-payment or prompt-filing discount. |
+| `prepayment` | Prepayment credit claimed on this return. Common on accelerated schedules in California, New York, and similar states. |
+| `prior_payment` | Credit carried forward from a prior period's return. |
+| `jurisdiction_issued_credit` | Credit memo issued by the tax authority, for example from an amended return. |
+| `marketplace_payment` | Tax collected and remitted by a marketplace facilitator on your behalf. |
+| `retail_delivery_fee` | Per-delivery surcharge assessed by states such as Colorado and Minnesota. |
+| `penalty` / `interest` | Late-filing penalty and interest on a late payment. |
+| `adjustment` | Free-form positive or negative adjustment line, for example to correct a prior-period reporting error. |
+| `rounding` | Rounding line for jurisdictions that round box values to a fixed precision. |
+| `tax_remitted` | Actual amount remitted to the jurisdiction after adjustments, discounts, and credits are applied. |
+
+Each field is populated only when the jurisdiction's return form includes that line item — fields that don't apply to the current filing are returned as `null`. Alongside these lines, `filing_transactions_count` reports the number of transactions rolled into the return so you can reconcile the filing against your transaction ledger.
+
 ### Exporting tax breakdowns
 
 From a filing you can export the full tax breakdown for downstream reporting or reconciliation:

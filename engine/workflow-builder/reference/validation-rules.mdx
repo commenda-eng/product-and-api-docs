@@ -251,14 +251,14 @@ Each stepGroup must have at least one stepId.
 
 ### LEGACY_SERVICE_REQUEST_REQUIRES_STEP_GROUPS
 
-**Rule:** Workflow with legacyServiceRequestType must have at least one step group
+**Rule:** A workflow must have at least one step group
 
 | Property | Value |
 |----------|-------|
 | Severity | ERROR |
 | Error Code | GROUPING_INVALID |
 
-If `legacyServiceRequestType` is set, at least one stepGroup must exist.
+A workflow's step groups are its requests' task groups, so at least one stepGroup must exist.
 
 ## Legacy service request rules
 
@@ -266,14 +266,14 @@ These rules validate legacy service request mappings and compatibility.
 
 ### LEGACY_SERVICE_REQUEST_TYPE_GROUP_TASK_UNIQUE
 
-**Rule:** Multiple steps share the same legacy combination (serviceRequestType, taskGroup, taskKey)
+**Rule:** Multiple steps share the same legacy combination (taskGroup, taskKey)
 
 | Property | Value |
 |----------|-------|
 | Severity | ERROR |
 | Error Code | LEGACY_CONFIG_INVALID |
 
-The tuple `(serviceRequestType, taskGroupKey, taskKey)` must be unique across all steps.
+The pair `(taskGroupKey, taskKey)` must be unique across all steps.
 
 ### LEGACY_SERVICE_REQUEST_TASK_GROUP_EXISTS_IN_TEMPLATE
 
@@ -284,7 +284,7 @@ The tuple `(serviceRequestType, taskGroupKey, taskKey)` must be unique across al
 | Severity | ERROR |
 | Error Code | LEGACY_CONFIG_INVALID |
 
-StepGroups with `legacyServiceRequestTaskGroupKey` must exist in the service request template.
+StepGroups with `legacyServiceRequestTaskGroupKey` must exist in the template the workflow's links bind it to.
 
 ### LEGACY_SERVICE_REQUEST_TASK_EXISTS_IN_TEMPLATE
 

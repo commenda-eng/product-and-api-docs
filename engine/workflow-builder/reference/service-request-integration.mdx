@@ -103,15 +103,11 @@ If something fails midway, a manual **"Sync" button** allows reconciliation betw
 
 ## Mapping workflows to service requests
 
-When creating a new workflow, connect it to a service request using these fields:
+When creating a new workflow, connect it to a service request using its links and these fields:
 
 ### Workflow level
 
-```typescript
-{
-  legacyServiceRequestType: "INDIA_PVT_LTD_INCORPORATION"
-}
-```
+A definition doesn't name the requests it runs. Its links do: a Commenda service, a compliance type, a product, or a sales-tax flow. The links also pick the template its step groups and steps bind to: the sales-tax flow's, else the Commenda filing template for a workflow linked to a compliance type or a filing service, else its service's own, else the custom one.
 
 ### Step group level
 
@@ -143,7 +139,7 @@ When creating a new workflow, connect it to a service request using these fields
 
 ### Mapping flow
 
-1. **Select** the `legacyServiceRequestType`
+1. **Link** the workflow to what it delivers
 2. **Select** the `taskGroup` for each `stepGroup`
 3. For each step, **select** the `taskKey`
 

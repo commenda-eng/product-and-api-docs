@@ -17,7 +17,6 @@ export type TWorkflowDefinition = {
   steps: TWorkflowStepDefinition[];
   stepTransitions: TWorkflowStepTransition[];
   stepGroups?: TStepGroup[];
-  legacyServiceRequestType?: string;
 };
 ```
 
@@ -28,7 +27,6 @@ export type TWorkflowDefinition = {
 | `steps` | Array of step definitions |
 | `stepTransitions` | Connections between steps |
 | `stepGroups` | UI groupings for steps |
-| `legacyServiceRequestType` | Maps to service request type |
 
 ## Step definitions
 

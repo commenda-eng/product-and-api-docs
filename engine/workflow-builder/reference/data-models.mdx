@@ -138,15 +138,16 @@ model WorkflowTemplateLink {
 | Field | Description |
 |-------|-------------|
 | `workflowTemplateId` | Template to trigger |
-| `entityType` | SERVICE_CATALOG or PRODUCT |
-| `entityId` | Service request type or product ID |
+| `entityType` | SERVICE_CATALOG, PRODUCT or COMPLIANCE_TYPE |
+| `entityId` | Sales-tax flow, product ID or compliance type |
 
 ### Link types
 
 | Type | Trigger condition |
 |------|-------------------|
-| `SERVICE_CATALOG` | When a specific service request type is created |
+| `SERVICE_CATALOG` | When a sales-tax filing or registration request is created |
 | `PRODUCT` | When a specific product is purchased (from billing) |
+| `COMPLIANCE_TYPE` | When the compliance calendar opens a request for a filing of that type |
 
 When a matching entity is created/purchased and a workflow link exists, the active version of the linked template is automatically instantiated.
 

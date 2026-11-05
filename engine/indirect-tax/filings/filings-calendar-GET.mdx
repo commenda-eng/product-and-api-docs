@@ -1,10 +1,14 @@
 ---
 title: "List filing calendar"
 api: "GET https://transaction-tax.api.in.commenda.io/api/v1/filings/calendar"
-description: "Get the filing calendar for a corporation showing all upcoming and past filings"
+description: "Get the projected filing schedule for a corporation's registrations"
 ---
 
-Retrieve the filing calendar for a corporation, showing all filings across registrations. Supports cursor-based pagination and an optional V2 mode for enhanced filing data.
+Returns the filing schedule projected from the corporation's active registrations, starting January 1 of the current year. Each entry is a return the corporation is expected to file, with its period and due date.
+
+Calendar entries are projections, not filing records. They have no `id` and no status. To get filing records with status, amounts and confirmations, use [List filings](/engine/indirect-tax/filings/filings-GET).
+
+All entries are returned in a single response; this endpoint is not paginated.
 
 ## Query parameters
 
@@ -12,22 +16,51 @@ Retrieve the filing calendar for a corporation, showing all filings across regis
   The unique identifier (UUID) for the corporation.
 </ParamField>
 
-<ParamField query="limit" type="integer">
-  Number of results per page. Default: `10`, maximum: `100`.
-</ParamField>
+## Response fields
 
-<ParamField query="cursor" type="string">
-  Pagination cursor from a previous response.
-</ParamField>
+<ResponseField name="filings" type="object[]">
+  <Expandable title="properties">
+    <ResponseField name="corporation_id" type="string">
+      The corporation the entry belongs to.
+    </ResponseField>
+    <ResponseField name="registration_id" type="string">
+      Identifier of the registration tax type the entry belongs to. Same value as `registration_tax_type_id` on a filing.
+    </ResponseField>
+    <ResponseField name="form_title" type="string">
+      Name of the tax return form.
+    </ResponseField>
+    <ResponseField name="description" type="string">
+      Additional details about the return, such as the filing variant or deadline type.
+    </ResponseField>
+    <ResponseField name="frequency" type="string">
+      Filing frequency, for example `MONTHLY` or `QUARTERLY`.
+    </ResponseField>
+    <ResponseField name="period_start_date" type="string">
+      First day of the tax period (`YYYY-MM-DD`).
+    </ResponseField>
+    <ResponseField name="period_end_date" type="string">
+      Last day of the tax period (`YYYY-MM-DD`).
+    </ResponseField>
+    <ResponseField name="reporting_period_start_date" type="string">
+      Start of the reporting period. May differ from the tax period.
+    </ResponseField>
+    <ResponseField name="reporting_period_end_date" type="string">
+      End of the reporting period.
+    </ResponseField>
+    <ResponseField name="due_date" type="string">
+      Date by which the return must be filed (`YYYY-MM-DD`).
+    </ResponseField>
+  </Expandable>
+</ResponseField>
 
-<ParamField query="v2" type="string">
-  Set to `true` to use V2 filing calendar logic, which includes V2 registration data and content-driven filing calendars.
-</ParamField>
+<ResponseField name="total_filings" type="integer">
+  Number of entries returned.
+</ResponseField>
 
 <RequestExample>
 ```bash cURL
 curl --request GET \
-  --url 'https://transaction-tax.api.in.commenda.io/api/v1/filings/calendar?corporation_id=550e8400-e29b-41d4-a716-446655440000&limit=20&v2=true' \
+  --url 'https://transaction-tax.api.in.commenda.io/api/v1/filings/calendar?corporation_id=550e8400-e29b-41d4-a716-446655440000' \
   --header 'Authorization: Bearer <your_token>'
 ```
 </RequestExample>
@@ -39,18 +72,18 @@ curl --request GET \
   "data": {
     "filings": [
       {
-        "id": "f1a2b3c4-d5e6-7890-abcd-ef1234567890",
         "corporation_id": "550e8400-e29b-41d4-a716-446655440000",
-        "registration_id": "7c9e6679-7425-40de-944b-e07fc1f90ae7",
+        "registration_id": "REG_STATE_CEN_06_RST",
         "form_title": "Sales and Use Tax Return",
         "frequency": "QUARTERLY",
-        "period_start_date": "2024-07-01",
-        "due_date": "2024-10-31",
-        "filing_status": "ACTIVE",
-        "country": "US"
+        "period_start_date": "2026-07-01",
+        "period_end_date": "2026-09-30",
+        "reporting_period_start_date": "2026-07-01",
+        "reporting_period_end_date": "2026-09-30",
+        "due_date": "2026-10-31"
       }
     ],
-    "cursor": "eyJpZCI6ImYxYTJiM2M0..."
+    "total_filings": 1
   }
 }
 ```

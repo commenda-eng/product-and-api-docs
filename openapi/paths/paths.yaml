@@ -1435,117 +1435,106 @@
   get:
     summary: List filings
     description: >-
-      List state and local sales tax filings for a corporation, filtered by query.
-      Pass `v2=true` to use the V2 filings path, which supports additional
-      filters (such as `registration_tax_type_id`, `jurisdiction_ids`,
-      `filing_statuses`, `filing_frequencies`, `from_due_date`, and
-      `to_due_date`) and opt-in expansions via the `extend` query parameter.
+      List a corporation's filings, newest first, with optional filters.
+      Always pass `v2=true`. Use `filing_statuses` and the due-date filters
+      to split upcoming returns from completed ones, for example
+      `filing_statuses=FILED` for completed returns and
+      `filing_statuses=SCHEDULED,ACCRUING,ACTIVE,OVERDUE` for open ones.
     operationId: listFilings
     parameters:
       - name: corporation_id
         in: query
-        description:
-          The unique identifier of the corporation for which to retrieve
-          data.
+        description: The unique identifier of the corporation whose filings to list.
         required: true
         schema:
           type: string
+          format: uuid
+      - name: v2
+        in: query
+        description: Set to `true`. Required for the response and filters documented on this page.
+        required: true
+        schema:
+          type: string
+          enum:
+            - "true"
       - name: cursor
         in: query
-        description: Cursor for pagination
+        description: >-
+          The `cursor` from the previous page. Omit it for the first page.
+          When a response has no `cursor`, you have reached the last page.
         required: false
         schema:
           type: string
       - name: limit
         in: query
-        description: Number of items to return per page
+        description: Number of filings per page.
         required: false
         schema:
           type: integer
           minimum: 1
           maximum: 100
           default: 10
-      - name: v2
+      - name: filing_statuses
         in: query
         description: >-
-          Set to `true` to use the V2 filings path, which returns V2 content
-          metadata (such as `registration_tax_type_id`, `jurisdiction_name`,
-          `jurisdiction_type`, and `filing_content_id`) and enables the
-          additional filters and `extend` parameter documented below. When
-          omitted or `false`, the legacy filings response is returned.
+          Comma-separated list of statuses to return. Allowed values:
+          `SCHEDULED`, `ACCRUING`, `ACTIVE`, `FILED`, `OVERDUE`. An unknown
+          value returns a `400`.
         required: false
         schema:
           type: string
-          enum:
-            - "true"
-            - "false"
-      - name: extend
-        in: query
-        description: >-
-          Opt-in expansion for the V2 path (requires `v2=true`). Comma-separated
-          list of expansion keys. The only supported value today is
-          `filing_contribution`, which inlines the computed tax-return box
-          contributions on each filing via a `contributions` array. When the
-          parameter is omitted, the `contributions` field is not included in
-          the response. Unknown values return a `400`.
-        required: false
-        schema:
-          type: string
-          example: "filing_contribution"
+          example: "ACTIVE,OVERDUE"
       - name: from_due_date
         in: query
-        description: >-
-          V2 path only (`v2=true`). ISO 8601 date string. Returns only filings
-          whose due date is on or after this value.
+        description: Returns only filings whose `filing_due_date` is on or after this date (`YYYY-MM-DD`).
         required: false
         schema:
           type: string
           format: date
       - name: to_due_date
         in: query
-        description: >-
-          V2 path only (`v2=true`). ISO 8601 date string. Returns only filings
-          whose due date is on or before this value.
+        description: Returns only filings whose `filing_due_date` is on or before this date (`YYYY-MM-DD`).
         required: false
         schema:
           type: string
           format: date
-      - name: registration_tax_type_id
-        in: query
-        description: >-
-          V2 path only (`v2=true`). Filter by V2 registration tax type content
-          identifier (e.g., `REG_STATE_CEN_06_RST`).
-        required: false
-        schema:
-          type: string
       - name: jurisdiction_ids
         in: query
-        description: >-
-          V2 path only (`v2=true`). Comma-separated list of Commenda
-          jurisdiction identifiers to filter by. Maximum 100 values.
+        description: Comma-separated list of Commenda jurisdiction identifiers. Maximum 100 values.
         required: false
         schema:
           type: string
-          example: "COUNTRY_DE_3018,STATE_CEN_06"
-      - name: filing_statuses
-        in: query
-        description: >-
-          V2 path only (`v2=true`). Comma-separated list of filing statuses to
-          filter by. Maximum 100 values.
-        required: false
-        schema:
-          type: string
+          example: "STATE_CEN_06,COUNTRY_DE_3018"
       - name: filing_frequencies
         in: query
         description: >-
-          V2 path only (`v2=true`). Comma-separated list of filing frequencies
-          to filter by. Maximum 100 values.
+          Comma-separated list of filing frequencies (see `filing_frequency`).
+          Maximum 100 values. An unknown value returns a `400`.
         required: false
         schema:
           type: string
+          example: "MONTHLY,QUARTERLY"
+      - name: registration_tax_type_id
+        in: query
+        description: Returns only filings for this registration tax type.
+        required: false
+        schema:
+          type: string
+          example: "REG_STATE_CEN_06_RST"
+      - name: extend
+        in: query
+        description: >-
+          Set to `filing_contribution` to include the EU/UK VAT box values on
+          each filing as a `contributions` array. Any other value returns a
+          `400`.
+        required: false
+        schema:
+          type: string
+          enum:
+            - filing_contribution
     responses:
       "200":
-        description: Filing info for all states
+        description: A page of filings
         content:
           application/json:
             schema:
@@ -1557,10 +1546,13 @@
                     filings:
                       type: array
                       items:
-                        "$ref": "../components/components.yaml#/components/schemas/FilingsForGetAll"
+                        "$ref": "../components/components.yaml#/components/schemas/Filing"
+                    total_filings:
+                      type: integer
+                      description: Total number of filings that match the filters, across all pages.
                     cursor:
                       type: string
-                      description: Pagination cursor for the next set of results
+                      description: Pass this as `cursor` to get the next page. Not present on the last page.
                 message:
                   type: string
                   example: Successfully fetched filings.
@@ -1573,7 +1565,7 @@
 "/filings/{id}":
   get:
     summary: Get one filing
-    description: Retrieve one filing by its id
+    description: Retrieve one filing by its id.
     operationId: getFiling
     parameters:
       - in: path
@@ -1581,20 +1573,65 @@
         required: true
         schema:
           type: string
-        description: The unique identifier of the transaction to fetch.
+          format: uuid
+        description: The unique identifier of the filing.
     responses:
       "200":
-        description: Transaction fetch response
+        description: The filing
         content:
           application/json:
             schema:
               type: object
               properties:
                 data:
-                  "$ref": "../components/components.yaml#/components/schemas/FilingsGet"
+                  "$ref": "../components/components.yaml#/components/schemas/Filing"
                 message:
                   type: string
                   example: Successfully fetched filing.
+      "400":
+        description: Bad request
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/Error"
+      "404":
+        description: Filing not found
+        content:
+          application/json:
+            schema:
+              "$ref": "../components/components.yaml#/components/schemas/Error"
+"/filings/{id}/documents":
+  get:
+    summary: List filing documents
+    description: >-
+      List the confirmation documents attached to a filing: the filing
+      confirmation, the payment confirmation and the filed return. To download
+      a document, call `GET /files/{file_id}` with its `file_id`; the response
+      includes a `signed_url` that is valid for 20 minutes.
+    operationId: listFilingDocuments
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: The unique identifier of the filing.
+    responses:
+      "200":
+        description: The documents attached to the filing. Empty when none have been attached yet.
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                data:
+                  type: array
+                  items:
+                    "$ref": "../components/components.yaml#/components/schemas/FilingDocument"
+                message:
+                  type: string
+                  example: Successfully fetched filing documents.
       "400":
         description: Bad request
         content:

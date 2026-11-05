@@ -259,11 +259,40 @@ Commenda provides webhook notifications for events related to the following obje
 
 1. #### `FILINGS.CREATED`
 
-   Fires when one or more new sales tax filings are generated for the corporation (for example, when a new period opens). The payload includes the list of newly-created filings under `data.added_filings`.
+   Fires when filings are generated for the corporation or removed from it. Newly created filings are under `data.added_filings`; removed filings are under `data.removed_filings`.
 
 2. #### `FILINGS.UPDATED`
 
-   Fires when an existing filing is updated (for example, when its status changes, totals are recomputed, or it is filed). The payload includes the updated filings under `data.updated_filings`. Filings that have been removed are reported under `data.removed_filings`.
+   Fires when an existing filing changes: its status changes, it is filed, or its filed amounts and confirmation numbers are recorded. The updated filings are under `data.updated_filings`.
+
+   Each filing in these payloads is a [filing object](/engine/indirect-tax/filings/filings-GET-ONE). To get the latest full record, call Get one filing with the filing's `id`.
+
+   ```json
+   {
+     "id": "b252d757-a286-4508-b538-41ad676e8305",
+     "topic": "FILINGS.UPDATED",
+     "triggered_at": 1727284490,
+     "webhook_id": "2535af08-a139-4d0c-9827-1651e46dfbcf",
+     "organization_id": "c2710df6-c6cf-4cd0-aa38-63faa44f16bc",
+     "data": {
+       "corporation_id": "a093d086-19e8-48c8-82d6-aba51f82eafc",
+       "updated_filings": [
+         {
+           "id": "f1a2b3c4-d5e6-7890-abcd-ef1234567890",
+           "corporation_id": "a093d086-19e8-48c8-82d6-aba51f82eafc",
+           "form_title": "Sales and Use Tax Return",
+           "filing_frequency": "QUARTERLY",
+           "tax_period_start_date": "2026-07-01",
+           "tax_period_end_date": "2026-09-30",
+           "filing_due_date": "2026-10-31",
+           "status": "FILED",
+           "filed_at": "2026-10-20"
+         }
+       ]
+     },
+     "api_version": "v1.0"
+   }
+   ```
 
 <a id="exemptions-certificates" />
 

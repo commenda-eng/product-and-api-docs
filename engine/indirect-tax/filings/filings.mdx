@@ -8,11 +8,14 @@ description: "Preview, generate, and manage tax filings for your registered juri
 The Filings API lets you preview upcoming tax filings, generate them for a jurisdiction, and manage their lifecycle. Filings represent individual tax returns that your business must submit to a tax authority for a specific period.
 
 Each filing includes:
-- **Tax period** — the date range the filing covers
-- **Reporting period** — the date range used for reporting (may differ from the tax period)
-- **Due date** — when the return must be filed
-- **Frequency** — how often filings occur (monthly, quarterly, annually, etc.)
-- **Status** — the current state of the filing (`SCHEDULED`, `UPCOMING`, `OVERDUE`, `FILED`, etc.)
+- **Jurisdiction** — where the return is filed (`jurisdiction_name`, `jurisdiction_type`, `jurisdiction_id`)
+- **Tax period** — the date range the return covers (`tax_period_start_date`, `tax_period_end_date`)
+- **Reporting period** — the date range used for reporting, which may differ from the tax period
+- **Due date** — when the return must be filed (`filing_due_date`)
+- **Frequency** — how often returns are filed (`filing_frequency`: monthly, quarterly, annually, etc.)
+- **Status** — where the return is in its lifecycle (`status`, see [Filing statuses](#filing-statuses))
+- **Amounts** — estimated amounts while the period is open, and the filed and paid amounts once the return is filed
+- **Confirmations** — the tax authority's filing and payment confirmation numbers, and confirmation documents
 
 ## V2 filings
 
@@ -36,28 +39,71 @@ V2 filings support:
   <Step title="Generate filings">
     Use the [bulk create endpoint](/engine/indirect-tax/filings/filings-bulk-create-POST) to generate the filings. The system creates filing records based on the filing calendar content for your registration.
   </Step>
-  <Step title="Track and manage">
-    Use the [list endpoint](/engine/indirect-tax/filings/filings-GET-ONE) to view filings and their statuses. Update filings with tax amounts, confirmation numbers, and status changes as you prepare and submit returns.
+  <Step title="Track">
+    Use [List filings](/engine/indirect-tax/filings/filings-GET) and [Get one filing](/engine/indirect-tax/filings/filings-GET-ONE) to follow each filing's status, amounts and confirmations as the return is prepared and filed.
   </Step>
   <Step title="Delete if needed">
     Use the [bulk delete endpoint](/engine/indirect-tax/filings/filings-bulk-delete-DELETE) to remove filings that are no longer needed. Filed returns cannot be deleted.
   </Step>
 </Steps>
 
-## Filing response fields
+## Filing statuses
 
-V2 filings include additional fields compared to V1:
-
-| Field | Description |
+| Status | Meaning |
 |---|---|
-| `registration_tax_type_id` | The V2 content ID linking the filing to a registration |
-| `jurisdiction_name` | Human-readable jurisdiction name (e.g., "California", "Germany") |
-| `jurisdiction_type` | Type of jurisdiction (e.g., `STATE_OR_PROVINCE`, `COUNTRY`, `TRADEBLOC`) |
-| `filing_content_id` | Content identifier linking the filing to its calendar entry and contribution box rules. Used together with `registration_tax_type_id` to distinguish parallel filing tracks under the same registration (e.g., a standard return vs. a Dauerfrist extension in Germany). Present for V2 filings with content-driven calendars; null for V1 filings. |
-| `form_title` | The display name of the filing form |
-| `description` | Additional description for the filing |
-| `reporting_period_start_date` | Start of the reporting period |
-| `reporting_period_end_date` | End of the reporting period |
+| `SCHEDULED` | The reporting period has not ended yet. |
+| `ACCRUING` | The reporting period is in progress. Some open filings stay `SCHEDULED` until the period ends, so treat `SCHEDULED` and `ACCRUING` the same way: not ready to file yet. |
+| `ACTIVE` | The reporting period has ended and the due date has not passed. The return is being prepared or is ready to file. |
+| `OVERDUE` | The due date has passed and the return has not been filed. |
+| `FILED` | The return has been filed. `filed_at` holds the filing date. |
+
+Statuses are refreshed once a day. A filing becomes `FILED` when the return is submitted.
+
+## Amounts on a filing
+
+A filing carries two sets of amounts:
+
+| Fields | What they are |
+|---|---|
+| `estimated_taxable_amount`, `estimated_non_taxable_amount`, `estimated_exempt_amount`, `estimated_tax_collected` | Computed by Commenda from the transactions in the period. Updated while the filing is open. |
+| `taxable_amount`, `non_taxable_amount`, `exempt_amount`, `tax_liability` | The amounts reported on the filed return. Recorded when the return is filed. |
+| `tax_paid` | The amount paid to the tax authority for the return. |
+| `penalty`, `interest` | Assessed by the tax authority, if any. |
+
+- Amounts are decimals in major units of `reporting_currency` (for example, `1031.25`).
+- An amount field is left out of the response when its value is zero or has not been recorded yet.
+- For EU and UK VAT returns, the box-by-box values are available as [filing contributions](#filing-contributions). Contribution values are integers in minor units (for example, cents).
+
+## Confirmations and documents
+
+When a return is filed, the filing records the tax authority's confirmations:
+
+- `filing_confirmation_number` — the confirmation number for the filed return.
+- `payment_confirmation_number` — the confirmation number for the payment.
+
+Confirmation files are listed by [List filing documents](/engine/indirect-tax/filings/filings-documents-GET). A filing has at most one document of each type:
+
+| Type | Document |
+|---|---|
+| `FILING_CONFIRMATION` | The tax authority's confirmation that the return was filed |
+| `PAYMENT_CONFIRMATION` | The confirmation of payment |
+| `RETURN_CONFIRMATION` | A copy of the filed return |
+
+To download a document, call [Get file](/engine/indirect-tax/files/files-id-GET) with its `file_id`. The response includes a `signed_url` that is valid for 20 minutes.
+
+## Syncing filings
+
+To keep a copy of your filings in another system:
+
+1. Call [List filings](/engine/indirect-tax/filings/filings-GET) with `v2=true` and `limit=100`. Pass the returned `cursor` to get the next page. When a response has no `cursor`, you have reached the last page.
+2. Split upcoming and completed returns with filters:
+   - Completed: `filing_statuses=FILED`
+   - Upcoming: `filing_statuses=SCHEDULED,ACCRUING,ACTIVE,OVERDUE`
+   - Use `from_due_date` and `to_due_date` to limit the due-date window.
+3. For each filed return, call [List filing documents](/engine/indirect-tax/filings/filings-documents-GET) to fetch its confirmation files.
+4. Subscribe to the [`FILINGS.CREATED` and `FILINGS.UPDATED` webhooks](/engine/indirect-tax/webhooks/event#filings) to learn about changes between scheduled runs. `FILINGS.UPDATED` fires when a filing's status changes and when it is filed, including when its filed amounts and confirmation numbers are recorded. It does not fire for changes to the estimated amounts.
+
+The list has no "modified since" filter, so a scheduled sync re-reads the filings in its window on each run. Requests are rate-limited to about 10 per second per endpoint; a `429` response means wait briefly and retry.
 
 ## Filing contributions
 
@@ -186,7 +232,10 @@ When you enable `managed_filing_enabled` on a [V2 registration](/engine/indirect
 | [`/internal/filings/preview`](/engine/indirect-tax/filings/filings-preview-POST) | POST | Preview proposed filings for a registration |
 | [`/internal/filings/bulk/create`](/engine/indirect-tax/filings/filings-bulk-create-POST) | POST | Generate filings for a registration |
 | [`/internal/filings/bulk/delete`](/engine/indirect-tax/filings/filings-bulk-delete-DELETE) | DELETE | Delete filings by registration or filing IDs |
+| [`/filings`](/engine/indirect-tax/filings/filings-GET) | GET | List filings with filters |
 | [`/filings/{id}`](/engine/indirect-tax/filings/filings-GET-ONE) | GET | Get a single filing |
+| [`/filings/{id}/documents`](/engine/indirect-tax/filings/filings-documents-GET) | GET | List a filing's confirmation documents |
+| [`/filings/calendar`](/engine/indirect-tax/filings/filings-calendar-GET) | GET | Get the projected filing schedule |
 | [`/filings/{id}/contributions`](/engine/indirect-tax/filings/filings-contributions-GET) | GET | List filing contributions |
 | [`/filings/contributions`](/engine/indirect-tax/filings/filings-contributions-batch-POST) | POST | Get filing contributions for up to 100 filings |
 | [`/filings/liability-report`](/engine/indirect-tax/filings/filings-liability-report-POST) | POST | Get per-filing liability snapshots |

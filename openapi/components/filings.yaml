@@ -151,8 +151,8 @@ schemas:
         example: "2025-04-30"
       filing_status:
         type: string
-        description: Current status of the filing (e.g., `SCHEDULED`, `UPCOMING`, `OVERDUE`, `FILED`).
-        example: "UPCOMING"
+        description: Current status of the filing (`SCHEDULED`, `ACCRUING`, `ACTIVE`, `FILED` or `OVERDUE`).
+        example: "ACTIVE"
       breakdown:
         nullable: true
         allOf:
@@ -235,7 +235,7 @@ schemas:
         example: "2025-04-30"
       filing_status:
         type: string
-        example: "UPCOMING"
+        example: "ACTIVE"
       contributions:
         nullable: true
         type: array

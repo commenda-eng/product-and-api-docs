@@ -1417,88 +1417,92 @@ paths:
   /filings:
     get:
       summary: List filings
-      description: List state and local sales tax filings for a corporation, filtered by query. Pass `v2=true` to use the V2 filings path, which supports additional filters (such as `registration_tax_type_id`, `jurisdiction_ids`, `filing_statuses`, `filing_frequencies`, `from_due_date`, and `to_due_date`) and opt-in expansions via the `extend` query parameter.
+      description: List a corporation's filings, newest first, with optional filters. Always pass `v2=true`. Use `filing_statuses` and the due-date filters to split upcoming returns from completed ones, for example `filing_statuses=FILED` for completed returns and `filing_statuses=SCHEDULED,ACCRUING,ACTIVE,OVERDUE` for open ones.
       operationId: listFilings
       parameters:
         - name: corporation_id
           in: query
-          description: The unique identifier of the corporation for which to retrieve data.
+          description: The unique identifier of the corporation whose filings to list.
           required: true
           schema:
             type: string
+            format: uuid
+        - name: v2
+          in: query
+          description: Set to `true`. Required for the response and filters documented on this page.
+          required: true
+          schema:
+            type: string
+            enum:
+              - 'true'
         - name: cursor
           in: query
-          description: Cursor for pagination
+          description: The `cursor` from the previous page. Omit it for the first page. When a response has no `cursor`, you have reached the last page.
           required: false
           schema:
             type: string
         - name: limit
           in: query
-          description: Number of items to return per page
+          description: Number of filings per page.
           required: false
           schema:
             type: integer
             minimum: 1
             maximum: 100
             default: 10
-        - name: v2
+        - name: filing_statuses
           in: query
-          description: Set to `true` to use the V2 filings path, which returns V2 content metadata (such as `registration_tax_type_id`, `jurisdiction_name`, `jurisdiction_type`, and `filing_content_id`) and enables the additional filters and `extend` parameter documented below. When omitted or `false`, the legacy filings response is returned.
+          description: 'Comma-separated list of statuses to return. Allowed values: `SCHEDULED`, `ACCRUING`, `ACTIVE`, `FILED`, `OVERDUE`. An unknown value returns a `400`.'
           required: false
           schema:
             type: string
-            enum:
-              - 'true'
-              - 'false'
-        - name: extend
-          in: query
-          description: Opt-in expansion for the V2 path (requires `v2=true`). Comma-separated list of expansion keys. The only supported value today is `filing_contribution`, which inlines the computed tax-return box contributions on each filing via a `contributions` array. When the parameter is omitted, the `contributions` field is not included in the response. Unknown values return a `400`.
-          required: false
-          schema:
-            type: string
-            example: filing_contribution
+            example: ACTIVE,OVERDUE
         - name: from_due_date
           in: query
-          description: V2 path only (`v2=true`). ISO 8601 date string. Returns only filings whose due date is on or after this value.
+          description: Returns only filings whose `filing_due_date` is on or after this date (`YYYY-MM-DD`).
           required: false
           schema:
             type: string
             format: date
         - name: to_due_date
           in: query
-          description: V2 path only (`v2=true`). ISO 8601 date string. Returns only filings whose due date is on or before this value.
+          description: Returns only filings whose `filing_due_date` is on or before this date (`YYYY-MM-DD`).
           required: false
           schema:
             type: string
             format: date
-        - name: registration_tax_type_id
-          in: query
-          description: V2 path only (`v2=true`). Filter by V2 registration tax type content identifier (e.g., `REG_STATE_CEN_06_RST`).
-          required: false
-          schema:
-            type: string
         - name: jurisdiction_ids
           in: query
-          description: V2 path only (`v2=true`). Comma-separated list of Commenda jurisdiction identifiers to filter by. Maximum 100 values.
+          description: Comma-separated list of Commenda jurisdiction identifiers. Maximum 100 values.
           required: false
           schema:
             type: string
-            example: COUNTRY_DE_3018,STATE_CEN_06
-        - name: filing_statuses
-          in: query
-          description: V2 path only (`v2=true`). Comma-separated list of filing statuses to filter by. Maximum 100 values.
-          required: false
-          schema:
-            type: string
+            example: STATE_CEN_06,COUNTRY_DE_3018
         - name: filing_frequencies
           in: query
-          description: V2 path only (`v2=true`). Comma-separated list of filing frequencies to filter by. Maximum 100 values.
+          description: Comma-separated list of filing frequencies (see `filing_frequency`). Maximum 100 values. An unknown value returns a `400`.
           required: false
           schema:
             type: string
+            example: MONTHLY,QUARTERLY
+        - name: registration_tax_type_id
+          in: query
+          description: Returns only filings for this registration tax type.
+          required: false
+          schema:
+            type: string
+            example: REG_STATE_CEN_06_RST
+        - name: extend
+          in: query
+          description: Set to `filing_contribution` to include the EU/UK VAT box values on each filing as a `contributions` array. Any other value returns a `400`.
+          required: false
+          schema:
+            type: string
+            enum:
+              - filing_contribution
       responses:
         '200':
-          description: Filing info for all states
+          description: A page of filings
           content:
             application/json:
               schema:
@@ -1510,10 +1514,13 @@ paths:
                       filings:
                         type: array
                         items:
-                          $ref: '#/components/schemas/FilingsForGetAll'
+                          $ref: '#/components/schemas/Filing'
+                      total_filings:
+                        type: integer
+                        description: Total number of filings that match the filters, across all pages.
                       cursor:
                         type: string
-                        description: Pagination cursor for the next set of results
+                        description: Pass this as `cursor` to get the next page. Not present on the last page.
                   message:
                     type: string
                     example: Successfully fetched filings.
@@ -1526,7 +1533,7 @@ paths:
   /filings/{id}:
     get:
       summary: Get one filing
-      description: Retrieve one filing by its id
+      description: Retrieve one filing by its id.
       operationId: getFiling
       parameters:
         - in: path
@@ -1534,20 +1541,61 @@ paths:
           required: true
           schema:
             type: string
-          description: The unique identifier of the transaction to fetch.
+            format: uuid
+          description: The unique identifier of the filing.
       responses:
         '200':
-          description: Transaction fetch response
+          description: The filing
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   data:
-                    $ref: '#/components/schemas/FilingsGet'
+                    $ref: '#/components/schemas/Filing'
                   message:
                     type: string
                     example: Successfully fetched filing.
+        '400':
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Filing not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  /filings/{id}/documents:
+    get:
+      summary: List filing documents
+      description: 'List the confirmation documents attached to a filing: the filing confirmation, the payment confirmation and the filed return. To download a document, call `GET /files/{file_id}` with its `file_id`; the response includes a `signed_url` that is valid for 20 minutes.'
+      operationId: listFilingDocuments
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: The unique identifier of the filing.
+      responses:
+        '200':
+          description: The documents attached to the filing. Empty when none have been attached yet.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/FilingDocument'
+                  message:
+                    type: string
+                    example: Successfully fetched filing documents.
         '400':
           description: Bad request
           content:
@@ -4064,30 +4112,6 @@ components:
           description: Registration threshold exposure data for each jurisdiction. A single jurisdiction may appear multiple times if multiple exposure rules apply (for example, EU Union OSS and Non-Union OSS).
           items:
             $ref: '#/components/schemas/JurisdictionExposure'
-    CountrySpecificDetails:
-      type: object
-      properties:
-        legal_name:
-          type: string
-          description: The legal name of the entity being registered.
-          example: Example Inc.
-        state:
-          type: string
-          description: State or province code.
-          example: CA
-        state_specific_details:
-          type: object
-          properties:
-            payment_interval:
-              type: string
-              description: Payment interval for sales tax.
-            sales_tax_id:
-              type: string
-              description: Sales tax ID.
-            tax_types:
-              type: array
-              items:
-                type: string
     filing_frequency:
       type: string
       enum:
@@ -4171,223 +4195,168 @@ components:
           format: int64
           description: Timestamp when this contribution was last updated, in Unix microseconds.
           example: 1713168000000000
-    FilingsForGetAll:
+    Filing:
       type: object
+      description: One tax return for one jurisdiction and one tax period. Money fields are decimals in major units of `reporting_currency` (for example, `1031.25` means 1,031.25). A money field is left out of the response when its value is zero or has not been recorded yet.
       properties:
         id:
           type: string
+          format: uuid
           description: The unique identifier for the filing.
         corporation_id:
           type: string
-          description: The unique identifier for a corporation associated with this filing.
+          format: uuid
+          description: The corporation this filing belongs to.
         form_title:
           type: string
-          description: Name of the tax return form for this filing (e.g., "Sales and Use Tax Return").
+          description: Name of the tax return form (e.g., "Sales and Use Tax Return").
         description:
           type: string
-          description: Additional details about the filing, such as filing variant or deadline type.
-        country:
-          $ref: '#/components/schemas/Country'
-        country_specific_details:
-          $ref: '#/components/schemas/CountrySpecificDetails'
-        registration_tax_type_id:
+          description: Additional details about the filing, such as the filing variant or deadline type.
+        jurisdiction_id:
           type: string
-          nullable: true
-          description: The V2 registration content identifier linking this filing to a specific registration tax type. Present for filings created via the V2 path; null for V1 filings.
-          example: REG_STATE_CEN_06_RST
+          description: Commenda identifier of the jurisdiction the return is filed with.
+          example: STATE_CEN_06
         jurisdiction_name:
           type: string
-          nullable: true
-          description: |-
-            Human-readable jurisdiction name derived from V2 registration content
-             (e.g., "California", "Germany"). Present for V2 filings; null for V1 filings.
+          description: Human-readable jurisdiction name.
+          example: California
         jurisdiction_type:
           type: string
-          nullable: true
-          description: Type of jurisdiction for this filing. Present for V2 filings; null for V1 filings.
+          description: Type of jurisdiction the return is filed with.
           enum:
             - STATE_OR_PROVINCE
             - COUNTRY
             - TRADEBLOC
             - CITY_OR_COUNTY
-        filing_content_id:
+        registration_tax_type_id:
           type: string
-          nullable: true
-          description: Content identifier linking this filing to its filing calendar entry and contribution box rules. Present for V2 filings with content-driven calendars; null for V1 filings.
-          example: FC_DE_3001_VAT
-        frequency:
+          description: Identifier of the registration tax type this filing belongs to. Can be used as a filter on List filings.
+          example: REG_STATE_CEN_06_RST
+        filing_frequency:
           $ref: '#/components/schemas/filing_frequency'
-        period_start_date:
+        tax_period_start_date:
           type: string
           format: date
-          description: ISO 8601 date string, identifying the start date of the period period for which the sales tax is being filed (e.g., '2024-09-01' for September 2024). For a quarter 1 filing where the fiscal year starts in March, the period_start_date will be 2024-03-01 and frequency will be QUARTERLY.
+          description: First day of the tax period the return covers.
+          example: '2026-07-01'
+        tax_period_end_date:
+          type: string
+          format: date
+          description: Last day of the tax period the return covers.
+          example: '2026-09-30'
         reporting_period_start_date:
           type: string
           format: date
-          description: Start date of the reporting period, which may differ from the tax period. For example, a quarterly filing may have a tax period of Jan–Mar but a reporting deadline that references a different window.
+          description: Start of the reporting period. May differ from the tax period.
         reporting_period_end_date:
           type: string
           format: date
-          description: End date of the reporting period.
-        due_date:
+          description: End of the reporting period.
+        filing_due_date:
           type: string
           format: date
-          description: ISO 8601 date string, identifying the date when by which the filing must be submitted.
-        filing_status:
+          description: Date by which the return must be filed.
+          example: '2026-10-31'
+        status:
           $ref: '#/components/schemas/Tax_filing_status'
-        filed_on:
+        filed_at:
           type: string
           format: date
-          description: Date when the taxes were filed with the state, in ISO 8601 format.
-        registration_id:
+          description: Date the return was filed with the tax authority. Set once the filing is `FILED`.
+          example: '2026-10-20'
+        reporting_currency:
           type: string
-          description: The unique identifier for the tax registration associated with this filing.
-        total_tax_filed:
+          nullable: true
+          description: ISO 4217 currency code that the money fields on this filing are in.
+          example: USD
+        estimated_taxable_amount:
           type: number
-          description: Total amount of sales tax filed with various jurisdictions for this period. May differ slightly from the total tax collected.
-          example: 135.92
-        payment_details:
-          type: object
-          properties:
-            amount_due:
-              type: number
-              description: Total amount due for this filing.
-            payment_status:
-              type: string
-              enum:
-                - PENDING
-                - COMPLETED
-                - FAILED
-              description: Status of the payment.
-            failure_details:
-              type: object
-              description: This object will be populated if the payment fails for any reason.
-              properties:
-                failed_at:
-                  type: string
-                  format: date
-                  description: ISO 8601 date string, identifying the date when the payment failed.
-                reason:
-                  type: string
-                  description: Specific information why the payment failed.
+          description: Taxable sales computed by Commenda from the transactions in the period. Updated while the filing is open.
+          example: 12500
+        estimated_non_taxable_amount:
+          type: number
+          description: Non-taxable sales computed from the transactions in the period.
+          example: 1500.5
+        estimated_exempt_amount:
+          type: number
+          description: Exempt sales computed from the transactions in the period.
+          example: 250
+        estimated_tax_collected:
+          type: number
+          description: Tax collected, computed from the transactions in the period.
+          example: 1031.25
+        taxable_amount:
+          type: number
+          description: Taxable sales reported on the filed return. Recorded when the return is filed.
+          example: 12480
+        non_taxable_amount:
+          type: number
+          description: Non-taxable sales reported on the filed return.
+          example: 1500.5
+        exempt_amount:
+          type: number
+          description: Exempt sales reported on the filed return.
+          example: 250
+        tax_liability:
+          type: number
+          description: Tax due on the filed return.
+          example: 1029.6
+        tax_paid:
+          type: number
+          description: Amount paid to the tax authority for this return.
+          example: 1029.6
+        penalty:
+          type: number
+          description: Penalty assessed on this return, if any.
+        interest:
+          type: number
+          description: Interest assessed on this return, if any.
+        filing_confirmation_number:
+          type: string
+          description: Confirmation number issued by the tax authority when the return was filed.
+          example: 0012-3456-7890
+        payment_confirmation_number:
+          type: string
+          description: Confirmation number issued by the tax authority for the payment.
+          example: PMT-998877
+        created_at:
+          type: integer
+          format: int64
+          description: When the filing was created, in Unix microseconds.
+          example: 1751328000000000
         contributions:
           type: array
           nullable: true
-          description: Computed tax-return box contributions for this filing. Only populated on the V2 list path (`v2=true`) when called with `extend=filing_contribution`. When the expansion is not requested, this field is omitted from the response. An empty array means the filing has no computed contributions yet.
+          description: Tax-return box values for EU and UK VAT filings. Only included on List filings when called with `extend=filing_contribution`; left out otherwise. An empty array means the box values have not been computed yet.
           items:
             $ref: '#/components/schemas/FilingContribution'
-    FilingsGet:
+    FilingDocument:
       type: object
       properties:
         id:
           type: string
-          description: The unique identifier for the filing.
-        corporation_id:
+          format: uuid
+          description: The unique identifier for the filing document.
+        filing_id:
           type: string
-          description: The unique identifier for a corporation associated with this filing.
-        form_title:
+          format: uuid
+          description: The filing this document belongs to.
+        file_id:
           type: string
-          description: Name of the tax return form for this filing (e.g., "Sales and Use Tax Return").
-        description:
+          format: uuid
+          description: Identifier of the file. Call `GET /files/{file_id}` to get a signed download URL.
+        type:
           type: string
-          description: Additional details about the filing, such as filing variant or deadline type.
-        country:
-          $ref: '#/components/schemas/Country'
-        country_specific_details:
-          $ref: '#/components/schemas/CountrySpecificDetails'
-        registration_tax_type_id:
-          type: string
-          nullable: true
-          description: The V2 registration content identifier linking this filing to a specific registration tax type. Present for filings created via the V2 path; null for V1 filings.
-          example: REG_STATE_CEN_06_RST
-        jurisdiction_name:
-          type: string
-          nullable: true
-          description: Human-readable jurisdiction name derived from V2 registration content (e.g., "California", "Germany"). Present for V2 filings; null for V1 filings.
-        jurisdiction_type:
-          type: string
-          nullable: true
-          description: Type of jurisdiction for this filing. Present for V2 filings; null for V1 filings.
           enum:
-            - STATE_OR_PROVINCE
-            - COUNTRY
-            - TRADEBLOC
-            - CITY_OR_COUNTY
-        filing_content_id:
-          type: string
-          nullable: true
-          description: Content identifier linking this filing to its filing calendar entry and contribution box rules. Present for V2 filings with content-driven calendars; null for V1 filings.
-          example: FC_DE_3001_VAT
-        frequency:
-          $ref: '#/components/schemas/filing_frequency'
-        period_start_date:
-          type: string
-          format: date
-          description: ISO 8601 date string, identifying the start date of the period period for which the sales tax is being filed (e.g., '2024-09-01' for September 2024). For a quarter 1 filing where the fiscal year starts in March, the period_start_date will be 2024-03-01 and frequency will be QUARTERLY.
-        reporting_period_start_date:
-          type: string
-          format: date
-          description: Start date of the reporting period, which may differ from the tax period.
-        reporting_period_end_date:
-          type: string
-          format: date
-          description: End date of the reporting period.
-        due_date:
-          type: string
-          format: date
-          description: ISO 8601 date string, identifying the date when by which the filing must be submitted.
-        filing_status:
-          $ref: '#/components/schemas/Tax_filing_status'
-        filed_on:
-          type: string
-          format: date
-          description: Date when the taxes were filed with the state, in ISO 8601 format.
-        registration_id:
-          type: string
-          description: The unique identifier for the tax registration associated with this filing.
-        total_tax_filed:
-          type: number
-          description: Total amount of sales tax filed with various jurisdictions for this period. May differ slightly from the total tax collected.
-          example: 135.92
-        sales_details:
-          type: object
-          properties:
-            total_sales:
-              type: number
-              description: Total sales amount for the filing period.
-              example: 12345.91
-            taxable_sales:
-              type: number
-              description: Total sales amount that was subject to sales tax for the filing period.
-              example: 12345.91
-            sales_tax_collected:
-              type: number
-              description: Total sales tax collected during the period.
-              example: 771.62
-        payment_details:
-          type: object
-          properties:
-            amount_due:
-              type: number
-              description: Total amount due for this filing.
-              example: 771.62
-            payment_status:
-              type: string
-              enum:
-                - PENDING
-                - COMPLETED
-                - FAILED
-              description: Status of the payment.
-            failure_details:
-              type: object
-              description: This object will be populated if the payment fails for any reason.
-              properties:
-                failed_at:
-                  type: string
-                  description: ISO 8601 date string, identifying the date when the payment failed.
-                reason:
-                  type: string
-                  description: Specific information why the payment failed.
+            - FILING_CONFIRMATION
+            - PAYMENT_CONFIRMATION
+            - RETURN_CONFIRMATION
+          description: 'What the document is. `FILING_CONFIRMATION`: the tax authority''s confirmation that the return was filed. `PAYMENT_CONFIRMATION`: the confirmation of payment. `RETURN_CONFIRMATION`: a copy of the filed return. A filing has at most one document of each type.'
+        created_at:
+          type: integer
+          format: int64
+          description: When the document was attached, in Unix microseconds.
     FilingContributionsResponse:
       type: object
       properties:
@@ -4478,8 +4447,8 @@ components:
           example: '2025-04-30'
         filing_status:
           type: string
-          description: Current status of the filing (e.g., `SCHEDULED`, `UPCOMING`, `OVERDUE`, `FILED`).
-          example: UPCOMING
+          description: Current status of the filing (`SCHEDULED`, `ACCRUING`, `ACTIVE`, `FILED` or `OVERDUE`).
+          example: ACTIVE
         breakdown:
           nullable: true
           allOf:
@@ -4532,7 +4501,7 @@ components:
           example: '2025-04-30'
         filing_status:
           type: string
-          example: UPCOMING
+          example: ACTIVE
         contributions:
           nullable: true
           type: array

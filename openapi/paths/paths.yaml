@@ -1324,9 +1324,9 @@
   get:
     summary: Get registration threshold exposure
     description: >-
-      Get registration threshold exposure for a corporation. By default, returns US-state-level data.
-      Pass `v2=true` to get global jurisdiction-level data covering US, Canada, UK, and EU jurisdictions,
-      including support for multiple exposure rules per jurisdiction (for example, EU Union OSS, Non-Union OSS, and IOSS).
+      Get registration threshold exposure for a corporation, per jurisdiction, covering US, Canada, UK,
+      and EU jurisdictions. A jurisdiction may appear once per exposure rule that applies to it
+      (for example, EU Union OSS, Non-Union OSS, and IOSS).
     operationId: getNexusDetails
     parameters:
       - name: corporation_id
@@ -1335,44 +1335,19 @@
         required: true
         schema:
           type: string
-      - name: v2
-        in: query
-        description: >-
-          Set to `true` to use the global registration threshold engine. When enabled, the response
-          uses a `jurisdictions` array with expanded fields including `jurisdiction_id`, `exposure_type`,
-          `exposure_rule_id`, `subdivision`, and `currency`. When omitted or `false`,
-          the legacy response format with a `states` array is returned.
-        required: false
-        schema:
-          type: string
-          enum:
-            - "true"
-            - "false"
     responses:
       "200":
         description: Registration threshold exposure data
         content:
           application/json:
             schema:
-              oneOf:
-                - type: object
-                  title: Default response
-                  description: Returned when `v2` is not set or `false`.
-                  properties:
-                    data:
-                      "$ref": "../components/components.yaml#/components/schemas/NexusResponse"
-                    message:
-                      type: string
-                      example: Successfully fetched nexus.
-                - type: object
-                  title: V2 response
-                  description: Returned when `v2=true`.
-                  properties:
-                    data:
-                      "$ref": "../components/components.yaml#/components/schemas/NexusV2Response"
-                    message:
-                      type: string
-                      example: Successfully fetched nexus.
+              type: object
+              properties:
+                data:
+                  "$ref": "../components/components.yaml#/components/schemas/NexusResponse"
+                message:
+                  type: string
+                  example: Successfully fetched nexus.
       "400":
         description: Bad request
         content:
@@ -1385,7 +1360,7 @@
     description: >-
       Trigger an on-demand recompute of registration threshold exposure for a corporation.
       The exposure engine evaluates the corporation's transactions against jurisdiction-level
-      exposure rules and updates the cached breached set used by `GET /nexus?v2=true`.
+      exposure rules and updates the cached breached set used by `GET /nexus`.
 
 
       As part of every successful run, the engine emits an `INDIRECT_TAX.EXPOSURE.COMPUTED`

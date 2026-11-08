@@ -5,7 +5,7 @@ openapi: "POST /exposure/sync"
 
 ## Overview
 
-Trigger an on-demand recompute of registration threshold exposure for a corporation. The exposure engine evaluates the corporation's transactions against jurisdiction-level exposure rules and updates the cached breached set returned by [GET /nexus?v2=true](/engine/indirect-tax/nexus/nexus-GET).
+Trigger an on-demand recompute of registration threshold exposure for a corporation. The exposure engine evaluates the corporation's transactions against jurisdiction-level exposure rules and updates the cached breached set returned by [GET /nexus](/engine/indirect-tax/nexus/nexus-GET).
 
 Every successful run emits an [`INDIRECT_TAX.EXPOSURE.COMPUTED`](/engine/indirect-tax/webhooks/event#indirect-tax-exposure) webhook with the corporation's full current set of exposed jurisdictions. The webhook is only dispatched when at least one subscriber is registered for the topic.
 

@@ -1,0 +1,29 @@
+---
+title: "Connect your systems"
+description: "Connect each entity's accounting, payments, and ecommerce systems so Commenda can sync its data."
+---
+
+When you connect a system, Commenda syncs its data for the entity you choose. Global Indirect Tax uses that data to track exposure and prepare filings.
+
+## Connect a system
+
+1. Open **Settings** and select **Integrations**.
+2. Select **Add integration**.
+3. Search for your system and follow the steps to sign in to it.
+
+The connection appears in **Integrations** with its **Entity** and **Sync status**.
+
+## Manage a connection
+
+Select a connection to open it. From there you can:
+
+- See the **Sync status** and the **Scopes** Commenda has.
+- Select **Sync updates** to sync now, or **Resync all** to sync everything again.
+- Change the **Sync configuration** and see **Settings history**.
+- **Disconnect**, **Reconnect**, or **Delete** the connection.
+
+## Use a connection for tax
+
+For Global Indirect Tax, turn on **Calculate tax** for the connection and set the **Tax start date**. Transactions dated before the start date sync but aren't taxed.
+
+For Stripe, paste the **Stripe webhook URL** into your Stripe webhook settings so Stripe transactions can be taxed.

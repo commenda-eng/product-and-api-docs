@@ -21,14 +21,6 @@ schemas:
       - SALES_ONLY
       - SALES_OR_TRANSACTIONS
       - SALES_AND_TRANSACTIONS
-    IncludableSalesType:
-      type: string
-      description: Specifies the type of sales that are included when calculating the nexus threshold. This determines which sales are considered for nexus evaluation.
-      enum:
-        - ALL_SALES
-        - TAXABLE_SALES
-        - RETAIL_SALES
-        - GROSS
     StateRegistrationStatus:
       description: Status of the state registration triggered by this upcoming or exceeded
         nexus threshold.
@@ -39,122 +31,9 @@ schemas:
       - REGISTRATION_IN_PROGRESS
       - REGISTRATION_COMPLETED
       - REGISTRATION_CANCELED
-    NexusRule:
-      type: object
-      required:
-        - threshold_type
-        - evaluation_period_type
-        - includable_sales_type
-      properties:
-        sales_threshold:
-          type: number
-          description: The maximum gross sales revenue a business can generate within a state before it must collect and remit sales tax. This threshold is a key determinant in establishing economic nexus.
-          example: 100000
-        transactions_threshold:
-          type: number
-          description: The maximum number of sales transactions a business can conduct within a state before it must collect and remit sales tax. This threshold helps determine economic nexus.
-          example: 200
-        threshold_type:
-          "$ref": "#/schemas/ThresholdType"
-          description: Specifies the criteria used by a state to calculate its economic nexus threshold, such as sales revenue or transaction count.
-        evaluation_period_type:
-          "$ref": "#/schemas/EvaluationPeriod"
-          description: Defines the time frame over which a state evaluates economic nexus, impacting which transactions count towards the threshold.
-        includable_sales_type:
-          "$ref": "#/schemas/IncludableSalesType"
-          description: Indicates the type of sales included in the nexus calculation, such as all sales, taxable sales, or retail sales.
-    EconomicExposure:
-      type: object
-      required:
-        - state
-        - rule
-        - calculation
-      properties:
-        state:
-          "$ref": "./primitives.yaml#/schemas/State"
-        rule:
-          "$ref": "#/schemas/NexusRule"
-        calculation:
-          "$ref": "#/schemas/CalculationObject"
-        is_nexus_breached:
-          type: boolean
-          description: Indicates whether the nexus threshold has been breached.
-        date_of_breach:
-          type: string
-          format: date
-          description: The date when the nexus threshold was breached, if applicable.
-    CalculationObject:
-      type: object
-      required:
-        - sales_exposure_percentage
-        - transactions_exposure_percentage
-        - total_sales
-        - total_transactions
-      properties:
-        total_sales:
-          type: number
-          description: Total sales made by the customer in a state during the current evaluation period.
-          example: 0
-        total_transactions:
-          type: integer
-          description: Total number of transactions reported by the entity in a state during the current evaluation period.
-          example: 0
-        gross_sales:
-          type: number
-          description: Total gross sales made by the customer in a state during the current evaluation period.
-          example: 0
-        gross_transactions:
-          type: integer
-          description: Total number of gross transactions reported by the entity in a state during the current evaluation period.
-          example: 0
-        taxable_sales:
-          type: number
-          description: Total taxable sales made by the customer in a state during the current evaluation period.
-          example: 0
-        taxable_transactions:
-          type: integer
-          description: Total number of taxable transactions reported by the entity in a state during the current evaluation period.
-          example: 0
-        retail_sales:
-          type: number
-          description: Total retail sales made by the customer in a state during the current evaluation period.
-          example: 0
-        retail_transactions:
-          type: integer
-          description: Total number of retail transactions reported by the entity in a state during the current evaluation period.
-          example: 0
-        sales_exposure_percentage:
-          type: number
-          description: The percentage of the state's sales threshold that the business has reached during the current evaluation period for this state. This metric indicates how close a business is to reaching or exceeding the sales threshold for economic nexus in a given state.
-          example: 0
-          minimum: 0
-          maximum: 1
-        transactions_exposure_percentage:
-          type: number
-          description: The percentage of the state's transaction threshold that the business has reached during the current evaluation period for this state. This metric shows how close a business is to reaching or exceeding the transaction threshold for economic nexus in a given state.
-          example: 0
-          minimum: 0
-          maximum: 1
-        includable_sales_type:
-          type: string
-          description: The type of sales included in the nexus calculation.
-          example: "GROSS"
     NexusResponse:
       type: object
-      description: Default response when `v2` is not set or `false`. Returns US-state-level registration threshold data.
-      properties:
-        corporation_id:
-          type: string
-          description: The unique identifier for a corporation associated with this
-            nexus details.
-          example: b6d009b0-d174-463f-b030-94643c28e209
-        states:
-          type: array
-          items:
-            "$ref": "#/schemas/EconomicExposure"
-    NexusV2Response:
-      type: object
-      description: Response when `v2=true`. Returns global jurisdiction-level registration threshold data covering US, Canada, UK, and EU jurisdictions.
+      description: Registration threshold exposure for a corporation, per jurisdiction, covering US, Canada, UK, and EU jurisdictions.
       properties:
         corporation_id:
           type: string
@@ -216,9 +95,9 @@ schemas:
           description: ISO 4217 currency code used for threshold amounts.
           example: USD
         rule:
-          "$ref": "#/schemas/NexusRuleV2"
+          "$ref": "#/schemas/NexusRule"
         calculation:
-          "$ref": "#/schemas/CalculationObjectV2"
+          "$ref": "#/schemas/CalculationObject"
         is_nexus_breached:
           type: boolean
           description: Whether the registration threshold has been exceeded for this rule.
@@ -234,7 +113,7 @@ schemas:
             type: string
           example:
             - REG_STATE_CEN_06_1000
-    NexusRuleV2:
+    NexusRule:
       type: object
       required:
         - threshold_type
@@ -282,7 +161,7 @@ schemas:
           type: integer
           nullable: true
           description: Maximum value per transaction for inclusion in threshold calculations. Transactions exceeding this cap are excluded. Used by schemes like IOSS where only consignments at or below €150 are included.
-    CalculationObjectV2:
+    CalculationObject:
       type: object
       required:
         - included_sales

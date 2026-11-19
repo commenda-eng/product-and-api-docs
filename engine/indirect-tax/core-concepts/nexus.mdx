@@ -9,7 +9,7 @@ A registration threshold is the point at which a seller must register to collect
 This concept applies globally: VAT and GST jurisdictions also set thresholds that determine when a business must register and begin collecting tax.
 
 <Tip>
-Commenda tracks registration thresholds across US states, Canada, the UK, and the EU — including trade bloc rules like Union OSS, Non-Union OSS, and IOSS. See [global exposure tracking](/engine/indirect-tax/core-concepts/global-exposure) for details on multi-jurisdiction support and the v2 API.
+Commenda tracks registration thresholds across US states, Canada, the UK, and the EU — including trade bloc rules like Union OSS, Non-Union OSS, and IOSS. See [global exposure tracking](/engine/indirect-tax/core-concepts/global-exposure) for details on multi-jurisdiction support and the response fields.
 </Tip>
 
 ### How jurisdictions define thresholds
@@ -28,54 +28,11 @@ Commenda automatically tracks your progress toward registration thresholds in ea
 
 You can use the registration threshold API endpoint to get a comprehensive overview of your threshold status across all jurisdictions, taking into account each jurisdiction's specific rules.
 
-### Default response (US states)
+### Response
 
-By default, the `GET /nexus` endpoint returns US-state-level threshold data. The response contains a `states` array where each object represents your exposure in one US state.
+The `GET /nexus` endpoint returns a `jurisdictions` array covering US, Canada, UK, and EU jurisdictions. Each object is one exposure rule evaluated for one jurisdiction, so a jurisdiction can appear more than once (for example, EU Union OSS, Non-Union OSS, and IOSS).
 
-```json
-{
-  "data": {
-    "corporation_id": "74df772f-9260-42cf-9c20-3b613b60fecd",
-    "states": [
-      {
-        "state": "VT",
-        "rule": {
-          "sales_threshold": 100000,
-          "transactions_threshold": 200,
-          "threshold_type": "SALES_OR_TRANSACTIONS",
-          "evaluation_period_type": "PRECEDING_12_MONTHS",
-          "includable_sales_type": "GROSS"
-        },
-        "calculation": {
-          "total_sales": 0,
-          "total_transactions": 0,
-          "gross_sales": 0,
-          "gross_transactions": 0,
-          "taxable_sales": 0,
-          "taxable_transactions": 0,
-          "retail_sales": 0,
-          "retail_transactions": 0,
-          "sales_exposure_percentage": 0,
-          "transactions_exposure_percentage": 0,
-          "includable_sales_type": "GROSS"
-        },
-        "is_nexus_breached": false
-      }
-    ]
-  },
-  "message": "Successfully fetched nexus."
-}
-```
-
-<Note>
-The default response uses field names like `is_nexus_breached` and `states` for backward compatibility. These fields represent registration threshold status — `is_nexus_breached` indicates whether you have exceeded the registration threshold in a given jurisdiction.
-</Note>
-
-### Global response (`v2=true`)
-
-Pass `v2=true` as a query parameter to get global jurisdiction-level threshold data. This covers US, Canada, UK, and EU jurisdictions, including support for multiple exposure rules per jurisdiction (for example, EU Union OSS, Non-Union OSS, and IOSS).
-
-The v2 response uses a `jurisdictions` array instead of `states`, and includes additional fields such as `jurisdiction_id`, `exposure_type`, `exposure_rule_id`, `subdivision`, and `currency`.
+Each object identifies the jurisdiction (`jurisdiction_id`, `jurisdiction_type`, `jurisdiction_name`, `subdivision`), the rule being evaluated (`exposure_type`, `exposure_rule_id`, `rule`), the threshold `currency`, and your progress toward the threshold (`calculation`).
 
 ```json
 {
@@ -146,18 +103,14 @@ The v2 response uses a `jurisdictions` array instead of `states`, and includes a
 }
 ```
 
-#### Recommended registration
+<Note>
+`is_nexus_breached` indicates whether you have exceeded the registration threshold for that jurisdiction and rule. The field keeps its `nexus` name for backward compatibility.
+</Note>
 
-Each jurisdiction in the v2 response includes a `recommended_registration_content_ids` field: an array of content IDs that link directly to the [V2 Registration API](/engine/indirect-tax/registrations/v2/registrations-v2). When a threshold is breached (or approaching breach), use these IDs to discover the appropriate registration options via the [Available Registrations](/engine/indirect-tax/registrations/v2/content/available-registrations-POST) endpoint.
+<Note>
+Earlier versions of this endpoint returned a US-only `states` array unless you passed `v2=true`. The `jurisdictions` response is now the only response, and the `v2` parameter is no longer needed.
+</Note>
 
-#### Key differences from the default response
+### Recommended registration
 
-| Field | Default | V2 (`v2=true`) |
-|---|---|---|
-| Top-level array | `states` | `jurisdictions` |
-| Jurisdiction identifier | `state` (US state code) | `jurisdiction_id`, `subdivision` |
-| Currency | Implicitly USD | Explicit `currency` field |
-| Exposure rule metadata | Not included | `exposure_type`, `exposure_rule_id`, `jurisdiction_type` |
-| Calculation fields | `total_sales`, `total_transactions`, etc. | `included_sales`, `included_transactions`, etc. |
-| Registration recommendation | Not included | `recommended_registration_content_ids` |
-| Supported jurisdictions | US states only | US, Canada, UK, EU (country-level and tradebloc) |
+Each jurisdiction in the response includes a `recommended_registration_content_ids` field: an array of content IDs that link directly to the [V2 Registration API](/engine/indirect-tax/registrations/v2/registrations-v2). When a threshold is breached (or approaching breach), use these IDs to discover the appropriate registration options via the [Available Registrations](/engine/indirect-tax/registrations/v2/content/available-registrations-POST) endpoint.

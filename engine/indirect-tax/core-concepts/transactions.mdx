@@ -18,7 +18,8 @@ Commenda provides a range of endpoints to manage transactions:
    - Supports both sales (`SALE`) and purchase (`PURCHASE`) transaction types. Purchase transactions are used for input tax credit calculations (EU VAT / UK VAT) and are excluded from sales-focused flows like threshold tracking and filings.
 
 3. `/nexus` endpoint:
-   - Used to view the seller’s progress toward registration thresholds.
+   - Used to view the seller’s progress toward registration thresholds in each jurisdiction (US states, Canada, the UK, and the EU).
+   - Returns one entry per jurisdiction and exposure rule. See [registration thresholds](/engine/indirect-tax/core-concepts/nexus).
 
 4. `/registrations` endpoints:
    - Used to manage sales tax registrations.

@@ -70,16 +70,16 @@ The EU Import One-Stop Shop (IOSS) scheme applies only to consignments valued at
 
 ## Querying exposure data
 
-Use the registration thresholds endpoint with `v2=true` to retrieve exposure data across all supported jurisdictions:
+Use the [registration thresholds endpoint](/engine/indirect-tax/nexus/nexus-GET) to retrieve exposure data across all supported jurisdictions:
 
 ```bash
-curl -X GET "https://transaction-tax.api.in.commenda.io/api/v1/nexus?corporation_id={corporation_id}&v2=true" \
+curl -X GET "https://transaction-tax.api.in.commenda.io/api/v1/nexus?corporation_id={corporation_id}" \
   -H "Authorization: Bearer <your_token>"
 ```
 
 ### Response structure
 
-The v2 response returns an array of jurisdiction objects, each representing one exposure rule evaluation:
+The response returns an array of jurisdiction objects, each representing one exposure rule evaluation:
 
 ```json
 {

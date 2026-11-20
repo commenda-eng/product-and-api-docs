@@ -55,7 +55,13 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/Error"
-"/webhooks/:id":
+"/webhooks/{id}":
+  parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
   post:
     summary: Update a webhook
     description: Update an existing webhook.
@@ -119,7 +125,13 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/Error"
-"/webhooks/test/trigger/:id":
+"/webhooks/test/trigger/{id}":
+  parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
   post:
     summary: Test your webhook
     description: Trigger a test against your webhook.
@@ -278,7 +290,13 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/Error"
-"/products/:id":
+"/products/{id}":
+  parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
   post:
     summary: Update a product.
     description: Update an existing product by id.
@@ -334,82 +352,6 @@
     responses:
       "204":
         description: Delete a product response.
-      "400":
-        description: Bad request
-        content:
-          application/json:
-            schema:
-              "$ref": "../components/components.yaml#/components/schemas/Error"
-"/products/{id}/customs-code":
-  post:
-    summary: Add or update a customs code for a product.
-    description: Manage customs code for each product by jurisdiction.
-    operationId: updateProductCustomsCode
-    parameters:
-      - in: path
-        required: true
-        name: id
-        schema:
-          type: string
-        description: The unique identifier of the product to update.
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - country
-              - customs_code
-            properties:
-              country:
-                "$ref": "../components/components.yaml#/components/schemas/Country"
-              # customs_code:
-              #   "$ref": "../components/components.yaml#/components/schemas/customs_code"
-    responses:
-      "200":
-        description: Set product customs code response.
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                message:
-                  type: string
-                  example: Successfully set product customs code.
-      "400":
-        description: Bad request
-        content:
-          application/json:
-            schema:
-              "$ref": "../components/components.yaml#/components/schemas/Error"
-  delete:
-    summary: Delete a customs code for a product.
-    operationId: deleteProductCustomsCode
-    parameters:
-      - in: path
-        required: true
-        name: id
-        schema:
-          type: string
-        description: The unique identifier of the product to update.
-    requestBody:
-      required: true
-      content:
-        application/json:
-          schema:
-            type: object
-            required:
-              - country
-            properties:
-              country:
-                description:
-                  ISO 3166 2-letter country code representing the country
-                  to remove the country code for.
-                "$ref": "../components/components.yaml#/components/schemas/Country"
-    responses:
-      "204":
-        description: Deleted customs code for product.
       "400":
         description: Bad request
         content:
@@ -983,7 +925,7 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/Error"
-"/calculate-customs-duty":
+"/customs-duty/calculate-customs-duty":
   post:
     summary: Calculate customs duty for a transaction
     operationId: calculateCustomsDuty
@@ -1277,11 +1219,11 @@
           application/json:
             schema:
               "$ref": "../components/components.yaml#/components/schemas/Error"
-"/transactions/bulk":
+"/transactions/bulk_upload/csv":
   post:
     summary: Bulk submit transactions
     description: |-
-      Submit a file of completed transactions for processing.
+      Submit a CSV file of completed transactions for processing. Upload the file with `POST /files` first, then pass its `file_id`.
       The CSV file must include required fields for SALE, RETURN, and PURCHASE transactions.
       For RETURN and PURCHASE transactions, all line items must have negative total amounts. RETURN transactions should include parent_invoice_id when available.
     operationId: submitBulkTransactions
@@ -1291,16 +1233,15 @@
         application/json:
           schema:
             type: object
+            required:
+              - file_id
             properties:
-              file:
+              file_id:
                 type: string
-                format: binary
-                description: The CSV file to upload.
+                description: The ID of a CSV file you uploaded with `POST /files`.
               corporation_id:
                 type: string
-                description:
-                  The unique identifier for a corporation associated with
-                  this file.
+                description: The unique identifier for a corporation associated with this file.
     responses:
       "200":
         description: Transaction creation response

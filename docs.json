@@ -1,178 +1,219 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Commenda — Entity Management, Indirect Tax, Compliance & Corporate APIs for Multinationals",
+  "name": "Commenda",
   "colors": {
     "primary": "#026EB9",
     "light": "#026EB9",
     "dark": "#026EB9"
   },
   "favicon": "/favicon-32x32.png",
-  "openapi": ["openapi.yaml"],
+  "openapi": [
+    "openapi.yaml"
+  ],
   "redirects": [
-    { "source": "/engine/partner-api/:slug*", "destination": "/engine/api-introduction" },
-    { "source": "/engine/incorporation/:slug*", "destination": "/engine/api-introduction" },
-    { "source": "/engine/commendaos/partner-api/:slug*", "destination": "/engine/commendaos/overview" },
-    { "source": "/engine/partner-webhooks/:slug*", "destination": "/engine/api-introduction" }
+    {
+      "source": "/introduction/:slug*",
+      "destination": "/"
+    },
+    {
+      "source": "/engine/api-introduction",
+      "destination": "/engine/indirect-tax/introduction"
+    },
+    {
+      "source": "/engine/api-introduction-Commenda",
+      "destination": "/engine/indirect-tax/introduction"
+    },
+    {
+      "source": "/api-reference/sales-tax/:slug*",
+      "destination": "/engine/indirect-tax/:slug*"
+    },
+    {
+      "source": "/engine/indirect-tax/exclude-jurisdiction-logic",
+      "destination": "/engine/indirect-tax/introduction"
+    },
+    {
+      "source": "/engine/partner-api/:slug*",
+      "destination": "/engine/indirect-tax/introduction"
+    },
+    {
+      "source": "/engine/incorporation/:slug*",
+      "destination": "/engine/indirect-tax/introduction"
+    },
+    {
+      "source": "/engine/partner-webhooks/:slug*",
+      "destination": "/engine/indirect-tax/webhooks/webhooks"
+    },
+    {
+      "source": "/engine/commendaos/:slug*",
+      "destination": "/"
+    },
+    {
+      "source": "/engine/commenda-os/:slug*",
+      "destination": "/"
+    },
+    {
+      "source": "/engine/address-api/:slug*",
+      "destination": "/"
+    },
+    {
+      "source": "/engine/company-name-checker/:slug*",
+      "destination": "/"
+    },
+    {
+      "source": "/engine/compliance-calendar/:slug*",
+      "destination": "/compliance/compliance-calendar"
+    },
+    {
+      "source": "/engine/compliance-calendar-preview/:slug*",
+      "destination": "/compliance/compliance-calendar"
+    },
+    {
+      "source": "/engine/form-builder/:slug*",
+      "destination": "/"
+    },
+    {
+      "source": "/engine/workflow-builder/:slug*",
+      "destination": "/"
+    },
+    {
+      "source": "/product/entities/key-persons",
+      "destination": "/entities/key-persons"
+    },
+    {
+      "source": "/product/entities/ownership",
+      "destination": "/entities/ownership"
+    },
+    {
+      "source": "/product/entities/:slug*",
+      "destination": "/entities/add-and-manage-entities"
+    },
+    {
+      "source": "/product/compliance/recurring-tasks",
+      "destination": "/compliance/tasks"
+    },
+    {
+      "source": "/product/compliance/:slug*",
+      "destination": "/compliance/compliance-calendar"
+    },
+    {
+      "source": "/product/sales-tax/getting-started",
+      "destination": "/indirect-tax/set-up"
+    },
+    {
+      "source": "/product/sales-tax/registrations",
+      "destination": "/indirect-tax/registrations"
+    },
+    {
+      "source": "/product/sales-tax/transactions",
+      "destination": "/indirect-tax/transactions"
+    },
+    {
+      "source": "/product/sales-tax/filings",
+      "destination": "/indirect-tax/filings"
+    },
+    {
+      "source": "/product/sales-tax/exemptions",
+      "destination": "/indirect-tax/customers-and-exemptions"
+    },
+    {
+      "source": "/product/sales-tax/products",
+      "destination": "/indirect-tax/products-and-tax-codes"
+    },
+    {
+      "source": "/product/sales-tax/:slug*",
+      "destination": "/indirect-tax/set-up"
+    },
+    {
+      "source": "/product/indirect-tax/:slug*",
+      "destination": "/indirect-tax/set-up"
+    },
+    {
+      "source": "/product/documents/:slug*",
+      "destination": "/collaborate/documents"
+    },
+    {
+      "source": "/product/tools/general-thread",
+      "destination": "/collaborate/inbox"
+    },
+    {
+      "source": "/product/services/service-requests",
+      "destination": "/collaborate/inbox"
+    },
+    {
+      "source": "/product/settings/:slug*",
+      "destination": "/get-started/invite-your-team"
+    },
+    {
+      "source": "/product/:slug*",
+      "destination": "/"
+    },
+    {
+      "source": "/integrations/:slug*",
+      "destination": "/settings/integrations"
+    },
+    {
+      "source": "/guides/:slug*",
+      "destination": "/"
+    },
+    {
+      "source": "/faq/:slug*",
+      "destination": "/"
+    }
   ],
   "navigation": {
     "tabs": [
       {
-        "tab": "Product Guides",
-        "icon": "computer-classic",
+        "tab": "Guides",
+        "icon": "book-open",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Get started",
             "pages": [
-              "introduction/welcome",
-              "introduction/key-concepts",
-              "introduction/user-roles",
-              "introduction/platform-overview",
-              "introduction/quickstart",
-              "introduction/navigation-guide"
+              "index",
+              "get-started/set-up-your-account",
+              "get-started/invite-your-team"
             ]
           },
           {
             "group": "Entities",
             "pages": [
-              "product/entities/overview",
-              "product/entities/creating-entities",
-              "product/entities/business-information",
-              "product/entities/key-persons",
-              "product/entities/ownership",
-              "product/entities/registrations",
-              "product/entities/corporate-structure",
-              "product/entities/bank-accounts",
-              {
-                "group": "Jurisdictions",
-                "pages": [
-                  "product/entities/philippines"
-                ]
-              }
+              "entities/add-and-manage-entities",
+              "entities/key-persons",
+              "entities/ownership"
             ]
           },
           {
             "group": "Compliance",
             "pages": [
-              "product/compliance/overview",
-              "product/compliance/compliance-calendar",
-              "product/compliance/tracking-filings",
-              "product/compliance/recurring-tasks"
+              "compliance/compliance-calendar",
+              "compliance/tasks"
             ]
           },
           {
-            "group": "Indirect Tax",
+            "group": "Work with Commenda",
             "pages": [
-              "product/sales-tax/overview",
-              "product/sales-tax/getting-started",
-              "product/sales-tax/registrations",
-              "product/sales-tax/transactions",
-              "product/sales-tax/filings",
-              "product/sales-tax/exemptions",
-              "product/sales-tax/products",
-              "product/sales-tax/tax-calculator",
-              "product/indirect-tax/guarantees"
+              "collaborate/inbox",
+              "collaborate/documents"
             ]
           },
           {
-            "group": "Transfer Pricing",
+            "group": "Global Indirect Tax",
             "pages": [
-              "product/transfer-pricing/overview",
-              "product/transfer-pricing/policies",
-              "product/transfer-pricing/benchmarking"
+              "indirect-tax/set-up",
+              "indirect-tax/exposure",
+              "indirect-tax/transactions",
+              "indirect-tax/registrations",
+              "indirect-tax/filings",
+              "indirect-tax/customers-and-exemptions",
+              "indirect-tax/products-and-tax-codes"
             ]
           },
           {
-            "group": "Services",
+            "group": "Account",
             "pages": [
-              "product/services/overview",
-              "product/services/marketplace",
-              "product/services/service-requests",
-              "product/services/incorporation"
-            ]
-          },
-          {
-            "group": "Documents",
-            "pages": [
-              "product/documents/overview",
-              "product/documents/drive",
-              "product/documents/tagging",
-              "product/documents/secure-information-requests"
-            ]
-          },
-          {
-            "group": "Tools",
-            "pages": [
-              "product/tools/esign",
-              "product/tools/general-thread"
-            ]
-          },
-          {
-            "group": "Settings",
-            "pages": [
-              "product/settings/overview"
-            ]
-          },
-          {
-            "group": "Integrations",
-            "pages": [
-              "integrations/supported-integrations",
-              "integrations/accounting/overview",
-              "integrations/stripe/overview",
-              "integrations/shopify/overview",
-              "integrations/xero/overview",
-              "integrations/zoho/overview",
-              {
-                "group": "WooCommerce",
-                "pages": [
-                  "integrations/woocommerce/setup",
-                  "integrations/woocommerce/plugin-checklist"
-                ]
-              },
-              "integrations/quickbooks/overview",
-              {
-                "group": "NetSuite",
-                "pages": [
-                  "integrations/netsuite/overview",
-                  "integrations/netsuite/plugin-checklist"
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Walkthroughs",
-        "icon": "book-open",
-        "groups": [
-          {
-            "group": "Walkthroughs",
-            "pages": [
-              "guides/onboarding-your-company",
-              "guides/setting-up-sales-tax",
-              "guides/managing-compliance",
-              "guides/working-with-your-advisor",
-              "guides/incorporating-a-new-entity"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "FAQ",
-        "icon": "circle-question",
-        "groups": [
-          {
-            "group": "FAQ",
-            "pages": [
-              "faq/general",
-              "faq/entity-management",
-              "faq/compliance-faq",
-              "faq/indirect-tax",
-              "faq/integrations",
-              "faq/services-and-marketplace-faq",
-              "faq/api-and-developer-api",
-              "faq/billing",
-              "faq/security"
+              "settings/integrations",
+              "settings/commenda-ai"
             ]
           }
         ]
@@ -465,5 +506,5 @@
     "strict": true,
     "default": "light"
   },
-  "description": "Commenda is the all-in-one platform for Controllers, CFOs, and Heads of Tax at multinational companies. Finance teams use Commenda to manage legal entities across 100+ countries, track global compliance obligations, handle indirect tax (VAT, GST, and US sales tax) across all jurisdictions, manage transfer pricing documentation, and access professional services through a vetted marketplace — all from a single platform. Commenda also provides a suite of APIs for software developers: the Global Indirect Tax API, CommendaOS entity data API, Incorporation API, Workflow Builder API, Company Name Checker API, and Address API."
+  "description": "Guides for managing legal entities, compliance deadlines, and indirect tax in Commenda, plus the Indirect Tax API reference."
 }

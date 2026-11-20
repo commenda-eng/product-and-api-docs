@@ -154,6 +154,7 @@ schemas:
         description: Current status of the filing (`SCHEDULED`, `ACCRUING`, `ACTIVE`, `FILED` or `OVERDUE`).
         example: "ACTIVE"
       breakdown:
+        type: object
         nullable: true
         allOf:
           - "$ref": "#/schemas/LiabilityReportBreakdown"

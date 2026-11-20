@@ -9,7 +9,7 @@ Commenda uses tax transactions to calculate the seller's tax obligations for fil
 
 ### Usage
 
-Files will be uploaded through a `POST` to the `transactions/bulk` endpoint. They must be exactly the correct format, and are limited to 50 MB. 
+Upload your CSV with `POST /files`, then pass its `file_id` to `POST /transactions/bulk_upload/csv`. Files are limited to 50 MB and must match the template format.
 
 ### Error Handling
 
